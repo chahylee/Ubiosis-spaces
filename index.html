@@ -79,6 +79,7 @@ button{cursor:pointer}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .lockbar.verbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fdf1d8;color:#4a3a12} .verbar .btn{margin-left:4px} body.viewing .unit{pointer-events:none}
 .verlist{display:grid;gap:6px;max-height:46vh;overflow:auto} .veritem{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--raise)} .veritem .vm{font-size:11.5px;color:var(--muted)} .veritem .va{display:flex;gap:4px;grid-row:span 2} .vname{font:600 13px var(--sans);border:1px solid transparent;border-radius:6px;padding:3px 6px;background:none;color:var(--ink);min-width:0} .vname:hover{border-color:var(--line)} .vname:focus{border-color:var(--accent);background:var(--panel);outline:none}
+.dimed{display:inline-flex;align-items:center;gap:2px;font-size:12px;color:var(--muted)} .dimed input{width:52px;padding:3px 4px;border:1px solid var(--line);border-radius:5px;background:var(--raise);color:var(--ink);font:12px var(--mono,monospace);text-align:right} .dimed small{margin-left:4px;font-size:10.5px} .dimed.sm input{width:44px;padding:2px 3px;font-size:11px} .rih{flex-wrap:wrap} .rih b{white-space:nowrap} .rih .dimed{order:9;flex-basis:100%;margin:3px 0 0 16px}
 .lockbar{padding-block:7px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--accent-soft);color:var(--ink);font-size:13px;font-weight:500;border-bottom:1px solid var(--line)}
 body.readonly .qadd,body.readonly .udel,body.readonly [data-delunit],body.readonly [data-additem],body.readonly [data-delitem]{display:none!important}
 .examplebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--warn-soft);color:var(--ink);font-size:13px;border-bottom:1px solid var(--line)}
@@ -186,7 +187,9 @@ button.num.zero{opacity:.35}
 .udel.armed{width:auto;padding:0 4px;font-size:10.5px;color:#fff;background:var(--bad)}
 .btn.danger{color:var(--bad)}
 .flag{font-size:9.5px;padding:0 5px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
-.flag.on{border-color:var(--accent);color:var(--accent)}
+.flag.on{border-color:var(--accent);color:var(--accent)} button.flag{background:none;cursor:pointer;font:inherit;font-size:9.5px} button.flag.on:hover{background:var(--accent);color:var(--accent-ink)} .traybg.drophot{fill:color-mix(in srgb,var(--warn) 16%,transparent);stroke:var(--warn);stroke-width:2.5;stroke-dasharray:8 6;vector-effect:non-scaling-stroke}
+.flag.need{border-color:var(--warn);color:var(--warn)}
+.rfilter{display:flex;align-items:center;gap:3px;flex-wrap:wrap;padding:2px 3px 8px;font-size:11px;color:var(--muted)} .rfilter span{margin-right:3px} .rfilter button{border:1px solid var(--line);background:var(--raise);color:var(--muted);border-radius:999px;padding:1px 8px;font-size:11px} .rfilter button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .runits select{font-size:11px;padding:1px 3px;border:1px solid var(--line);border-radius:6px;background:var(--raise);min-width:0;width:100%}
 .railempty{padding:20px 12px;color:var(--muted);font-size:13px;display:grid;gap:10px}
 .raildrop{position:absolute;inset:0;border:2px dashed var(--warn);border-radius:8px;pointer-events:none}
@@ -258,7 +261,7 @@ button.num.zero{opacity:.35}
 .sbar:hover i,.sbar.drag i{left:2px;width:10px;background:var(--accent,#1f5f86)}
 .legend{position:absolute;left:12px;bottom:24px;font-size:11.5px;color:var(--muted);background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);border-radius:7px;padding:4px 9px;display:flex;gap:10px;align-items:center}
 .legend i{display:inline-block;width:14px;height:14px;border:1px solid var(--grid2);vertical-align:-3px;margin-right:4px}
-.selbar{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:var(--raise);border:1px solid var(--line);border-radius:10px;padding:6px 8px 6px 12px;box-shadow:0 4px 18px rgba(0,0,0,.12);max-width:calc(100% - 24px);flex-wrap:wrap;font-size:13px}
+.selbar{position:absolute;bottom:62px;left:50%;max-width:calc(100% - 24px);flex-wrap:wrap;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:var(--raise);border:1px solid var(--line);border-radius:10px;padding:6px 8px 6px 12px;box-shadow:0 4px 18px rgba(0,0,0,.12);max-width:calc(100% - 24px);flex-wrap:wrap;font-size:13px}
 .selbar .route{color:var(--muted)}
 .rb{font-size:12px;border-radius:999px;padding:1px 9px;font-weight:500}
 .rb.new{background:#fbe3ee;color:#b0125b}
@@ -324,7 +327,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .g2{stroke:var(--grid2);stroke-width:1;fill:none;vector-effect:non-scaling-stroke}
 .aphm{display:none}
 .afbar{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:4px 0 10px;font-size:12.5px;color:var(--muted)} .afbar input{min-width:150px;padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--raise);color:var(--ink)} .afbar select{padding:5px 6px;border:1px solid var(--line);border-radius:7px;background:var(--raise);color:var(--ink)} .afbar #afXlsx{margin-left:auto}
-.asset td{vertical-align:middle} .asset tr.gsub td{border-top:1px dashed var(--line)} .asset tr.gfirst td{border-top:1px solid var(--line)}
+.asset td{vertical-align:middle} .asset tbody td{border-bottom:0} .asset tr.gsub td{border-top:0} .asset tr.gfirst td{border-top:1px solid var(--line)} .asset .c{text-align:center} .asset td.c .num{min-width:34px} .asset .num.nb{border:1px solid var(--line);color:var(--ink)} .asset tr.gsub td,.asset tr.gfirst td{padding-top:7px;padding-bottom:7px}
 .athumb{width:56px;height:42px;padding:0;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--soft);cursor:zoom-in}
 .athumb img{width:100%;height:100%;object-fit:cover;display:block}
 .aadd{font-size:11.5px;padding:5px 9px;border:1px dashed var(--muted);border-radius:6px;background:none;color:var(--muted);white-space:nowrap;cursor:pointer}
@@ -365,7 +368,9 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .guide{stroke:var(--hl);stroke-width:1.5;stroke-dasharray:6 5;vector-effect:non-scaling-stroke}
 .link{stroke:var(--hl);stroke-width:2.5;fill:none;stroke-dasharray:8 6;vector-effect:non-scaling-stroke}
 .mline{stroke:var(--hl);stroke-width:2;vector-effect:non-scaling-stroke}
-.mdot{fill:var(--hl)}
+.mline.live{stroke-dasharray:6 5}
+.mdot{fill:var(--hl);stroke:#fff;stroke-width:1.5px;vector-effect:non-scaling-stroke}
+.mtot rect{fill:var(--hl)} .mtot text{fill:#fff;font-family:var(--mono);font-weight:600}
 .mtext{fill:var(--hl);font-family:var(--mono);font-weight:500;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:4px}
 
 /* tables & cards */
@@ -510,6 +515,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
   .tabs button{white-space:nowrap;flex:0 0 auto;padding:6px 11px}
   .afbar input{flex:1 1 100%}
   .afbar #afXlsx{margin-left:0}
+  .plan>*{min-width:0} .tools{flex-wrap:wrap} .tools input[type=range]{width:80px} .slotsel,.slotsel select,.msel{max-width:100%;min-width:0}
   .aphm{display:block!important;margin-top:5px} .asset thead th:last-child,.asset td.aph,.asset tfoot th:last-child{display:none}
 }
 </style>
@@ -542,7 +548,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
             <button id="btnRail" class="ibtn" title="가구 목록 접기·펼치기">◀ 목록</button>
             <label class="mono" style="font-size:12px;color:var(--muted)" for="snapSel">맞춤</label>
             <select id="snapSel"><option value="0">끄기</option><option value="5">5cm</option><option value="10" selected>10cm</option><option value="50">50cm</option></select>
-            <button id="btnMeasure" class="ibtn" title="길이 재기 (M)">길이 재기</button>
+            <button id="btnMeasure" class="ibtn" title="거리 재기 (M) · 지점을 차례로 클릭 · 더블클릭/Enter로 끝 · Shift 수평·수직 · Esc 지우기">📏 거리 재기</button>
             <button id="btnZout" class="ibtn" aria-label="축소">−</button>
             <input type="range" id="zoomR" min="-2.3" max="3.4" step="0.01" value="0" aria-label="확대 배율">
             <span id="zoomP" class="mono zoomp">100%</span>
@@ -949,9 +955,10 @@ function buildTray(L){ UI.trayPos={}; UI.trayBox=null; if(UI.view!=='space'||!L.
     for(const u of us){ const it=I(u.itemId); if(x>tx0&&x+it.w>tx0+TW){ x=tx0; y+=rowH+40; rowH=0 } UI.trayPos[u.id]={x,y,w:it.w,d:it.d}; s+=trayUnitSVG(u,x,y); x+=it.w+30; rowH=Math.max(rowH,it.d) }
     y+=rowH+60 }
   if(!list.length){ s+=`<text class="trayhdr" x="${tx0}" y="${ty0+60}">${layer==='a'?'모든 가구의 기존 위치를 정했어요':'남은 가구가 없어요'}</text>`; y=ty0+100 }
+  s+=`<text class="trayhdr" style="opacity:.6" x="${tx0}" y="${y-10}">도면의 가구를 여기로 끌어오면 다시 위치 정할 가구가 돼요</text>`; y+=20;
   const bx=tx0-30, by=ty0, bw=TW+60, bh=Math.max(y-ty0,160);
   UI.trayBox={x1:bx,y1:by-90,x2:bx+bw,y2:by+bh};
-  return `<g class="tray"><g class="fixsz" data-col="L" data-fx="${bx}" data-fy="${by}" transform="translate(${bx} ${by-34})"><rect class="ptag tr" x="0" y="-22" width="${layer==='a'?250:200}" height="40" rx="7"/><text class="ptagt tr" x="${layer==='a'?125:100}" y="-2">${layer==='a'?'위치 정할 가구':'남은 가구'} ${list.length}</text></g><rect class="traybg" x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="10"/>${s}</g>` }
+  return `<g class="tray"><g class="fixsz" data-col="L" data-fx="${bx}" data-fy="${by}" transform="translate(${bx} ${by-34})"><rect class="ptag tr" x="0" y="-22" width="250" height="40" rx="7"/><text class="ptagt tr" x="125" y="-2">위치 정할 가구 ${list.length}</text></g><rect class="traybg" x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="10"/>${s}</g>` }
 function renderPlan(){
   ensurePanels(); const L=UI.L=layout();
   const em=$('#planEmpty');
@@ -989,7 +996,12 @@ function applyRestore(){ const r=UI.restore; if(!r) return; if(r.view!==UI.view|
   const cx=centerX(); V.zoomAt(cx!=null?cx:V.x+V.w/2,V.y,1/(r.z||1)); UI.colz={L:1,R:1,...(r.colz||{})}; UI.scroll={L:0,R:0,...(r.scroll||{})}; UI.hx=r.hx||0; V.y=(UI.fitY||0)+(r.dy||0);
   ['L','R'].forEach(c=>{ const g=$('#col'+c); if(g) g.setAttribute('transform',colTransform(c)) }); V.apply(); syncColZoom&&syncColZoom();
   clearTimeout(UI.restoreT); UI.restoreT=setTimeout(()=>{ UI.restore=null },700) }
-function bootView(){ let r=null; try{ r=JSON.parse(localStorage.getItem('mb-viewstate')||'null') }catch(e){} if(!r||!(r.view==='plan'||r.view==='space')){ return }
+/* 화면 설정 기억 (이 브라우저) */
+const AF={q:'',from:'',to:'',sort:'base'};
+let PREFS0={}; try{ PREFS0=JSON.parse(localStorage.getItem('mb-prefs')||'{}')||{} }catch(e){}
+if(PREFS0.AF) Object.assign(AF,PREFS0.AF); if(PREFS0.itemsTab!=null) UI.itemsTab=PREFS0.itemsTab; if(PREFS0.chkMode) UI.chkMode=PREFS0.chkMode; if(PREFS0.railFilter) UI.railFilter=PREFS0.railFilter; if(PREFS0.snap!=null){ UI.snap=PREFS0.snap; const ss=$('#snapSel'); if(ss) ss.value=String(PREFS0.snap) }
+function savePrefs(){ if(!UI.booted||UI.viewVer) return; try{ localStorage.setItem('mb-prefs',JSON.stringify({view:UI.view,itemsTab:UI.itemsTab||'',chkMode:UI.chkMode||'from',snap:UI.snap,AF,railFilter:UI.railFilter||''})) }catch(e){} }
+function bootView(){ UI.booted=true; const pv=PREFS0.view; if(pv&&pv!=='plan'&&pv!=='space'&&$('#view-'+pv)){ switchView(pv); return } let r=null; try{ r=JSON.parse(localStorage.getItem('mb-viewstate')||'null') }catch(e){} if(!r||!(r.view==='plan'||r.view==='space')){ return }
   if(r.view==='space'){ if(r.focus&&!P(r.focus)) return; UI.focus=UI.lastFocus=r.focus; UI.room=r.room&&M(r.room.mapId)?r.room:null; UI.railTab=r.focus&&itemsOf(r.focus).length?r.focus:'' }
   UI.restore=r; switchView(r.view); if(r.view==='space'&&r.wlayer==='b'){ UI.wlayer='b'; renderAll(); fitAll(); requestAnimationFrame(fitAll) }
   setTimeout(()=>{ UI.restore=null },1500) }
@@ -1041,8 +1053,7 @@ function renderOverlay(){ fixLabels();
   if(UI.sel) linkU=U(UI.sel.id); else if(UI.hl&&UI.hl.ids.size===1) linkU=U([...UI.hl.ids][0]);
   if(linkU){ const a=unitRect(linkU,'from'), b=unitRect(linkU,'to'); if(a&&b){ const ax=a.x+a.w/2,ay=a.y+a.d/2,bx=b.x+b.w/2,by=b.y+b.d/2; s+=`<path class="link" d="M${ax} ${ay}L${bx} ${by}"/><circle class="mdot" cx="${bx}" cy="${by}" r="${5*k}"/>` } }
   if(UI.sel){ const su=U(UI.sel.id); const r=su&&unitRect(su,UI.sel.slot); if(r) s+=gapsSVG(r.e,r.lx,r.ly,r.lw,r.ld,su.id) }
-  if(UI.measure){ const p=UI.measure.pts; for(const q of p) s+=`<circle class="mdot" cx="${q.x}" cy="${q.y}" r="${4*k}"/>`;
-    if(p.length===2){ const mc=colAtX(p[0].x); const dcm=Math.hypot(p[1].x-p[0].x,p[1].y-p[0].y)/(mc?colZ(mc):1); s+=`<line class="mline" x1="${p[0].x}" y1="${p[0].y}" x2="${p[1].x}" y2="${p[1].y}"/><text class="mtext" x="${(p[0].x+p[1].x)/2}" y="${(p[0].y+p[1].y)/2-10*k}" font-size="${16*k}">${fmt(dcm)} cm</text>` } }
+  if(UI.measure) s+=measureSVG(k);
   g.innerHTML=s;
 }
 function renderStagebar(){
@@ -1083,13 +1094,20 @@ function routeBadge(u){ const it=I(u.itemId), dp=destPlace(u), op=it.placeId; co
   if(!dp) return `<span class="rb wr">남음</span><span class="route">${esc(on)} 가구 · 도착지 미정</span>`;
   if(dp===op) return `<span class="rb same">같은 공간 안 이동</span><span class="route">${esc(destLabel(u)||on)}</span>`;
   return `<span class="rb in">${esc(on)}에서 옴</span><span class="route">${esc(on)} → ${esc(destLabel(u))}</span>` }
+function dimInputs(it,opt={}){ const its=Array.isArray(it)?it:[it]; const f=its[0]; const ids=its.map(i=>i.id).join(','); const n=its.reduce((a,i)=>a+unitsOf(i).length,0); const w=opt.w??f.w, d=opt.d??f.d, h=(its.find(i=>i.h)||{}).h;
+  return `<span class="dimed ${opt.cls||''}" title="${esc(f.name)} ${n}개 모두에 적용돼요"><input data-dimf="w" data-dimit="${ids}" type="number" min="1" value="${w}" aria-label="가로 cm">×<input data-dimf="d" data-dimit="${ids}" type="number" min="1" value="${d}" aria-label="세로 cm">×<input data-dimf="h" data-dimit="${ids}" type="number" min="0" value="${h||''}" placeholder="높이" aria-label="높이 cm">${opt.noNote?'':`<small>cm${n>1?` · ${n}개 모두`:''}</small>`}</span>` }
+document.addEventListener('change',e=>{ const t=e.target.closest('[data-dimf]'); if(!t) return; const its=t.dataset.dimit.split(',').map(I).filter(Boolean); if(!its.length) return; const f=t.dataset.dimf; const v=Math.round(+t.value);
+  if(f!=='h'&&!(v>0)){ t.value=its[0][f]; return }
+  for(const it of its){ if(f==='h') it.h=v>0?v:0; else it[f]=v; const same=S.items.find(o=>!its.includes(o)&&gkey(o)===gkey(it)); if(same) it.color=same.color }
+  const it=its[0]; commit(); toast(`${it.name} 치수를 ${it.w}×${it.d}${it.h?'×'+it.h:''}로 바꿨어요.`) });
+document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.closest&&e.target.closest('[data-dimf]')) e.target.blur() },true);
 function renderSelbar(){
   const b=$('#selbar'); const sel=UI.sel; if(!sel){b.hidden=true;return}
-  const u=U(sel.id); if(sel.slot==='tray'&&u){ const it=I(u.itemId); b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b><span class="mono">${it.w}×${it.d}${it.h?'×'+it.h:''}</span>${it.isNew?'<span class="rb new">새로 살 가구</span>':''}<span class="route">대기 중 · 끌어서 도면에 놓으세요</span><button class="btn small danger" data-delunit="${u.id}">가구 삭제</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`; b.hidden=false; return }
+  const u=U(sel.id); if(sel.slot==='tray'&&u){ const it=I(u.itemId); b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b>${dimInputs(it)}${it.isNew?'<span class="rb new">새로 살 가구</span>':''}<span class="route">대기 중 · 끌어서 도면에 놓으세요</span><button class="btn small danger" data-delunit="${u.id}">가구 삭제</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`; b.hidden=false; return }
   if(!u||!u[sel.slot]){UI.sel=null;b.hidden=true;return}
-  { const m=getMulti(); if(m.length>1){ b.innerHTML=`<b>${m.length}개 선택</b><span class="route">${esc(m.map(x=>lbl(U(x.id))).join(', ').slice(0,60))}</span><span class="hint">끌면 함께 이동 · Ctrl+클릭으로 추가/빼기</span><button class="btn small" data-act="rot" title="Alt+→ / Alt+← : 각각 90° 회전">회전<kbd>Alt+←→</kbd></button><button class="btn small" data-act="rm">위치 모두 빼기</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`; b.hidden=false; return } }
+  { const m=getMulti(); if(m.length>1){ b.innerHTML=`<b>${m.length}개 선택</b><span class="route">${esc(m.map(x=>lbl(U(x.id))).join(', ').slice(0,60))}</span><span class="hint">끌면 함께 이동 · Ctrl+클릭으로 추가/빼기</span><button class="btn small" data-act="rot" title="Alt+→ / Alt+← : 각각 90° 회전">회전<kbd>Alt+←→</kbd></button><button class="btn small" data-act="rm">↩ 모두 위치 정할 가구로</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`; b.hidden=false; return } }
   const it=I(u.itemId); const dp=destPlace(u);
-  b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b><span class="mono">${it.w}×${it.d}${it.h?'×'+it.h:''}</span>${routeBadge(u)}<button class="btn small" data-act="rot" title="R 또는 Alt+→ : 90° 회전 · Alt+← : 반대로">회전<kbd>Alt+←→</kbd></button><button class="btn small" data-act="rm">${sel.slot==='from'?'기존 위치 지우기':'도착 위치 빼기'}</button><button class="btn small danger" data-delunit="${u.id}">가구 삭제</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`;
+  b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b>${dimInputs(it)}${routeBadge(u)}<button class="btn small" data-act="rot" title="R 또는 Alt+→ : 90° 회전 · Alt+← : 반대로">회전<kbd>Alt+←→</kbd></button><button class="btn small" data-act="rm" title="Delete 키">↩ 위치 정할 가구로</button><button class="btn small danger" data-delunit="${u.id}">가구 삭제</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`;
   b.hidden=false;
 }
 
@@ -1132,7 +1150,7 @@ planSvg.addEventListener('pointerdown',e=>{
   const g=e.target.closest('.unit');
   if(g&&!UI.measure){ unitDrag(e,g); return }
   planPan(e,(moved,p)=>{ if(moved) return;
-    if(UI.measure){ const m=UI.measure; if(m.pts.length>=2) m.pts=[]; m.pts.push({x:p.x,y:p.y}); renderOverlay(); return }
+    if(UI.measure){ UI.measure.shift=UI.measure.shift||false; measureAdd(p); return }
     if(UI.sel||UI.hl||UI.multi){ UI.sel=null; UI.multi=null; UI.hl=null; renderPlan(); renderRail() }
   });
 });
@@ -1144,6 +1162,7 @@ function unitDrag(e,g){
   const mod=e.ctrlKey||e.metaKey||e.shiftKey;
   const grp=(slot!=='tray'&&!mod&&inMulti(u.id,slot)&&getMulti().length>1)?getMulti().filter(x=>!(x.id===u.id&&x.slot===slot)&&x.slot===slot).map(x=>{ const el=planSvg.querySelector(`.unit[data-id="${x.id}"][data-slot="${x.slot}"]`); const m=el&&/translate\(([-\d.e]+)[ ,]+([-\d.e]+)\)/.exec(el.getAttribute('transform')); const uu=U(x.id); return {u:uu,el,tx:m?+m[1]:0,ty:m?+m[2]:0,pos:{...uu[x.slot]}} }):[];
   const mv=ev=>{ if(V.pinching) return; if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<4) return; if(!moved){ moved=true; UI.dragging=true; $('#dragl').appendChild(g); g.classList.add('dragging'); grp.forEach(o=>o.el&&o.el.classList.add('dragging')) }
+    if(slot!=='tray'&&UI.trayBox){ const pq=V.pt(ev,inv); const l=fromW('L',pq.x,pq.y); const tb=UI.trayBox; const on=l.x>=tb.x1&&l.x<=tb.x2&&l.y>=tb.y1&&l.y<=tb.y2; const bg=planSvg.querySelector('.traybg'); if(bg) bg.classList.toggle('drophot',on) }
     if(grp.length){ const p=V.pt(ev,inv); const z0=colZ(r.e.col); const dx=(p.x-p0.x)/z0, dy=(p.y-p0.y)/z0; grp.forEach(o=>o.el&&o.el.setAttribute('transform',`translate(${o.tx+dx} ${o.ty+dy})`)) } const p=V.pt(ev,inv); let wx=r.x+p.x-p0.x, wy=r.y+p.y-p0.y; let z=colZ(r.e.col); const e2=panelAt(wx+r.w/2,wy+r.d/2); if(e2){ z=colZ(e2.col); const lc=fromW(e2.col,wx+r.w/2,wy+r.d/2); const a=alignSnap(e2,u.id,lc.x-e2.mx-r.lw/2,lc.y-e2.my-r.ld/2,r.lw,r.ld); const q=toW(e2.col,e2.mx+a.x,e2.my+a.y); wx=q.x; wy=q.y; drawGuides(e2,a,gapsSVG(e2,a.x,a.y,r.lw,r.ld,u.id)) } else drawGuides(null); g.setAttribute('transform',`translate(${wx} ${wy}) scale(${z})`) };
   const up=ev=>{ planSvg.removeEventListener('pointermove',mv); planSvg.removeEventListener('pointerup',up); planSvg.removeEventListener('pointercancel',up); UI.dragging=false; if(Cloud.pendingApply) setTimeout(applyCloud,0);
     if(!moved){ if(slot==='tray'){ UI.multi=null; UI.sel={id:u.id,slot:'tray'}; UI.hl=null; renderPlan(); return }
@@ -1151,6 +1170,7 @@ function unitDrag(e,g){
       if(!inMulti(u.id,slot)) UI.multi=null; UI.sel={id:u.id,slot}; UI.hl=null; renderPlan(); renderRail(); return }
     const el=document.elementFromPoint(ev.clientX,ev.clientY);
     if(el&&el.closest('#rail')){ if(slot==='tray'){ renderPlan(); return } removeSlot(u,slot); return }
+    if(slot!=='tray'&&UI.trayBox){ const pq=V.pt(ev,inv); const l=fromW('L',pq.x,pq.y); const tb=UI.trayBox; if(l.x>=tb.x1&&l.x<=tb.x2&&l.y>=tb.y1&&l.y<=tb.y2){ const list=grp.length?[u,...grp.map(o=>o.u)]:[u]; for(const x of list) x[slot]=null; UI.sel=null; UI.multi=null; toast(list.length>1?`${list.length}개를 위치 정할 가구로 돌려놓았어요.`:`${lbl(u)}을(를) 위치 정할 가구로 돌려놓았어요.`); commit(); return } }
     const before=slot!=='tray'&&u[slot]?{...u[slot]}:null; const keepMulti=grp.length?getMulti():null;
     const p=V.pt(ev,inv); dropUnit(u,slot==='tray'?null:slot,r.x+p.x-p0.x+r.w/2,r.y+p.y-p0.y+r.d/2,slot==='tray'?0:(u[slot].rot||0));
     if(grp.length&&before){ const after=u[slot]; if(after){ const dx=after.x-before.x, dy=after.y-before.y, nm=M(after.mapId); let skip=0;
@@ -1224,19 +1244,19 @@ function nudgeSel(dx,dy){ const m=getMulti(); const list=m.length?m:(UI.sel?[UI.
     pos.x=Math.round(clamp(pos.x+dx,0,Math.max(0,W-w))); pos.y=Math.round(clamp(pos.y+dy,0,Math.max(0,H-d))); n++ }
   if(n) commit() }
 function removeSel(){ const m=getMulti(); if(m.length>1){ for(const x of m){ const u=U(x.id); if(u) u[x.slot]=null } UI.multi=null; UI.sel=null; toast(`${m.length}개의 위치를 뺐어요.`); commit(); return } if(UI.sel&&U(UI.sel.id)) removeSlot(U(UI.sel.id),UI.sel.slot) }
-function removeSlot(u,slot){ u[slot]=null; if(UI.sel&&UI.sel.id===u.id) UI.sel=null; toast(slot==='from'?`${lbl(u)}의 기존 위치를 지웠어요.`:`${lbl(u)}을(를) 도착 위치에서 뺐어요.`); commit() }
+function removeSlot(u,slot){ u[slot]=null; if(UI.sel&&UI.sel.id===u.id) UI.sel=null; toast(`${lbl(u)}을(를) 위치 정할 가구로 돌려놓았어요.`); commit() }
 function rotateSel(dir=1){ const m=getMulti(); const list=m.length?m:(UI.sel?[UI.sel]:[]); let n=0; for(const s of list){ const u=U(s.id); const pos=u&&u[s.slot]; if(!pos) continue; const it=I(u.itemId); const[w,d]=dims(it,pos.rot||0); const cx=pos.x+w/2, cy=pos.y+d/2; pos.rot=(((pos.rot||0)+90*dir)%360+360)%360; const[w2,d2]=dims(it,pos.rot); pos.x=Math.round(cx-w2/2); pos.y=Math.round(cy-d2/2); n++ } if(n) commit() }
 function commit(){ save(); renderAll() }
 /* ---------- 버전 (시점별 저장) ---------- */
 const liveS=()=>UI.viewVer?UI.live:S;
 function fmtAt(t){ const d=new Date(t); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}` }
 function makeVersion(name,auto){ const L=liveS(); const data=JSON.stringify({places:L.places,maps:L.maps.map(m=>{ const c={...m}; delete c.img; return c }),items:L.items,units:L.units,meta:L.meta||{}});
-  if(data.length>950000){ toast('내용이 너무 커서 버전으로 저장할 수 없어요. 파일로 내보내기를 이용하세요.'); return null }
+  if(new TextEncoder().encode(data).length>1000000){ toast('내용이 너무 커서 버전으로 저장할 수 없어요. 파일로 내보내기를 이용하세요.'); return null }
   const placed=L.units.filter(isPlaced).length; const v={id:uid(),name:name||'이름 없는 버전',at:Date.now(),auto:!!auto,data,stats:{units:L.units.length,placed}};
   (L.versions||(L.versions=[])).push(v); return v }
 function advanceAll(){ // 변경 후 → 새 변경 전 (전체)
   for(const u of S.units){ const it=I(u.itemId); if(!it) continue; const dp=destPlace(u);
-    if(it.isNew||(dp&&dp!==it.placeId)){ const place=dp||it.placeId; const base={...it,isNew:false}; let tgt=S.items.find(x=>x!==it&&x.placeId===place&&!x.isNew&&gkey(x)===gkey(base)); if(!tgt){ tgt={...base,id:uid(),placeId:place,qty:0}; S.items.push(tgt) } u.itemId=tgt.id }
+    if((it.isNew&&dp)||(dp&&dp!==it.placeId)){ const place=dp||it.placeId; const base={...it,isNew:false}; let tgt=S.items.find(x=>x!==it&&x.placeId===place&&!x.isNew&&gkey(x)===gkey(base)); if(!tgt){ tgt={...base,id:uid(),placeId:place,qty:0}; S.items.push(tgt) } u.itemId=tgt.id }
     if(u.to) u.from={...u.to}; else if(dp&&dp!==it.placeId) u.from=null;
     u.to=null; u.toPlaceId=null; u.chk={} }
   S.items=S.items.filter(it=>S.units.some(u=>u.itemId===it.id)); for(const it of S.items){ const us=unitsOf(it); it.qty=us.length; us.forEach((u,i)=>u.idx=i+1) } }
@@ -1316,12 +1336,15 @@ function railTotal(){
   return h;
 }
 function destOptions(u){ const dp=destPlace(u), op=I(u.itemId).placeId; let o=`<option value="">도착지 미정</option>`; for(const p of S.places){ const pos=u.to&&M(u.to.mapId)?.placeId===p.id; o+=`<option value="${p.id}" ${dp===p.id?'selected':''}>${p.id===op&&!I(u.itemId).isNew?'그대로 남김':'→ '+esc(p.name)}${pos?' (도면)':''}</option>` } return o }
+const curSlot=()=>UI.view==='space'?((UI.wlayer||'a')==='b'?'to':'from'):'to';
 function railSpace(pid){
-  let h=''; const items=itemsOf(pid);
-  for(const it of items){ const us=unitsOf(it);
-    h+=`<div class="ritem"><div class="rih"><span class="sw" style="--c:${it.color}"></span><b>${esc(it.name)}</b>${it.isNew?'<span class="newtagh">새</span>':''}${it.kind==='item'?'<span class="toptag">올림</span>':''}<span class="mono">${it.w}×${it.d}</span><span class="c">${us.filter(isPlaced).length}/${us.length} 배치</span></div><ul class="runits">`;
+  let h=''; const items=itemsOf(pid); const sl=curSlot(); const rf=UI.railFilter||'';
+  const all=items.flatMap(unitsOf).filter(u=>!(sl==='from'&&isNewU(u))); const na=all.filter(u=>u[sl]).length;
+  h+=`<div class="rfilter"><span>${sl==='from'?'변경 전':'변경 후'} 기준</span><button data-rfilter="" class="${rf===''?'on':''}">전체 ${all.length}</button><button data-rfilter="a" class="${rf==='a'?'on':''}">배정 ${na}</button><button data-rfilter="n" class="${rf==='n'?'on':''}">배정 필요 ${all.length-na}</button></div>`;
+  for(const it of items){ const us=unitsOf(it).filter(u=>!rf||(sl==='from'&&isNewU(u)?false:(rf==='a')===!!u[sl])); if(!us.length) continue;
+    h+=`<div class="ritem"><div class="rih"><span class="sw" style="--c:${it.color}"></span><b>${esc(it.name)}</b>${it.isNew?'<span class="newtagh">새</span>':''}${it.kind==='item'?'<span class="toptag">올림</span>':''}${dimInputs(it,{cls:'sm',noNote:true})}<span class="c">${us.filter(isPlaced).length}/${us.length} 배치</span></div><ul class="runits">`;
     for(const u of us){ const on=UI.hl&&UI.hl.ids.size===1&&UI.hl.ids.has(u.id);
-      h+=`<li draggable="true" data-du="${u.id}" data-u="${u.id}" class="${isPlaced(u)?'':'rem'} ${on?'on':''}"><span class="sw" style="--c:${it.color}"></span><span class="nm">${esc(lbl(u))}</span>${isNewU(u)?'<span class="flag newf" title="새로 살 가구">새</span>':`<span class="flag ${u.from?'on':''}" title="${u.from?'기존 위치 표시됨':'기존 위치 없음'}">기존</span>`}<select data-dest="${u.id}" aria-label="${esc(lbl(u))} 도착지">${destOptions(u)}</select><button class="udel" data-delunit="${u.id}" title="이 가구 삭제" aria-label="${esc(lbl(u))} 삭제">×</button></li>` }
+      h+=`<li draggable="true" data-du="${u.id}" data-u="${u.id}" class="${isPlaced(u)?'':'rem'} ${on?'on':''}"><span class="sw" style="--c:${it.color}"></span><span class="nm">${esc(lbl(u))}</span>${sl==='from'&&isNewU(u)?'<span class="flag newf" title="새로 살 가구 · 변경 후에서 배치">새</span>':u[sl]?`<button class="flag on" data-unassign="${u.id}" title="눌러서 위치 정할 가구로 돌려놓기">배정 ↩</button>`:`<span class="flag need" title="도면에 아직 놓지 않았어요">배정 필요</span>`}<select data-dest="${u.id}" aria-label="${esc(lbl(u))} 도착지">${destOptions(u)}</select><button class="udel" data-delunit="${u.id}" title="이 가구 삭제" aria-label="${esc(lbl(u))} 삭제">×</button></li>` }
     h+='</ul></div>';
   }
   return h;
@@ -1330,8 +1353,8 @@ $('#rail').addEventListener('dragstart',e=>{ const t=e.target.closest('[data-dg]
 $('#rail').addEventListener('dragend',()=>{ setTimeout(()=>UI.drag=null,0) });
 
 /* ---------- items view ---------- */
-document.addEventListener('input',e=>{ const t=e.target; if(t.id==='afQ'){ AF.q=t.value; $('#assetTbl').innerHTML=assetTable() } });
-document.addEventListener('change',e=>{ const t=e.target; if(t.id==='afFrom'||t.id==='afTo'||t.id==='afSort'){ AF[{afFrom:'from',afTo:'to',afSort:'sort'}[t.id]]=t.value; $('#assetTbl').innerHTML=assetTable() } });
+document.addEventListener('input',e=>{ const t=e.target; if(t.id==='afQ'){ AF.q=t.value; $('#assetTbl').innerHTML=assetTable(); savePrefs() } });
+document.addEventListener('change',e=>{ const t=e.target; if(t.id==='afFrom'||t.id==='afTo'||t.id==='afSort'){ AF[{afFrom:'from',afTo:'to',afSort:'sort'}[t.id]]=t.value; $('#assetTbl').innerHTML=assetTable(); savePrefs() } });
 document.addEventListener('click',e=>{ const t=e.target.closest('#afReset,#afXlsx'); if(!t) return; if(t.id==='afXlsx'){ exportAssetsXlsx(); return } AF.q='';AF.from='';AF.to='';AF.sort='base'; renderItems() });
 function renderItems(){
   const v=$('#view-items'); const places=S.places;
@@ -1343,14 +1366,13 @@ function renderItems(){
   v.innerHTML=h+'</div>';
 }
 function origLabel(u){ const it=I(u.itemId); if(it.isNew) return '새로 구매'; const r=unitRoom(u,'from'); return (P(it.placeId)?.name||'')+(r?' › '+r.name:'') }
-const AF={q:'',from:'',to:'',sort:'base'};
 function assetRows(){ // 필터·정렬 적용된 자산 행
   const q=AF.q.trim().replace(/\s+/g,'').toLowerCase(); const out=[];
   for(const g of GROUPS){ if(q&&!g.name.replace(/\s+/g,'').toLowerCase().includes(q)) continue;
     const us=g.units.filter(u=>(!AF.from||origLabel(u).split(' › ')[0]===AF.from||origLabel(u)===AF.from)&&(!AF.to||(destLabel(u)||'미정').split(' › ')[0]===AF.to||(destLabel(u)||'미정')===AF.to)); if(!us.length) continue;
     const grp=f=>{ const m=new Map(); for(const u of us){ const k=f(u); if(!m.has(k)) m.set(k,[]); m.get(k).push(u) } return [...m] };
     const hh=(g.items.find(i=>i.h)||{}).h;
-    out.push({g,us,spec:`${g.w}×${g.d}${hh?'×'+hh:''}`,h:hh||0,fr:grp(origLabel),to:grp(u=>destLabel(u)||'미정').sort((a,b)=>(a[0]==='미정')-(b[0]==='미정')),und:us.filter(u=>!destLabel(u)).length,photo:S.photos.find(p=>p.placeId==='@asset'&&p.dir===g.key)}) }
+    out.push({g,us,spec:`${g.w}×${g.d}${hh?'×'+hh:''}`,h:hh||0,fr:grp(origLabel),to:grp(u=>destLabel(u)||'미정').filter(x=>x[0]!=='미정'),undU:us.filter(u=>!destLabel(u)),und:us.filter(u=>!destLabel(u)).length,photo:S.photos.find(p=>p.placeId==='@asset'&&p.dir===g.key)}) }
   const ko=(a,b)=>a.localeCompare(b,'ko');
   const so={base:null,name:(a,b)=>ko(a.g.name,b.g.name),qty:(a,b)=>b.us.length-a.us.length,und:(a,b)=>b.und-a.und||b.us.length-a.us.length,size:(a,b)=>b.g.w*b.g.d-a.g.w*a.g.d,nophoto:(a,b)=>(!!a.photo)-(!!b.photo)}[AF.sort];
   if(so) out.sort(so); return out }
@@ -1366,14 +1388,14 @@ function itemsTotal(){
 }
 function assetTable(){
   const rows=assetRows(); UI.hlmap=[]; const hlBtn=(us,cls)=>{ UI.hlmap.push(us.map(u=>u.id)); return `<button class="num ${cls}" style="padding:1px 9px" data-hlm="${UI.hlmap.length-1}" title="배치판에서 강조">${us.length}</button>` };
-  let h=`<div class="tblwrap"><table class="asset"><thead><tr><th></th><th>자산명</th><th class="n">규격 (가로×세로×높이 cm)</th><th class="n">전체 수량</th><th>이전 위치</th><th class="n">수량</th><th>변경 위치</th><th class="n">수량</th><th>사진</th></tr></thead><tbody>`;
-  if(!rows.length) h+=`<tr><td colspan="9" class="hint" style="padding:16px">조건에 맞는 가구가 없어요.</td></tr>`;
+  let h=`<div class="tblwrap"><table class="asset"><thead><tr><th></th><th>자산명</th><th class="n">규격 (가로×세로×높이 cm)</th><th class="n">전체 수량</th><th>이전 위치</th><th class="c">수량</th><th>변경 위치</th><th class="c">수량</th><th class="c">미정</th><th class="c">사진</th></tr></thead><tbody>`;
+  if(!rows.length) h+=`<tr><td colspan="10" class="hint" style="padding:16px">조건에 맞는 가구가 없어요.</td></tr>`;
   let tot=0, und=0;
   for(const r of rows){ const g=r.g; tot+=r.us.length; und+=r.und; const n=Math.max(r.fr.length,r.to.length,1);
     const photo=r.photo?`<button class="athumb" data-photo="${r.photo.id}" aria-label="${esc(g.name)} 사진 크게 보기"><img src="${r.photo.img}" alt=""></button>`:`<button class="aadd" data-addphoto="@asset" data-dir="${esc(g.key)}" aria-label="${esc(g.name)} 사진 올리기">📷 사진</button>`;
     for(let i=0;i<n;i++){ const f=r.fr[i], t=r.to[i]; const first=i===0;
-      h+=`<tr class="${first?'gfirst':'gsub'}">${first?`<td rowspan="${n}"><span class="sw" style="--c:${g.color}"></span></td><td rowspan="${n}"><b>${esc(g.name)}</b>${g.newN?` <span class="newtagh">새 ${g.newN}</span>`:''}<div class="aphm">${photo}</div></td><td class="n mono" rowspan="${n}">${r.spec}</td><td class="n" rowspan="${n}"><b>${r.us.length}</b></td>`:''}<td>${f?esc(f[0]):''}</td><td class="n">${f?hlBtn(f[1],''):''}</td><td>${t?(t[0]==='미정'?'<span class="hint">미정</span>':esc(t[0])):''}</td><td class="n">${t?hlBtn(t[1],t[0]==='미정'?'wr':'ok'):''}</td>${first?`<td rowspan="${n}" class="aph">${photo}</td>`:''}</tr>` } }
-  h+=`</tbody><tfoot><tr><th></th><th>합계 ${rows.length}종</th><th></th><th class="n">${tot}</th><th></th><th></th><th class="hint" style="font-weight:500">배치 ${tot-und} · 미정 ${und}</th><th></th><th></th></tr></tfoot></table></div><p class="hint">수량 숫자를 누르면 배치판에서 해당 가구가 강조돼요. 📷 사진을 누르면 휴대폰에서는 바로 카메라로 찍거나 앨범에서 고를 수 있어요.</p>`;
+      h+=`<tr class="${first?'gfirst':'gsub'}">${first?`<td rowspan="${n}"><span class="sw" style="--c:${g.color}"></span></td><td rowspan="${n}"><b>${esc(g.name)}</b>${g.newN?` <span class="newtagh">새 ${g.newN}</span>`:''}<div class="aphm">${photo}</div></td><td class="n" rowspan="${n}">${dimInputs(g.items,{w:g.items[0].w,d:g.items[0].d,cls:'sm',noNote:true})}</td><td class="n" rowspan="${n}"><b>${r.us.length}</b></td>`:''}<td>${f?esc(f[0]):''}</td><td class="c">${f?hlBtn(f[1],'nb'):''}</td><td>${t?esc(t[0]):''}</td><td class="c">${t?hlBtn(t[1],'ok'):''}</td>${first?`<td class="c" rowspan="${n}">${r.und?hlBtn(r.undU,'wr'):'<span class="hint">0</span>'}</td><td rowspan="${n}" class="aph c">${photo}</td>`:''}</tr>` } }
+  h+=`</tbody><tfoot><tr><th></th><th>합계 ${rows.length}종</th><th></th><th class="n">${tot}</th><th></th><th class="c">${tot}</th><th></th><th class="c">${tot-und}</th><th class="c">${und}</th><th></th></tr></tfoot></table></div><p class="hint">수량 숫자를 누르면 배치판에서 해당 가구가 강조돼요. 📷 사진을 누르면 휴대폰에서는 바로 카메라로 찍거나 앨범에서 고를 수 있어요.</p>`;
   return h;
 }
 /* ---------- 엑셀(xlsx) 만들기: 외부 라이브러리 없이 ---------- */
@@ -1400,11 +1422,11 @@ function makeXlsx(sheet,rows,widths,merges){ const x=v=>String(v).replace(/&/g,'
     ['xl/worksheets/sheet1.xml',ws]]) }
 async function saveFile(fname,data){ try{ const dl=window.claude&&await window.claude.use('downloads'); if(dl){ try{ await dl.save({filename:fname,data}); toast('내보냈어요.') }catch(err){ if(!err||err.code!=='declined') toast('내보내기가 막혀 있어요.') } return } }catch(_){}
   const blob=data instanceof Blob?data:new Blob([data]); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000) }
-function exportAssetsXlsx(){ const rows=[['자산명','규격 (가로×세로×높이 cm)','가로','세로','높이','전체 수량','이전 위치','수량','변경 위치','수량','새로 구매','사진']];
+function exportAssetsXlsx(){ const rows=[['자산명','규격 (가로×세로×높이 cm)','가로','세로','높이','전체 수량','이전 위치','수량','변경 위치','수량','미정','새로 구매','사진']];
   for(const r of assetRows()){ const n=Math.max(r.fr.length,r.to.length,1);
-    for(let i=0;i<n;i++){ const f=r.fr[i], t=r.to[i]; rows.push([r.g.name,r.spec,r.g.w,r.g.d,r.h||'',r.us.length,f?f[0]:'',f?f[1].length:'',t?t[0]:'',t?t[1].length:'',r.g.newN||'',r.photo?'있음':'']) } }
+    for(let i=0;i<n;i++){ const f=r.fr[i], t=r.to[i]; rows.push([r.g.name,r.spec,r.g.w,r.g.d,r.h||'',r.us.length,f?f[0]:'',f?f[1].length:'',t?t[0]:'',t?t[1].length:'',i===0?r.und:'',r.g.newN||'',r.photo?'있음':'']) } }
   const dt=new Date(); const fname=`자산목록-${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}.xlsx`;
-  saveFile(fname,makeXlsx('자산목록',rows,[18,22,7,7,7,10,26,7,30,7,9,7])) }
+  saveFile(fname,makeXlsx('자산목록',rows,[18,22,7,7,7,10,26,7,30,7,7,9,7])) }
 function itemsSpace(pid){
   const items=itemsOf(pid);
   let h=`<div class="tblwrap"><table><thead><tr><th></th><th style="min-width:160px">가구 이름</th><th>종류</th><th>새 가구</th><th class="n">가로</th><th class="n">세로</th><th class="n">높이</th><th class="n">수량</th><th>번호별 상태</th><th></th></tr></thead><tbody>`;
@@ -1505,7 +1527,7 @@ function switchView(view){
   renderAll(); if(view==='plan'||view==='space'){ fitAll(); requestAnimationFrame(fitAll) }
 }
 function renderAll(){
-  rebuild(); $('#exampleBar').hidden=!S.meta.example||Cloud.on;
+  rebuild(); $('#exampleBar').hidden=!S.meta.example||Cloud.on; savePrefs();
   if(UI.view==='plan'||UI.view==='space'){ renderRail(); renderPlan() }
   else if(UI.view==='items') renderItems();
   else if(UI.view==='routes') renderRoutes();
@@ -1521,6 +1543,8 @@ document.addEventListener('click',e=>{
   const d=t.dataset;
   if(d.view){ switchView(d.view); return }
   if(d.close!==undefined){ t.closest('dialog').close(); return }
+  if(d.rfilter!==undefined){ UI.railFilter=d.rfilter; renderRail(); savePrefs(); return }
+  if(d.unassign){ const u=U(d.unassign); const sl=curSlot(); if(u&&u[sl]){ u[sl]=null; if(UI.sel&&UI.sel.id===u.id) UI.sel=null; toast(`${lbl(u)}을(를) 위치 정할 가구로 돌려놓았어요.`); commit() } return }
   if(d.mq){ const[side,l]=d.mq.split(':'); const cols=getCols(); cols[side]=l==='none'?[]:S.maps.filter(cal).map(m=>`${m.id}:*:${l}`); UI.openMsel=side; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.swapcols!==undefined){ const c=getCols(); UI.cols={L:c.R,R:c.L}; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.colsreset!==undefined){ UI.cols=defaultCols(); UI.openMsel=null; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
@@ -1562,7 +1586,7 @@ document.addEventListener('change',e=>{
   if(t.dataset.vis){ const[k,v]=t.dataset.vis.split(':'); if(k==='layer'){ VIS[v]=t.checked; if(!VIS.a&&!VIS.b){ VIS[v==='a'?'b':'a']=true } } else { t.checked?VIS.hidden.delete(v):VIS.hidden.add(v) } saveVis(); UI.fitted=true; renderPlan(); fitAll(); requestAnimationFrame(fitAll); return }
   if(t.dataset.wsel!==undefined){ const v=t.value; if(v.startsWith('p:')) setFocus(v.slice(2)); else setRoom(v.slice(2)); return }
   if(t.dataset.slotsel!==undefined){ putSlot(+t.dataset.slotsel,t.value||null); return }
-  if(t.id==='snapSel'){ UI.snap=+t.value; return }
+  if(t.id==='snapSel'){ UI.snap=+t.value; savePrefs(); return }
 });
 document.addEventListener('submit',e=>{ if(e.target.id==='qadd'){ e.preventDefault(); const nm=$('#qaName').value.trim(), w=Math.round(num($('#qaW').value,0)), d=Math.round(num($('#qaD').value,0)), h=Math.max(0,Math.round(num($('#qaH').value,0))), q=Math.max(1,Math.round(num($('#qaQ').value,1)));
     if(!nm){ toast('가구 이름을 입력하세요.'); $('#qaName').focus(); return } if(!(w>0&&d>0)){ toast('가로와 세로를 cm로 입력하세요.'); (w>0?$('#qaD'):$('#qaW')).focus(); return }
@@ -1577,10 +1601,27 @@ document.addEventListener('keydown',e=>{
   else if(e.altKey&&UI.sel&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){ e.preventDefault(); rotateSel(e.key==='ArrowLeft'||e.key==='ArrowDown'?-1:1) }
   else if(e.key==='r'||e.key==='R'){ rotateSel() }
   else if((e.key==='Delete'||e.key==='Backspace')&&UI.sel){ e.preventDefault(); removeSel() }
-  else if(e.key==='Escape'){ UI.sel=null; UI.multi=null; UI.hl=null; UI.measure=null; renderPlan(); renderRail() }
+  else if(e.key==='Escape'){ if(UI.measure&&UI.measure.pts.length){ UI.measure.pts=[]; UI.measure.done=false; UI.measure.hover=null; renderOverlay(); return } UI.sel=null; UI.multi=null; UI.hl=null; UI.measure=null; renderPlan(); renderRail() }
   else if(e.key==='m'||e.key==='M'){ toggleMeasure() }
 });
-function toggleMeasure(){ UI.measure=UI.measure?null:{pts:[]}; if(UI.measure) toast('두 점을 클릭하면 길이가 나와요. Esc로 끝내요.'); renderPlan() }
+function toggleMeasure(){ UI.measure=UI.measure?null:{pts:[],done:false,hover:null}; if(UI.measure){ UI.sel=null; UI.multi=null; toast('지점을 차례로 클릭하면 구간별 거리와 총 거리가 나와요. 더블클릭·Enter로 끝, Shift: 수평·수직, Esc: 지우기') } renderPlan() }
+const fmtLen=cm=>cm>=100?`${(cm/100).toFixed(2)} m`:`${Math.round(cm)} cm`;
+function measureAdd(p){ const m=UI.measure; if(!m) return; if(m.done){ m.pts=[]; m.done=false } const c=colAtX(p.x)||'L'; let l=fromW(c,p.x,p.y);
+  if(m.pts.length){ const a=m.pts[m.pts.length-1]; if(m.shift){ if(Math.abs(l.x-a.x)>Math.abs(l.y-a.y)) l.y=a.y; else l.x=a.x } if(a.c!==c){ const q=toW(c,l.x,l.y); l=fromW(a.c,q.x,q.y); m.pts.push({c:a.c,x:l.x,y:l.y}); renderOverlay(); return } }
+  if(m.pts.length){ const a=m.pts[m.pts.length-1]; const dd=a.c===c?Math.hypot(a.x-l.x,a.y-l.y):Infinity; if(m.pts.length>=2&&dd<12*V.w/1000){ m.done=true; m.hover=null; renderOverlay(); return } if(dd<2) return }
+  m.pts.push({c,x:l.x,y:l.y}); renderOverlay() }
+function measureSVG(k){ const m=UI.measure; const P=m.pts.map(q=>({...toW(q.c,q.x,q.y),q})); let s=''; let tot=0;
+  const seg=(a,b,live)=>{ const d=Math.hypot(b.q.x-a.q.x,b.q.y-a.q.y); const mx=(a.x+b.x)/2, my=(a.y+b.y)/2; s+=`<line class="mline${live?' live':''}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>`; if(d>1) s+=`<text class="mtext" x="${mx}" y="${my-8*k}" font-size="${13*k}">${fmtLen(d)}</text>`; return d };
+  for(let i=1;i<P.length;i++) tot+=seg(P[i-1],P[i]);
+  let liveD=0; if(!m.done&&m.hover&&P.length){ const a=P[P.length-1]; let l=fromW(a.q.c,m.hover.x,m.hover.y); if(m.shift){ if(Math.abs(l.x-a.q.x)>Math.abs(l.y-a.q.y)) l.y=a.q.y; else l.x=a.q.x } const w=toW(a.q.c,l.x,l.y); liveD=seg(a,{...w,q:{x:l.x,y:l.y}},true); tot+=liveD }
+  for(const p of P) s+=`<circle class="mdot" cx="${p.x}" cy="${p.y}" r="${4*k}"/>`;
+  if(P.length>=2||(P.length&&m.hover&&!m.done)){ const last=P[P.length-1]; const lx=m.done||!m.hover?last.x:m.hover.x, ly=m.done||!m.hover?last.y:m.hover.y; const nseg=P.length-1+(liveD>1?1:0); const txt=`총 ${fmtLen(tot)}${nseg>1?` · ${nseg}구간`:''}`; const w=txt.length*7.6*k+16*k;
+    s+=`<g class="mtot" transform="translate(${lx+10*k} ${ly+12*k})"><rect width="${w}" height="${22*k}" rx="${5*k}"/><text x="${8*k}" y="${15*k}" font-size="${13*k}">${txt}</text></g>` }
+  return s }
+planSvg.addEventListener('pointermove',e=>{ const m=UI.measure; if(!m||m.done||!m.pts.length||V.pinching) return; m.hover=V.pt(e); m.shift=e.shiftKey; renderOverlay() });
+planSvg.addEventListener('dblclick',e=>{ const m=UI.measure; if(!m||!m.pts.length) return; e.preventDefault(); m.done=true; m.hover=null; renderOverlay() });
+document.addEventListener('keydown',e=>{ const m=UI.measure; if(!m) return; if(e.key==='Shift'){ m.shift=true; renderOverlay() } if(e.key==='Enter'&&!e.target.closest('input,select,textarea')){ m.done=true; m.hover=null; renderOverlay() } if(e.key==='Backspace'&&!e.target.closest('input,select,textarea')&&!m.done&&m.pts.length){ e.preventDefault(); e.stopImmediatePropagation(); m.pts.pop(); renderOverlay() } },true);
+document.addEventListener('keyup',e=>{ if(e.key==='Shift'&&UI.measure){ UI.measure.shift=false; renderOverlay() } });
 $('#btnMeasure').onclick=toggleMeasure;
 try{ UI.railOff=localStorage.getItem('mb-railoff')==='1'; UI.photosOff=localStorage.getItem('mb-photosoff')==='1' }catch(e){}
 function applyRail(){ $('#view-plan').classList.toggle('railoff',!!UI.railOff); $('#btnRail').textContent=UI.railOff?'▶ 목록':'◀ 목록'; $('#railTab').hidden=!UI.railOff }

@@ -123,6 +123,7 @@ h3{font-size:15px;margin:0}
 .traybg{fill:color-mix(in srgb,var(--panel) 85%,transparent);stroke:var(--line);stroke-width:1.5;stroke-dasharray:8 6;vector-effect:non-scaling-stroke}
 .trayhdr{fill:var(--muted);font:600 22px var(--sans)}
 .trayhdr.new{fill:#b0125b}
+.trayhdr.sec{fill:var(--ink);font-size:24px;font-weight:700}
 .newtag rect{fill:#b0125b}
 .newtag text{fill:#fff;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--sans)}
 .newtagh{display:inline-block;font-size:10px;font-weight:600;color:#fff;background:#b0125b;border-radius:4px;padding:0 5px;line-height:1.5}
@@ -1038,13 +1039,17 @@ function trayUnitSVG(u,x,y){ const it=I(u.itemId); const w=it.w, d=it.d; const n
 function buildTray(L){ UI.trayPos={}; UI.trayBox=null; if(UI.view!=='space'||!L.length||!UI.focus) return '';
   const layer=UI.wlayer||'a'; let list;
   if(layer==='a') list=S.units.filter(u=>I(u.itemId).placeId===UI.focus&&!u.from&&!isNewU(u));
-  else list=S.units.filter(u=>!isPlaced(u)).sort((a,b)=>(I(b.itemId).placeId===UI.focus)-(I(a.itemId).placeId===UI.focus));
+  // 변경 후: ① 이 공간으로 정했지만 도면 자리가 없는 가구 ② 아직 도착 장소를 안 정한 가구 (다른 공간으로 보낸 가구는 빼고)
+  else list=[...S.units.filter(u=>!u.to&&destPlace(u)===UI.focus), ...S.units.filter(u=>!isPlaced(u)).sort((a,b)=>(I(b.itemId).placeId===UI.focus)-(I(a.itemId).placeId===UI.focus))];
   const held=0;
-  const groups=new Map(); for(const u of list){ const k=isNewU(u)?'__new':I(u.itemId).placeId; if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(u) }
+  const groups=new Map(); for(const u of list){ const k=(layer==='b'&&destPlace(u)?'h:':'n:')+(isNewU(u)?'__new':I(u.itemId).placeId); if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(u) }
+  const secN={h:list.filter(u=>layer==='b'&&destPlace(u)).length}; secN.n=list.length-secN.h; let lastSec='';
   const maxW=Math.max(...L.map(e=>e.w)); const tx0=Math.max(...L.map(e=>e.ox+e.w))+180, ty0=Math.min(...L.map(e=>e.oy)); const TW=clamp(maxW*.6,380,900);
   let y=ty0+20, s=''; const showHdr=layer==='b';
   if(held){ s+=`<text class="trayhdr warn" x="${tx0}" y="${y+22}">이 공간 가구 ${held}개는 먼저 ‘변경 전’에서 지금 위치를 정하세요</text>`; y+=56 }
-  for(const [pid,us] of groups){ if(showHdr){ s+=`<text class="trayhdr${pid==='__new'?' new':''}" x="${tx0}" y="${y+22}">${pid==='__new'?'신규 구매':'← '+esc(P(pid)?.name||'')} ${us.length}</text>`; y+=48 } let x=tx0, rowH=0;
+  for(const [gk,us] of groups){ const sec=gk[0], pid=gk.slice(2);
+    if(showHdr&&sec!==lastSec){ lastSec=sec; s+=`<text class="trayhdr sec" x="${tx0}" y="${y+22}">${sec==='h'?`이 공간으로 옮겨 온 가구 · 도면 자리 미정 ${secN.h}`:`도착 장소 미정 ${secN.n}`}</text>`; y+=52 }
+    if(showHdr){ s+=`<text class="trayhdr${pid==='__new'?' new':''}" x="${tx0}" y="${y+22}">${pid==='__new'?'신규 구매':'← '+esc(P(pid)?.name||'')} ${us.length}</text>`; y+=48 } let x=tx0, rowH=0;
     for(const u of us){ const it=I(u.itemId); if(x>tx0&&x+it.w>tx0+TW){ x=tx0; y+=rowH+40; rowH=0 } UI.trayPos[u.id]={x,y,w:it.w,d:it.d}; s+=trayUnitSVG(u,x,y); x+=it.w+30; rowH=Math.max(rowH,it.d) }
     y+=rowH+60 }
   if(!list.length){ s+=`<text class="trayhdr" x="${tx0}" y="${ty0+60}">${layer==='a'?'모든 가구의 기존 위치를 정했어요':'남은 가구가 없어요'}</text>`; y=ty0+100 }
@@ -1263,7 +1268,7 @@ function openCtx(el,x,y){
   document.body.appendChild(m); const r=m.getBoundingClientRect(); m.style.left=Math.max(4,Math.min(x,innerWidth-r.width-4))+'px'; m.style.top=Math.max(4,Math.min(y,innerHeight-r.height-4))+'px';
   m.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; e.stopPropagation(); closeCtx();
     if(b.dataset.cdest!==undefined){ moveUnitsTo(CTX.ids,b.dataset.cdest); return }
-    if(b.dataset.cunplace!==undefined){ for(const s of CTX.slots){ const uu=U(s.id); if(uu) uu[s.slot]=null } UI.multi=null; UI.sel=null; toast(CTX.slots.length>1?`${CTX.slots.length}개를 미배치 가구로 돌려놓았어요.`:`${lbl(U(CTX.slots[0].id))}을(를) 미배치 가구로 돌려놓았어요.`); commit() } });
+    if(b.dataset.cunplace!==undefined){ for(const s of CTX.slots){ const uu=U(s.id); if(uu) unplace(uu,s.slot) } UI.multi=null; UI.sel=null; toast(CTX.slots.length>1?`${CTX.slots.length}개를 미배치 가구로 돌려놓았어요.`:`${lbl(U(CTX.slots[0].id))}을(를) 미배치 가구로 돌려놓았어요.`); commit() } });
   const f=m.querySelector('button'); if(f) f.focus({preventScroll:true}); return true }
 document.addEventListener('contextmenu',e=>{ if(openCtx(e.target,e.clientX,e.clientY)) e.preventDefault() });
 document.addEventListener('pointerdown',e=>{ const m=$('#ctxMenu'); if(m&&!m.contains(e.target)&&Date.now()-CTX.at>400) closeCtx() },true);
@@ -1315,7 +1320,7 @@ function unitDrag(e,g){
       if(!inMulti(u.id,slot)) UI.multi=null; UI.sel={id:u.id,slot}; UI.hl=null; renderPlan(); renderRail(); return }
     const el=document.elementFromPoint(ev.clientX,ev.clientY);
     if(el&&el.closest('#rail')){ if(slot==='tray'){ renderPlan(); return } removeSlot(u,slot); return }
-    if(slot!=='tray'&&UI.trayBox){ const pq=V.pt(ev,inv); const l=fromW('L',pq.x,pq.y); const tb=UI.trayBox; if(l.x>=tb.x1&&l.x<=tb.x2&&l.y>=tb.y1&&l.y<=tb.y2){ const list=grp.length?[u,...grp.map(o=>o.u)]:[u]; for(const x of list) x[slot]=null; UI.sel=null; UI.multi=null; toast(list.length>1?`${list.length}개를 미배치 가구로 돌려놓았어요.`:`${lbl(u)}을(를) 미배치 가구로 돌려놓았어요.`); commit(); return } }
+    if(slot!=='tray'&&UI.trayBox){ const pq=V.pt(ev,inv); const l=fromW('L',pq.x,pq.y); const tb=UI.trayBox; if(l.x>=tb.x1&&l.x<=tb.x2&&l.y>=tb.y1&&l.y<=tb.y2){ const list=grp.length?[u,...grp.map(o=>o.u)]:[u]; for(const x of list) unplace(x,slot); UI.sel=null; UI.multi=null; toast(list.length>1?`${list.length}개를 미배치 가구로 돌려놓았어요.`:`${lbl(u)}을(를) 미배치 가구로 돌려놓았어요.`); commit(); return } }
     const before=slot!=='tray'&&u[slot]?{...u[slot]}:null; const keepMulti=grp.length?getMulti():null;
     const p=V.pt(ev,inv); dropUnit(u,slot==='tray'?null:slot,r.x+p.x-p0.x+r.w/2,r.y+p.y-p0.y+r.d/2,slot==='tray'?0:(u[slot].rot||0));
     if(grp.length&&before){ const after=u[slot]; if(after){ const dx=after.x-before.x, dy=after.y-before.y, nm=M(after.mapId); let skip=0;
@@ -1388,8 +1393,10 @@ function nudgeSel(dx,dy){ const m=getMulti(); const list=m.length?m:(UI.sel?[UI.
   for(const sl of list){ const u=U(sl.id); const pos=u&&u[sl.slot]; if(!pos) continue; const mp=M(pos.mapId); const[w,d]=dims(I(u.itemId),pos.rot||0); const W=mp?mp.w/mp.sx:Infinity, H=mp?mp.h/mp.sy:Infinity;
     pos.x=Math.round(clamp(pos.x+dx,0,Math.max(0,W-w))); pos.y=Math.round(clamp(pos.y+dy,0,Math.max(0,H-d))); n++ }
   if(n) commit() }
-function removeSel(){ const m=getMulti(); if(m.length>1){ for(const x of m){ const u=U(x.id); if(u&&x.slot!=='tray') u[x.slot]=null } UI.multi=null; UI.sel=null; toast(`${m.length}개의 위치를 뺐어요.`); commit(); return } if(UI.sel&&U(UI.sel.id)) removeSlot(U(UI.sel.id),UI.sel.slot) }
-function removeSlot(u,slot){ u[slot]=null; if(UI.sel&&UI.sel.id===u.id) UI.sel=null; toast(`${lbl(u)}을(를) 미배치 가구로 돌려놓았어요.`); commit() }
+function removeSel(){ const m=getMulti(); if(m.length>1){ for(const x of m){ const u=U(x.id); if(u&&x.slot!=='tray') unplace(u,x.slot) } UI.multi=null; UI.sel=null; toast(`${m.length}개의 위치를 뺐어요.`); commit(); return } if(UI.sel&&U(UI.sel.id)) removeSlot(U(UI.sel.id),UI.sel.slot) }
+/* 변경 후 도면에서 빼도 도착 공간은 그대로 (그 공간의 '자리 미정' 가구로 돌아감) */
+function unplace(u,slot){ if(slot==='to'&&u.to){ const m=M(u.to.mapId); if(m) u.toPlaceId=m.placeId } u[slot]=null }
+function removeSlot(u,slot){ unplace(u,slot); if(UI.sel&&UI.sel.id===u.id) UI.sel=null; toast(`${lbl(u)}을(를) 미배치 가구로 돌려놓았어요.`); commit() }
 function rotateSel(dir=1){ const m=getMulti(); const list=m.length?m:(UI.sel?[UI.sel]:[]); let n=0; for(const s of list){ const u=U(s.id); const pos=u&&u[s.slot]; if(!pos) continue; const it=I(u.itemId); const[w,d]=dims(it,pos.rot||0); const cx=pos.x+w/2, cy=pos.y+d/2; pos.rot=(((pos.rot||0)+90*dir)%360+360)%360; const[w2,d2]=dims(it,pos.rot); pos.x=Math.round(cx-w2/2); pos.y=Math.round(cy-d2/2); n++ } if(n) commit() }
 function commit(){ save(); renderAll() }
 /* ---------- 버전 (시점별 저장) ---------- */
@@ -1712,7 +1719,7 @@ document.addEventListener('click',e=>{
   if(d.close!==undefined){ t.closest('dialog').close(); return }
   if(d.rfilter!==undefined){ UI.railFilter=d.rfilter; renderRail(); savePrefs(); return }
   if(d.rselall){ if(d.rselall==='off'){ UI.rsel=null } else { const s=UI.rsel||new Set(); $$('#rail [data-rsel]').forEach(c=>s.add(c.dataset.rsel)); UI.rsel=s.size?s:null } renderRail(); return }
-  if(d.unassign){ const u=U(d.unassign); const sl=curSlot(); if(u&&u[sl]){ u[sl]=null; if(UI.sel&&UI.sel.id===u.id) UI.sel=null; toast(`${lbl(u)}을(를) 미배치 가구로 돌려놓았어요.`); commit() } return }
+  if(d.unassign){ const u=U(d.unassign); const sl=curSlot(); if(u&&u[sl]){ unplace(u,sl); if(UI.sel&&UI.sel.id===u.id) UI.sel=null; toast(`${lbl(u)}을(를) 미배치 가구로 돌려놓았어요.`); commit() } return }
   if(d.mq){ const[side,l]=d.mq.split(':'); const cols=getCols(); cols[side]=l==='none'?[]:S.maps.filter(cal).map(m=>`${m.id}:*:${l}`); UI.openMsel=side; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.swapcols!==undefined){ const c=getCols(); UI.cols={L:c.R,R:c.L}; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.colsreset!==undefined){ UI.cols=defaultCols(); UI.openMsel=null; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }

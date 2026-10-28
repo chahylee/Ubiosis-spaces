@@ -187,7 +187,7 @@ button.num.zero{opacity:.35}
 .tsub{grid-column:2/-1;font-size:11px;color:var(--muted);padding:0 0 4px}
 .ritem{padding:6px 2px 4px;border-bottom:1px dashed var(--line)}
 .ritem.rcomp{display:flex;align-items:center;gap:6px;padding:7px 4px;cursor:pointer;border-radius:6px} .ritem.rcomp:hover{background:var(--soft)}
-.rcomp b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .rcomp .rsz{font-size:11px;color:var(--muted)} .rcomp .rcnt{margin-left:auto;font-size:11px;white-space:nowrap;color:var(--muted)} .rcomp .rcnt.wr{color:var(--warn)} .rcomp .rgo{color:var(--muted);font-size:15px}
+.rcomp b{flex:1;min-width:3em;word-break:keep-all;overflow-wrap:anywhere;line-height:1.25} .rcomp .rsz{font-size:11px;color:var(--muted)} .rcomp .rcnt{font-size:12px;font-weight:600;white-space:nowrap;min-width:2.6em;text-align:right} .rcomp .rsz{white-space:nowrap} .rcomp .rgo{color:var(--muted);font-size:15px}
 .newtag2{font-size:10.5px;padding:0 5px;border:1px solid var(--line);border-radius:999px;color:var(--muted);white-space:nowrap} .newtag2.on{color:#b0125b;border-color:currentColor}
 #dlgItem .ritem{border:0} #dlgItem .runits{max-height:55vh;overflow:auto}
 .rih{display:flex;align-items:center;gap:6px;padding:0 3px 3px}
@@ -1575,7 +1575,7 @@ function railSpace(pid){
   // 가구마다 한 줄. 누르면 팝업(itemDetail)에서 하나하나 보기
   for(const it of items){ const us=unitsOf(it).filter(u=>!rf||(sl==='from'&&isNewU(u)?false:(rf==='a')===!!u[sl])); if(!us.length) continue;
     const allU=unitsOf(it), pl=allU.filter(isPlaced).length;
-    h+=`<div class="ritem rcomp" data-openitem="${it.id}" title="눌러서 하나하나 보기"><span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b class="dragi" draggable="true" data-di="${it.id}" title="${esc(it.name)} · 위쪽 공간 탭에 끌어 놓으면 그 공간 가구로 바뀌어요">${esc(it.name)}</b><span class="newtag2 ${it.isNew?'on':''}">${it.isNew?'신규':'기존'}</span>${it.kind==='item'?'<span class="toptag">올림</span>':''}${assetPhotoBtn(it,'rp')}<span class="rsz mono">${it.w}×${it.d}</span><span class="rcnt ${pl<allU.length?'wr':''}">${allU.length}개 · ${pl}/${allU.length} 배치</span><span class="rgo">›</span></div>` }
+    h+=`<div class="ritem rcomp" data-openitem="${it.id}" title="눌러서 하나하나 보기"><span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b class="dragi" draggable="true" data-di="${it.id}" title="${esc(it.name)} · 위쪽 공간 탭에 끌어 놓으면 그 공간 가구로 바뀌어요">${esc(it.name)}</b>${it.isNew?'<span class="newtag2 on">신규</span>':''}<span class="rsz mono">${it.w}×${it.d}${it.h?'×'+it.h:''}</span>${assetPhotoBtn(it,'rp')}<span class="rcnt">${allU.length}개</span><span class="rgo">›</span></div>` }
   return h;
 }
 /* 가구 한 종류의 세부(팝업) */

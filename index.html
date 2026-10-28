@@ -369,6 +369,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .link{stroke:var(--hl);stroke-width:2.5;fill:none;stroke-dasharray:8 6;vector-effect:non-scaling-stroke}
 .mline{stroke:var(--hl);stroke-width:2;vector-effect:non-scaling-stroke}
 .mline.live{stroke-dasharray:6 5}
+.twin rect{fill:color-mix(in srgb,var(--hl) 14%,transparent);stroke:var(--hl);stroke-width:2.5;vector-effect:non-scaling-stroke;animation:twinp 1.4s ease-in-out infinite} .twin.ghost rect{stroke-dasharray:6 4;fill:color-mix(in srgb,var(--hl) 8%,transparent)} .twin text{fill:var(--hl);font-family:var(--sans);font-weight:700;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:3px} @keyframes twinp{50%{stroke-opacity:.35}} @media (prefers-reduced-motion: reduce){.twin rect{animation:none}}
 .mdot{fill:var(--hl);stroke:#fff;stroke-width:1.5px;vector-effect:non-scaling-stroke}
 .mtot rect{fill:var(--hl)} .mtot text{fill:#fff;font-family:var(--mono);font-weight:600}
 .mtext{fill:var(--hl);font-family:var(--mono);font-weight:500;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:4px}
@@ -1051,7 +1052,11 @@ function renderOverlay(){ fixLabels();
   const g=$('#ovl'); if(!g) return; let s=''; const k=V.w/1000;
   let linkU=null;
   if(UI.sel) linkU=U(UI.sel.id); else if(UI.hl&&UI.hl.ids.size===1) linkU=U([...UI.hl.ids][0]);
-  if(linkU){ const a=unitRect(linkU,'from'), b=unitRect(linkU,'to'); if(a&&b){ const ax=a.x+a.w/2,ay=a.y+a.d/2,bx=b.x+b.w/2,by=b.y+b.d/2; s+=`<path class="link" d="M${ax} ${ay}L${bx} ${by}"/><circle class="mdot" cx="${bx}" cy="${by}" r="${5*k}"/>` } }
+  if(linkU){ const mySlot=UI.sel&&UI.sel.id===linkU.id?UI.sel.slot:null; const tw=[];
+    for(const sl of ['from','to']){ if(sl===mySlot) continue; const pos=linkU[sl]; if(!pos) continue; let r=unitRect(linkU,sl);
+      if(!r){ const[w,d]=dims(I(linkU.itemId),pos.rot||0); const e=UI.L.find(e=>e.m.id===pos.mapId&&inPanel(e,pos.x+w/2,pos.y+d/2)); if(e){ const z=colZ(e.col), q=toW(e.col,e.mx+pos.x,e.my+pos.y); r={x:q.x,y:q.y,w:w*z,d:d*z,ghost:true} } }
+      if(r) tw.push({r,sl}) }
+    for(const {r,sl} of tw){ const pad=4*k; s+=`<g class="twin${r.ghost?' ghost':''}"><rect x="${r.x-pad}" y="${r.y-pad}" width="${r.w+pad*2}" height="${r.d+pad*2}" rx="${4*k}"/><text x="${r.x+r.w/2}" y="${r.y-pad-5*k}" font-size="${11*k}">${sl==='from'?'기존 위치':'변경 위치'}</text></g>` } }
   if(UI.sel){ const su=U(UI.sel.id); const r=su&&unitRect(su,UI.sel.slot); if(r) s+=gapsSVG(r.e,r.lx,r.ly,r.lw,r.ld,su.id) }
   if(UI.measure) s+=measureSVG(k);
   g.innerHTML=s;

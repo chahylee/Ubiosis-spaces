@@ -80,6 +80,12 @@ button{cursor:pointer}
 .lockbar.verbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fdf1d8;color:#4a3a12} .verbar .btn{margin-left:4px} body.viewing .unit{pointer-events:none}
 .verlist{display:grid;gap:6px;max-height:46vh;overflow:auto} .veritem{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--raise)} .veritem .vm{font-size:11.5px;color:var(--muted)} .veritem .va{display:flex;gap:4px;grid-row:span 2} .vname{font:600 13px var(--sans);border:1px solid transparent;border-radius:6px;padding:3px 6px;background:none;color:var(--ink);min-width:0} .vname:hover{border-color:var(--line)} .vname:focus{border-color:var(--accent);background:var(--panel);outline:none}
 .dimed{display:inline-flex;align-items:center;gap:2px;font-size:12px;color:var(--muted)} .dimed input{width:52px;padding:3px 4px;border:1px solid var(--line);border-radius:5px;background:var(--raise);color:var(--ink);font:12px var(--mono,monospace);text-align:right} .dimed small{margin-left:4px;font-size:10.5px} .dimed.sm input{width:44px;padding:2px 3px;font-size:11px} .rih{flex-wrap:wrap} .rih b{white-space:nowrap} .rih .dimed{order:9;flex-basis:100%;margin:3px 0 0 16px}
+.gate{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg);padding:20px}
+.gatebox{max-width:420px;text-align:center;display:grid;gap:12px;justify-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:28px 24px;box-shadow:0 10px 40px rgba(0,0,0,.08)}
+.gatelogo{font-size:20px;font-weight:700} .linkbtn{border:0;background:none;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer;margin-top:4px}
+.badge{display:inline-block;min-width:16px;margin-left:4px;padding:0 4px;border-radius:999px;background:var(--warn);color:#fff;font-size:10.5px;line-height:16px;text-align:center}
+.acrow.req{grid-template-columns:1fr auto auto auto} .acrow.add{grid-template-columns:minmax(0,1fr) 110px auto} .acrow input{width:100%}
+.mlist{display:grid;gap:4px;max-height:220px;overflow:auto} .acrow{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;font-size:12.5px} .acrow span{overflow:hidden;text-overflow:ellipsis} .acrow input,.acrow select{padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:var(--raise);color:var(--ink);min-width:0}
 .lockbar{padding-block:7px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--accent-soft);color:var(--ink);font-size:13px;font-weight:500;border-bottom:1px solid var(--line)}
 body.readonly .qadd,body.readonly .udel,body.readonly [data-delunit],body.readonly [data-additem],body.readonly [data-delitem]{display:none!important}
 .examplebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--warn-soft);color:var(--ink);font-size:13px;border-bottom:1px solid var(--line)}
@@ -262,7 +268,7 @@ button.num.zero{opacity:.35}
 .legend{position:absolute;left:12px;bottom:24px;font-size:11.5px;color:var(--muted);background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);border-radius:7px;padding:4px 9px;display:flex;gap:10px;align-items:center}
 .legend i{display:inline-block;width:14px;height:14px;border:1px solid var(--grid2);vertical-align:-3px;margin-right:4px}
 .selbar{position:absolute;bottom:62px;left:50%;max-width:calc(100% - 24px);flex-wrap:wrap;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:var(--raise);border:1px solid var(--line);border-radius:10px;padding:6px 8px 6px 12px;box-shadow:0 4px 18px rgba(0,0,0,.12);max-width:calc(100% - 24px);flex-wrap:wrap;font-size:13px}
-.selbar .route{color:var(--muted)}
+.selbar .route{display:none} .selbar{flex-wrap:nowrap!important;white-space:nowrap}
 .rb{font-size:12px;border-radius:999px;padding:1px 9px;font-weight:500}
 .rb.new{background:#fbe3ee;color:#b0125b}
 .flag.newf{border-color:#b0125b;color:#b0125b}
@@ -527,14 +533,14 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
     <nav class="tabs" aria-label="화면">
       <button data-view="plan" class="on">배치판</button>
       <button data-view="space">공간 작업</button>
-      <button data-view="items">가구 목록</button>
+      <button data-view="items">자산 목록</button>
       <button data-view="routes">이동 경로</button>
       <button data-view="check">체크리스트</button>
       <button data-view="spaces">공간·도면</button>
     </nav>
-    <div class="topr"><span id="saveState" class="savestate">불러오는 중</span><button id="btnVer" class="btn small">버전</button><button id="btnData" class="btn small">데이터</button></div>
+    <div class="topr"><span id="saveState" class="savestate">불러오는 중</span><button id="btnAdmin" class="btn small" hidden>관리자<span id="admBadge" class="badge" hidden></span></button><button id="btnVer" class="btn small">버전</button><button id="btnData" class="btn small">데이터</button></div>
   </header>
-  <div id="lockBar" class="lockbar" hidden></div><div id="verBar" class="lockbar verbar" hidden></div>
+  <div id="gate" class="gate" hidden></div><div id="lockBar" class="lockbar" hidden></div><div id="verBar" class="lockbar verbar" hidden></div>
   <div id="exampleBar" class="examplebar" hidden>
     <span>지금 보이는 공간과 가구는 <b>예시</b>예요. 둘러본 뒤 지우고 실제 공간을 등록하세요.</span>
     <button id="btnClearEx" class="btn small">예시 지우고 시작</button>
@@ -546,7 +552,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
         <div class="stagebar">
           <div id="pchips" class="pchips"></div>
           <div class="tools">
-            <button id="btnRail" class="ibtn" title="가구 목록 접기·펼치기">◀ 목록</button>
+            <button id="btnRail" class="ibtn" title="자산 목록 접기·펼치기">◀ 목록</button>
             <label class="mono" style="font-size:12px;color:var(--muted)" for="snapSel">맞춤</label>
             <select id="snapSel"><option value="0">끄기</option><option value="5">5cm</option><option value="10" selected>10cm</option><option value="50">50cm</option></select>
             <button id="btnMeasure" class="ibtn" title="거리 재기 (M) · 지점을 차례로 클릭 · 더블클릭/Enter로 끝 · Shift 수평·수직 · Esc 지우기">📏 거리 재기</button>
@@ -561,7 +567,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
           <div class="layerseg" id="layerSeg" hidden><button data-wl="a">변경 전 (기존)</button><button data-wl="b">변경 후</button></div>
           <div class="czoom left" id="czL" hidden><span class="sl">왼쪽</span><button data-cz="L:out" aria-label="왼쪽 축소">−</button><input type="range" data-czr="L" min="-2.3" max="3" step="0.01" value="0" aria-label="왼쪽 배율"><button data-cz="L:in" aria-label="왼쪽 확대">+</button><span class="czp mono">100%</span><button data-cz="L:reset" title="100%로">↺</button></div>
           <div class="czoom right" id="czR" hidden><span class="sl">오른쪽</span><button data-cz="R:out" aria-label="오른쪽 축소">−</button><input type="range" data-czr="R" min="-2.3" max="3" step="0.01" value="0" aria-label="오른쪽 배율"><button data-cz="R:in" aria-label="오른쪽 확대">+</button><span class="czp mono">100%</span><button data-cz="R:reset" title="100%로">↺</button></div>
-          <button id="railTab" class="railtab" hidden title="가구 목록 펼치기">▶<span>가구 목록</span></button>
+          <button id="railTab" class="railtab" hidden title="자산 목록 펼치기">▶<span>자산 목록</span></button>
           <svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg>
           <div id="selbar" class="selbar" hidden></div>
           <div class="legend" title="휠: 칸별 위아래 · Shift+휠: 좌우 · Ctrl+휠: 확대·축소 (Ctrl+Alt+휠: 더 세밀하게) · Ctrl+클릭: 여러 개 선택 · Ctrl+방향키: 1cm씩 이동 (Shift 같이: 10cm) · Alt+방향키: 90° 회전 · 공간 이름: 그 공간만"><span><i></i>1칸 = 50cm</span><span>Ctrl+클릭 여러 개 · Ctrl+방향키 미세 이동 · Alt+방향키 회전 · Shift+휠 좌우</span></div>
@@ -664,6 +670,19 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
     <div class="df"><button type="submit" class="btn primary">바꾸기</button></div>
   </form>
 </dialog>
+<dialog id="dlgAdmin" class="small" aria-labelledby="admTitle">
+  <div class="dlg">
+    <div class="dh"><h2 id="admTitle">관리자</h2><button class="btn small x" data-close>닫기</button></div>
+    <div class="dbody" style="padding:16px 18px;display:grid;gap:14px">
+      <div style="display:grid;gap:8px"><b style="font-size:13px">권한 신청 <span id="reqCount" class="hint"></span></b><div id="reqList" class="mlist"></div></div>
+      <div style="display:grid;gap:8px;border-top:1px solid var(--line);padding-top:12px"><b style="font-size:13px">권한 있는 사람</b>
+        <p class="hint">허가한 Google 계정만 이 사이트를 볼 수 있어요. 직접 이메일을 넣어 추가할 수도 있어요.</p>
+        <div class="acrow add"><input id="memEmail" type="email" placeholder="example@gmail.com" autocomplete="off"><select id="memRole"><option value="view">보기만</option><option value="edit">수정 가능</option></select><button class="btn small primary" id="btnMemAdd">추가</button></div>
+        <div id="memberList" class="mlist"></div></div>
+      <div style="display:grid;gap:8px;border-top:1px solid var(--line);padding-top:12px"><b style="font-size:13px">수정 잠금</b><p class="hint">잠그면 수정 가능한 사람도 잠시 보기만 할 수 있어요. 관리자는 계속 고칠 수 있어요.</p><div class="actions"><button class="btn" id="btnLock">수정 잠그기</button></div></div>
+    </div>
+  </div>
+</dialog>
 <dialog id="dlgVer" class="small" aria-labelledby="verTitle">
   <div class="dlg">
     <div class="dh"><h2 id="verTitle">버전</h2><button class="btn small x" data-close>닫기</button></div>
@@ -686,7 +705,8 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
       <p class="hint" id="exportNote">Claude 미리보기 안에서는 다운로드가 막힐 수 있어요. 웹에 올린 뒤에는 정상으로 작동해요.</p>
       
       <div style="display:grid;gap:6px;border-top:1px solid var(--line);padding-top:12px"><b style="font-size:13px">이사 완료 반영 (변경 후 → 새 변경 전)</b><p class="hint">이사를 마쳤거나 한 단계가 끝났을 때, 변경 후 위치를 새 <b>변경 전(현재 위치)</b>으로 바꿉니다. 옮긴 가구는 도착한 공간의 가구가 되고, 도착지·체크 표시는 비워져 다음 계획을 새로 세울 수 있어요. 되돌릴 수 없으니 먼저 파일로 내보내 두세요.</p><label class="field">반영할 범위<select id="commitScope"></select></label><div class="actions"><button class="btn" id="btnCommit">반영하기</button></div></div>
-      <div id="adminBox" hidden style="display:grid;gap:6px;border-top:1px solid var(--line);padding-top:12px"><b style="font-size:13px">관리자</b><p class="hint" id="adminStatus"></p><p class="hint">관리자로 로그인하면 <b>수정 잠금</b>(다른 사람은 보기만)과 <b>비공개</b>(관리자 말고는 아무도 못 봄)를 켜고 끌 수 있어요.</p><div class="actions"><button class="btn" id="btnLogin">Google로 관리자 로그인</button><button class="btn primary" id="btnLock">수정 잠그기</button><button class="btn" id="btnHide">비공개로 전환</button><button class="btn" id="btnLogout">로그아웃</button></div></div>
+      <div id="adminBox" hidden style="display:grid;gap:8px;border-top:1px solid var(--line);padding-top:12px"><b style="font-size:13px">계정과 권한</b><p class="hint" id="adminStatus"></p>
+        <div class="actions"><button class="btn" id="btnLogout">로그아웃</button></div></div>
       <div class="actions"><button class="btn" id="btnReset">모두 지우기</button></div>
     </div>
   </div>
@@ -773,18 +793,56 @@ async function applyCloud(){
 }
 function cloudStart(){
   try{ firebase.initializeApp(FIREBASE_CONFIG); Cloud.db=firebase.firestore(); Cloud.on=true }catch(e){ console.error(e); return false }
-  setSave('불러오는 중…'); const pending=new Set([...COLLS,'meta']); const tick=k=>{ pending.delete(k); if(!pending.size) applyCloud() };
-  for(const coll of COLLS) Cloud.db.collection(coll).onSnapshot(snap=>{ Cloud.docs[coll]=new Map(snap.docs.map(d=>[d.id,d.data()])); if(pending.size) tick(coll); else if(!snap.metadata.hasPendingWrites) applyCloud() },e=>{ console.error(e); if(String(e&&e.code).includes('permission')){ Cloud.readErr=true; S=empty(); renderAll(); setSave('비공개 · 볼 수 없음'); renderLock() } else setSave('연결 오류 · Firebase 규칙이나 인터넷을 확인하세요') });
-  Cloud.db.collection('meta').doc('main').onSnapshot(d=>{ Cloud.meta=d.exists?d.data():{}; if(pending.size) tick('meta') },e=>console.error(e));
-  Cloud.db.collection('settings').doc('lock').onSnapshot(d=>{ const x=d.exists?d.data():{}; Cloud.locked=!!x.locked; Cloud.hidden=!!x.hidden; if(!Cloud.hidden&&Cloud.readErr) location.reload(); renderLock() },e=>console.error(e));
-  try{ if(firebase.auth) firebase.auth().onAuthStateChanged(u=>{ Cloud.user=u||null; if(u&&Cloud.readErr) location.reload(); renderLock() }) }catch(e){ console.error(e) }
+  setSave('로그인 확인 중…'); showGate('wait');
+  try{ firebase.auth().onAuthStateChanged(async u=>{
+      if(Cloud.user&&u&&Cloud.user.uid===u.uid) return; if(Cloud.started&&(!u||!Cloud.user||Cloud.user.uid!==u.uid)){ location.reload(); return }
+      Cloud.user=u||null; if(!u){ showGate('login'); setSave('로그인 필요'); return }
+      const em=(u.email||'').toLowerCase(); Cloud.isAdmin=false; Cloud.role=null;
+      try{ await Cloud.db.collection('members').limit(1).get(); Cloud.isAdmin=true }catch(e){}
+      if(!Cloud.isAdmin){ try{ const d=await Cloud.db.collection('members').doc(em).get(); if(d.exists) Cloud.role=d.data().role==='edit'?'edit':'view' }catch(e){ console.error(e) } }
+      if(Cloud.wantAdmin&&!Cloud.isAdmin) toast('관리자 계정이 아니에요.');
+      if(!Cloud.isAdmin&&!Cloud.role){ let req=false; try{ req=(await Cloud.db.collection('requests').doc(em).get()).exists }catch(e){} showGate(req?'requested':'denied'); if(req) watchMyAccess(); setSave('권한 없음'); return }
+      showGate(null); startListeners() }) }catch(e){ console.error(e); showGate('login') }
   return true;
 }
-function canEdit(){ return !Cloud.on||!Cloud.locked||!!Cloud.user }
-function renderLock(){ const ro=Cloud.on&&(Cloud.locked||Cloud.readErr)&&!Cloud.user; document.body.classList.toggle('readonly',ro); const lb=$('#lockBar'); lb.hidden=!(Cloud.on&&(Cloud.locked||Cloud.hidden||Cloud.readErr));
-  lb.textContent=Cloud.readErr&&!Cloud.user?'관리자가 비공개로 설정해 두었어요. 지금은 볼 수 없어요.':Cloud.hidden?'비공개 중 · 관리자만 볼 수 있어요.'+(Cloud.locked?' 수정도 잠겨 있어요.':''):ro?'관리자가 수정을 잠가 두었어요. 지금은 보기만 할 수 있어요.':'수정 잠금 중 · 관리자로 로그인되어 있어 고칠 수 있어요.';
-  const box=$('#adminBox'); if(!box) return; box.hidden=!Cloud.on; $('#adminStatus').textContent=`${Cloud.user?Cloud.user.email+'로 로그인됨':'관리자 로그인이 필요해요'} · 지금 ${Cloud.hidden?'비공개':'공개'}, ${Cloud.locked?'수정 잠김':'누구나 수정 가능'}`;
-  $('#btnLogin').hidden=!!Cloud.user; $('#btnLogout').hidden=!Cloud.user; $('#btnLock').hidden=!Cloud.user; $('#btnLock').textContent=Cloud.locked?'수정 잠금 풀기':'수정 잠그기 (모두 보기만)'; $('#btnHide').hidden=!Cloud.user; $('#btnHide').textContent=Cloud.hidden?'다시 공개하기':'비공개로 전환 (관리자만 보기)' }
+function startListeners(){ if(Cloud.started) return; Cloud.started=true; setSave('불러오는 중…');
+  const pending=new Set([...COLLS,'meta']); const tick=k=>{ pending.delete(k); if(!pending.size) applyCloud() };
+  for(const coll of COLLS) Cloud.db.collection(coll).onSnapshot(snap=>{ Cloud.docs[coll]=new Map(snap.docs.map(d=>[d.id,d.data()])); if(pending.size) tick(coll); else if(!snap.metadata.hasPendingWrites) applyCloud() },e=>{ console.error(e); if(String(e&&e.code).includes('permission')){ showGate('denied'); setSave('권한 없음') } else setSave('연결 오류 · 인터넷을 확인하세요') });
+  Cloud.db.collection('meta').doc('main').onSnapshot(d=>{ Cloud.meta=d.exists?d.data():{}; if(pending.size) tick('meta') },e=>{ console.error(e); tick('meta') });
+  Cloud.db.collection('settings').doc('lock').onSnapshot(d=>{ const x=d.exists?d.data():{}; Cloud.locked=!!x.locked; renderLock() },e=>console.error(e));
+  if(Cloud.isAdmin) Cloud.db.collection('requests').onSnapshot(snap=>{ const prev=(Cloud.requests||[]).length; Cloud.requests=snap.docs.map(d=>({email:d.id,...d.data()})).sort((a,b)=>(a.at||0)-(b.at||0)); renderRequests(); if(Cloud.requests.length>prev&&Cloud.reqInit) toast(`권한 신청이 ${Cloud.requests.length-prev}건 들어왔어요. 위쪽 [관리자]에서 승인하세요.`); Cloud.reqInit=true },e=>console.error(e));
+  if(Cloud.isAdmin) Cloud.db.collection('members').onSnapshot(snap=>{ Cloud.members=snap.docs.map(d=>({email:d.id,...d.data()})).sort((a,b)=>a.email.localeCompare(b.email)); renderMembers() },e=>console.error(e));
+  renderLock() }
+function showGate(mode){ const g=$('#gate'); if(!g) return; g.hidden=!mode; if(!mode) return; const em=Cloud.user?esc(Cloud.user.email||''):'';
+  g.innerHTML=`<div class="gatebox"><div class="gatelogo">이사 배치판</div>${mode==='wait'?'<p>로그인 상태를 확인하고 있어요…</p>':mode==='login'?'<p>허가된 Google 계정으로 로그인해야 볼 수 있어요.<br>처음이면 로그인한 뒤 <b>권한 신청</b>을 누르세요.</p><button class="btn primary" data-gate="login">Google 계정으로 로그인</button><button class="linkbtn" data-gate="admin">관리자 로그인</button>':mode==='requested'?`<p><b>${em}</b></p><p>권한을 신청했어요. 관리자가 승인하면 자동으로 열려요.</p><div class="actions" style="justify-content:center"><button class="btn" data-gate="logout">다른 계정으로 로그인</button></div>`:`<p><b>${em}</b> 계정은 아직 권한이 없어요.</p><label class="field" style="width:100%;text-align:left">이름 (관리자가 알아볼 수 있게)<input id="reqName" placeholder="예: 홍길동 / 디자인팀" value="${esc(Cloud.user&&Cloud.user.displayName||'')}"></label><button class="btn primary" data-gate="request">권한 신청하기</button><div class="actions" style="justify-content:center"><button class="btn" data-gate="logout">다른 계정으로 로그인</button></div>`}</div>` }
+async function gLogin(){ try{ await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()) }catch(e){ console.error(e); const c=String(e&&e.code); toast(c.includes('unauthorized-domain')?'이 주소가 Firebase 승인 도메인에 없어요. Authentication → 설정 → 승인된 도메인에 추가해 주세요.':c.includes('popup-closed')?'로그인 창이 닫혔어요.':'로그인하지 못했어요. 팝업 차단을 확인하세요.') } }
+document.addEventListener('click',async e=>{ const t=e.target.closest('[data-gate]'); if(!t) return; const a=t.dataset.gate;
+  if(a==='login'||a==='admin'){ Cloud.wantAdmin=a==='admin'; gLogin() }
+  else if(a==='logout'){ firebase.auth().signOut().then(gLogin) }
+  else if(a==='request'){ const em=(Cloud.user.email||'').toLowerCase(); try{ await Cloud.db.collection('requests').doc(em).set({name:($('#reqName').value||'').trim().slice(0,60),uid:Cloud.user.uid,at:Date.now()}); showGate('requested'); watchMyAccess() }catch(err){ console.error(err); toast('신청하지 못했어요. 잠시 뒤 다시 시도하세요.') } }
+  else location.reload() });
+function watchMyAccess(){ if(Cloud.watching) return; Cloud.watching=true; const em=(Cloud.user.email||'').toLowerCase(); try{ Cloud.db.collection('members').doc(em).onSnapshot(d=>{ if(d.exists) location.reload() },e=>console.error(e)) }catch(e){} }
+function canEdit(){ return !Cloud.on||Cloud.isAdmin||(Cloud.role==='edit'&&!Cloud.locked) }
+function renderLock(){ const ro=Cloud.on&&Cloud.started&&!canEdit(); document.body.classList.toggle('readonly',ro); const lb=$('#lockBar');
+  lb.hidden=!(Cloud.on&&Cloud.started&&(ro||Cloud.locked));
+  lb.textContent=Cloud.role==='view'&&!Cloud.isAdmin?'보기 전용 권한이에요. 고치려면 관리자에게 수정 권한을 요청하세요.':ro?'관리자가 수정을 잠가 두었어요. 지금은 보기만 할 수 있어요.':'수정 잠금 중 · 관리자라서 고칠 수 있어요.';
+  const box=$('#adminBox'); if(!box) return; box.hidden=!Cloud.on;
+  $('#adminStatus').textContent=Cloud.user?`${Cloud.user.email} · ${Cloud.isAdmin?'관리자':Cloud.role==='edit'?'수정 가능':'보기 전용'}${Cloud.locked?' · 지금 수정 잠김':''}`:'';
+  $('#btnAdmin').hidden=!Cloud.isAdmin; $('#btnLock').textContent=Cloud.locked?'수정 잠금 풀기':'수정 잠그기 (모두 보기만)'; renderMembers() }
+function renderRequests(){ const rs=Cloud.requests||[]; const bd=$('#admBadge'); if(bd){ bd.hidden=!rs.length; bd.textContent=rs.length } const box=$('#reqList'); if(!box) return; $('#reqCount').textContent=rs.length?`${rs.length}건`:'';
+  box.innerHTML=rs.length?rs.map(r=>`<div class="acrow req"><span title="${esc(r.email)}">${esc(r.name||'')} <small class="hint">${esc(r.email)}</small></span><button class="btn small primary" data-reqok="${esc(r.email)}" data-role="view">보기 승인</button><button class="btn small" data-reqok="${esc(r.email)}" data-role="edit">수정 승인</button><button class="btn small danger" data-reqno="${esc(r.email)}">거절</button></div>`).join(''):'<span class="hint">새 신청이 없어요.</span>' }
+document.addEventListener('click',async e=>{ const t=e.target.closest('[data-reqok],[data-reqno]'); if(!t) return; const em=t.dataset.reqok||t.dataset.reqno;
+  if(t.dataset.reqok){ if(!(await setMember(em,t.dataset.role))) return; toast(`${em}을(를) ${t.dataset.role==='edit'?'수정 가능':'보기만'}으로 승인했어요.`) } else { if(!armed(t)) return; toast('신청을 거절했어요.') }
+  try{ await Cloud.db.collection('requests').doc(em).delete() }catch(err){ console.error(err) } });
+$('#btnAdmin').onclick=()=>{ renderRequests(); renderMembers(); $('#dlgAdmin').showModal() };
+function renderMembers(){ const box=$('#memberList'); if(!box||!Cloud.isAdmin) return; const ms=Cloud.members||[];
+  box.innerHTML=ms.length?ms.map(m=>`<div class="acrow"><span>${esc(m.email)}</span><select data-mrole="${esc(m.email)}"><option value="edit" ${m.role==='edit'?'selected':''}>수정 가능</option><option value="view" ${m.role!=='edit'?'selected':''}>보기만</option></select><button class="btn small danger" data-mdel="${esc(m.email)}">빼기</button></div>`).join(''):'<span class="hint">아직 권한을 준 사람이 없어요. 관리자만 볼 수 있어요.</span>' }
+async function setMember(email,role){ email=(email||'').trim().toLowerCase(); if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ toast('이메일 주소를 확인해 주세요.'); return false }
+  try{ await Cloud.db.collection('members').doc(email).set({role,by:Cloud.user.email,at:Date.now()}); return true }catch(e){ console.error(e); toast('권한을 저장하지 못했어요. Firebase 규칙을 새로 게시했는지 확인하세요.'); return false } }
+document.addEventListener('change',async e=>{ const t=e.target.closest('[data-mrole]'); if(!t) return; if(await setMember(t.dataset.mrole,t.value)) toast('권한을 바꿨어요.') });
+document.addEventListener('click',async e=>{ const t=e.target.closest('[data-mdel],#btnMemAdd'); if(!t) return;
+  if(t.id==='btnMemAdd'){ const em=$('#memEmail').value; if(await setMember(em,$('#memRole').value)){ $('#memEmail').value=''; toast(`${em.trim()}에게 권한을 줬어요.`) } return }
+  if(!armed(t)) return; try{ await Cloud.db.collection('members').doc(t.dataset.mdel).delete(); toast('권한을 뺐어요.') }catch(err){ console.error(err); toast('빼지 못했어요.') } });
 let saveT;
 function save(){
   if(UI.viewVer){ toast('지난 버전을 보는 중이라 저장되지 않아요. 위쪽 [현재로 돌아가기]를 누르세요.'); return }
@@ -881,7 +939,7 @@ const VIS={hidden:new Set(),a:true,b:true};
 try{ const v=JSON.parse(localStorage.getItem('mb-vis')||'null'); if(v){ VIS.hidden=new Set(v.hidden||[]); VIS.a=v.a!==false; VIS.b=v.b!==false } }catch(e){}
 function allKeys(){ const out=[]; for(const p of S.places) for(const m of S.maps.filter(m=>m.placeId===p.id&&cal(m))){ for(const l of ['a','b']) out.push(`${m.id}:*:${l}`); for(const r of roomsOf(m)) for(const l of ['a','b']) out.push(`${m.id}:${r.id}:${l}`) } return out }
 function defaultCols(){ const fl=S.maps.filter(cal); return {L:fl.map(m=>`${m.id}:*:a`),R:fl.map(m=>`${m.id}:*:b`)} }
-function getCols(){ if(!UI.cols){ try{ const v=JSON.parse(localStorage.getItem('mb-cols')||'null'); if(v&&Array.isArray(v.L)&&Array.isArray(v.R)) UI.cols=v }catch(e){} if(!UI.cols) UI.cols=defaultCols() }
+function getCols(){ if(!UI.cols){ try{ const v=JSON.parse(localStorage.getItem('mb-cols')||'null'); if(v&&Array.isArray(v.L)&&Array.isArray(v.R)) UI.cols={L:v.L.filter(k=>k.endsWith(':a')),R:v.R.filter(k=>k.endsWith(':b'))} }catch(e){} if(!UI.cols) UI.cols=defaultCols() }
   const ok=new Set(allKeys()); UI.cols.L=UI.cols.L.filter(k=>ok.has(k)); UI.cols.R=UI.cols.R.filter(k=>ok.has(k)); if(!UI.cols.L.length&&!UI.cols.R.length) UI.cols=defaultCols(); return UI.cols }
 function saveCols(){ try{localStorage.setItem('mb-cols',JSON.stringify(UI.cols))}catch(e){} }
 function saveVis(){ try{localStorage.setItem('mb-vis',JSON.stringify({hidden:[...VIS.hidden],a:VIS.a,b:VIS.b}))}catch(e){} }
@@ -926,23 +984,24 @@ function getMulti(){ const m=(UI.multi||[]).filter(x=>{ const u=U(x.id); return 
 const inMulti=(id,slot)=>!!(UI.multi||[]).find(x=>x.id===id&&x.slot===slot);
 function unitSVG(u,slot,e,flags){
   const it=I(u.itemId), pos=u[slot]; const[w,d]=dims(it,pos.rot||0); const x=e.mx+pos.x, y=e.my+pos.y; const name=lbl(u);
-  const dimTxt=`${it.w}*${it.d}`;
-  let fs=Math.min(d*.3,w*.9/Math.max(1.4,name.length*.98)); fs=clamp(fs,3,30);
-  let fd=Math.min(fs*.72,w*.9/(dimTxt.length*.62)); fd=clamp(fd,2.5,20);
-  const tot=fs*1.05+fd*1.1; if(tot>d*.9){ const k=d*.9/tot; fs*=k; fd*=k }
+  const dimTxt=`${it.w}*${it.d}`; const vert=d>w*1.2; const tw=vert?d:w, th=vert?w:d; // 세로로 긴 가구는 글씨를 긴 쪽 방향으로
+  let fs=Math.min(th*.3,tw*.9/Math.max(1.4,name.length*.98)); fs=clamp(fs,3,30);
+  let fd=Math.min(fs*.72,tw*.9/(dimTxt.length*.62)); fd=clamp(fd,2.5,20);
+  const tot=fs*1.05+fd*1.1; if(tot>th*.9){ const k=th*.9/tot; fs*=k; fd*=k }
   const showDim=true;
   const cls=['unit',slot]; if(it.kind==='item') cls.push('top'); if(it.isNew) cls.push('isnew'); if(flags.ghost)cls.push('ghost'); if(flags.clash)cls.push('clash'); if(flags.sel)cls.push('sel'); if(flags.hl)cls.push('hl'); if(flags.dim)cls.push('dim');
   let s=`<g class="${cls.join(' ')}" data-id="${u.id}" data-slot="${slot}" transform="translate(${x} ${y})" style="--c:${it.color}"><rect class="ub" width="${w}" height="${d}" rx="2"/>`;
-  s+=`<text class="un" x="${w/2}" y="${d/2-fd*.55}" font-size="${fs.toFixed(1)}">${esc(name)}</text>`;
-  s+=`<text class="ud" x="${w/2}" y="${d/2+fs*.55}" font-size="${fd.toFixed(1)}">${dimTxt}</text>`;
+  s+=`<g${vert?` transform="rotate(-90 ${w/2} ${d/2})"`:''}><text class="un" x="${w/2}" y="${d/2-fd*.55}" font-size="${fs.toFixed(1)}">${esc(name)}</text>`;
+  s+=`<text class="ud" x="${w/2}" y="${d/2+fs*.55}" font-size="${fd.toFixed(1)}">${dimTxt}</text></g>`;
   if(it.isNew){ const th=clamp(Math.min(d,w)*.28,7,18); s+=`<g class="newtag"><rect x="-1" y="${-th-1}" width="${th*1.9}" height="${th}" rx="${th*.25}"/><text x="${th*.95-1}" y="${-th/2-1}" font-size="${(th*.68).toFixed(1)}">새</text></g>` }
   if(slot==='to'&&it.placeId!==e.m.placeId&&!it.isNew){ const on='← '+(P(it.placeId)?.name||''); const f2=clamp(Math.min(fs*.72,w*.95/Math.max(2,on.length*.95)),4,16); s+=`<text class="ufrom" x="${w/2}" y="${d+f2*.9}" font-size="${f2.toFixed(1)}">${esc(on)}</text>` }
   if(flags.ghost){ const on='→ '+destLabel(u); const f2=clamp(Math.min(fs*.72,w*1.1/Math.max(2,on.length*.95)),4,16); s+=`<text class="ugo" x="${w/2}" y="${d+f2*.9}" font-size="${f2.toFixed(1)}">${esc(on)}</text>` }
   return s+'</g>';
 }
 function trayUnitSVG(u,x,y){ const it=I(u.itemId); const w=it.w, d=it.d; const name=lbl(u); const dimTxt=`${it.w}*${it.d}`;
-  let fs=Math.min(d*.3,w*.9/Math.max(1.4,name.length*.98)); fs=clamp(fs,3,30); let fd=Math.min(fs*.72,w*.9/(dimTxt.length*.62)); fd=clamp(fd,2.5,20); const tot=fs*1.05+fd*1.1; if(tot>d*.9){ const k=d*.9/tot; fs*=k; fd*=k }
-  return `<g class="unit traywait${it.kind==='item'?' top':''}${it.isNew?' isnew':''}${UI.sel&&UI.sel.slot==='tray'&&UI.sel.id===u.id?' sel':''}" data-id="${u.id}" data-slot="tray" transform="translate(${x} ${y})" style="--c:${it.color}"><rect class="ub" width="${w}" height="${d}" rx="2"/><text class="un" x="${w/2}" y="${d/2-fd*.55}" font-size="${fs.toFixed(1)}">${esc(name)}</text><text class="ud" x="${w/2}" y="${d/2+fs*.55}" font-size="${fd.toFixed(1)}">${dimTxt}</text></g>` }
+  const vert=d>w*1.2, tw=vert?d:w, th=vert?w:d;
+  let fs=Math.min(th*.3,tw*.9/Math.max(1.4,name.length*.98)); fs=clamp(fs,3,30); let fd=Math.min(fs*.72,tw*.9/(dimTxt.length*.62)); fd=clamp(fd,2.5,20); const tot=fs*1.05+fd*1.1; if(tot>th*.9){ const k=th*.9/tot; fs*=k; fd*=k }
+  return `<g class="unit traywait${it.kind==='item'?' top':''}${it.isNew?' isnew':''}${UI.sel&&UI.sel.slot==='tray'&&UI.sel.id===u.id?' sel':''}" data-id="${u.id}" data-slot="tray" transform="translate(${x} ${y})" style="--c:${it.color}"><rect class="ub" width="${w}" height="${d}" rx="2"/><g${vert?` transform="rotate(-90 ${w/2} ${d/2})"`:''}><text class="un" x="${w/2}" y="${d/2-fd*.55}" font-size="${fs.toFixed(1)}">${esc(name)}</text><text class="ud" x="${w/2}" y="${d/2+fs*.55}" font-size="${fd.toFixed(1)}">${dimTxt}</text></g></g>` }
 function buildTray(L){ UI.trayPos={}; UI.trayBox=null; if(UI.view!=='space'||!L.length||!UI.focus) return '';
   const layer=UI.wlayer||'a'; let list;
   if(layer==='a') list=S.units.filter(u=>I(u.itemId).placeId===UI.focus&&!u.from&&!isNewU(u));
@@ -1074,16 +1133,16 @@ function renderStagebar(){
   else if(!S.maps.length){ h='<span class="hint">도면을 추가하면 여기에서 볼 화면을 고를 수 있어요.</span>' }
   else {
     const cols=getCols();
-    const label=k=>{ const q=parseKey(k); const m=M(q.id); const r=q.room!=='*'?roomsOf(m).find(r=>r.id===q.room):null; return `${P(m.placeId)?.name||''} ${m.name}${r?' '+r.name:''} · ${q.layer==='a'?'기존':'변경'}` };
+    const label=k=>{ const q=parseKey(k); const m=M(q.id); const r=q.room!=='*'?roomsOf(m).find(r=>r.id===q.room):null; return `${P(m.placeId)?.name||''} ${m.name}${r?' '+r.name:''}` };
     const menu=side=>{ const sel=new Set(cols[side]); const n=sel.size;
-      let x=`<details class="msel" data-msel="${side}" ${UI.openMsel===side?'open':''}><summary><span class="sl">${side==='L'?'왼쪽':'오른쪽'}</span><span class="msum">${n?(n===1?esc(label(cols[side][0])):`${esc(label(cols[side][0]))} 외 ${n-1}개`):'선택 안 함'}</span><span class="caret">▾</span></summary><div class="mpanel">`;
-      x+=`<div class="mquick"><button class="btn small" data-mq="${side}:a">층 전체 기존만</button><button class="btn small" data-mq="${side}:b">층 전체 변경만</button><button class="btn small" data-mq="${side}:none">모두 해제</button></div>`;
+      let x=`<details class="msel" data-msel="${side}" ${UI.openMsel===side?'open':''}><summary><span class="sl">${side==='L'?'왼쪽 · 기존':'오른쪽 · 변경'}</span><span class="msum">${n?(n===1?esc(label(cols[side][0])):`${esc(label(cols[side][0]))} 외 ${n-1}개`):'선택 안 함'}</span><span class="caret">▾</span></summary><div class="mpanel">`;
+      const LY=side==='L'?'a':'b'; x+=`<div class="mquick"><button class="btn small" data-mq="${side}:${LY}">층 전체 모두</button><button class="btn small" data-mq="${side}:none">모두 해제</button></div>`;
       for(const p of S.places){ const ms=S.maps.filter(m=>m.placeId===p.id&&cal(m)); if(!ms.length) continue; x+=`<div class="mgrp"><b>${esc(p.name)}</b>`;
-        const row=(k0,txt,sub)=>`<div class="mline ${sub?'sub':''}"><span>${txt}</span>${['a','b'].map(l=>{ const k=k0+':'+l; return `<label class="vchk"><input type="checkbox" data-col="${side}" data-key="${k}" ${sel.has(k)?'checked':''}> ${l==='a'?'기존':'변경'}</label>` }).join('')}</div>`;
+        const row=(k0,txt,sub)=>`<div class="mline ${sub?'sub':''}"><span>${txt}</span>${[LY].map(l=>{ const k=k0+':'+l; return `<label class="vchk"><input type="checkbox" data-col="${side}" data-key="${k}" ${sel.has(k)?'checked':''}> 보기</label>` }).join('')}</div>`;
         for(const m of ms){ x+=row(`${m.id}:*`,`${esc(m.name)} 전체`,false); for(const r of roomsOf(m)) x+=row(`${m.id}:${r.id}`,`└ ${esc(r.name)}`,true) }
         x+='</div>' }
       return x+'</div></details>' };
-    h+=`<div class="slots">${menu('L')}<button class="ibtn" data-swapcols title="좌우 바꾸기" aria-label="좌우 바꾸기">⇄</button>${menu('R')}<button class="btn small" data-colsreset>기본으로</button>`;
+    h+=`<div class="slots">${menu('L')}${menu('R')}<button class="btn small" data-colsreset>기본으로</button>`;
     for(const m of S.maps){ if(cal(m)) continue; const p=P(m.placeId); h+=`<button class="tchip need" data-cal="${m.id}"><b>${esc(p?p.name:'')}</b><span class="cm">${esc(m.name)}</span>축척 맞추기</button>` }
     h+='</div>';
   }
@@ -1100,7 +1159,7 @@ function routeBadge(u){ const it=I(u.itemId), dp=destPlace(u), op=it.placeId; co
   if(dp===op) return `<span class="rb same">같은 공간 안 이동</span><span class="route">${esc(destLabel(u)||on)}</span>`;
   return `<span class="rb in">${esc(on)}에서 옴</span><span class="route">${esc(on)} → ${esc(destLabel(u))}</span>` }
 function dimInputs(it,opt={}){ const its=Array.isArray(it)?it:[it]; const f=its[0]; const ids=its.map(i=>i.id).join(','); const n=its.reduce((a,i)=>a+unitsOf(i).length,0); const w=opt.w??f.w, d=opt.d??f.d, h=(its.find(i=>i.h)||{}).h;
-  return `<span class="dimed ${opt.cls||''}" title="${esc(f.name)} ${n}개 모두에 적용돼요"><input data-dimf="w" data-dimit="${ids}" type="number" min="1" value="${w}" aria-label="가로 cm">×<input data-dimf="d" data-dimit="${ids}" type="number" min="1" value="${d}" aria-label="세로 cm">×<input data-dimf="h" data-dimit="${ids}" type="number" min="0" value="${h||''}" placeholder="높이" aria-label="높이 cm">${opt.noNote?'':`<small>cm${n>1?` · ${n}개 모두`:''}</small>`}</span>` }
+  return `<span class="dimed ${opt.cls||''}" title="${esc(f.name)} ${n}개 모두에 적용돼요"><input data-dimf="w" data-dimit="${ids}" type="number" min="1" value="${w}" aria-label="가로 cm">×<input data-dimf="d" data-dimit="${ids}" type="number" min="1" value="${d}" aria-label="세로 cm">×<input data-dimf="h" data-dimit="${ids}" type="number" min="0" value="${h||''}" placeholder="높이" aria-label="높이 cm">${opt.noNote?'':`<small>cm</small>`}</span>` }
 document.addEventListener('change',e=>{ const t=e.target.closest('[data-dimf]'); if(!t) return; const its=t.dataset.dimit.split(',').map(I).filter(Boolean); if(!its.length) return; const f=t.dataset.dimf; const v=Math.round(+t.value);
   if(f!=='h'&&!(v>0)){ t.value=its[0][f]; return }
   for(const it of its){ if(f==='h') it.h=v>0?v:0; else it[f]=v; const same=S.items.find(o=>!its.includes(o)&&gkey(o)===gkey(it)); if(same) it.color=same.color }
@@ -1108,11 +1167,11 @@ document.addEventListener('change',e=>{ const t=e.target.closest('[data-dimf]');
 document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.closest&&e.target.closest('[data-dimf]')) e.target.blur() },true);
 function renderSelbar(){
   const b=$('#selbar'); const sel=UI.sel; if(!sel){b.hidden=true;return}
-  const u=U(sel.id); if(sel.slot==='tray'&&u){ const it=I(u.itemId); b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b>${dimInputs(it)}${it.isNew?'<span class="rb new">새로 살 가구</span>':''}<span class="route">대기 중 · 끌어서 도면에 놓으세요</span><button class="btn small danger" data-delunit="${u.id}">가구 삭제</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`; b.hidden=false; return }
+  const u=U(sel.id); if(sel.slot==='tray'&&u){ const it=I(u.itemId); b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b>${dimInputs(it)}${it.isNew?'<span class="rb new">새로 살 가구</span>':''}`; b.hidden=false; return }
   if(!u||!u[sel.slot]){UI.sel=null;b.hidden=true;return}
-  { const m=getMulti(); if(m.length>1){ b.innerHTML=`<b>${m.length}개 선택</b><span class="route">${esc(m.map(x=>lbl(U(x.id))).join(', ').slice(0,60))}</span><span class="hint">끌면 함께 이동 · Ctrl+클릭으로 추가/빼기</span><button class="btn small" data-act="rot" title="Alt+→ / Alt+← : 각각 90° 회전">회전<kbd>Alt+←→</kbd></button><button class="btn small" data-act="rm">↩ 모두 위치 정할 가구로</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`; b.hidden=false; return } }
+  { const m=getMulti(); if(m.length>1){ b.innerHTML=`<b title="${esc(m.map(x=>lbl(U(x.id))).join(', '))}">${m.length}개 선택</b><button class="btn small" data-act="rm">↩ 모두 위치 정할 가구로</button>`; b.hidden=false; return } }
   const it=I(u.itemId); const dp=destPlace(u);
-  b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b>${dimInputs(it)}${routeBadge(u)}<button class="btn small" data-act="rot" title="R 또는 Alt+→ : 90° 회전 · Alt+← : 반대로">회전<kbd>Alt+←→</kbd></button><button class="btn small" data-act="rm" title="Delete 키">↩ 위치 정할 가구로</button><button class="btn small danger" data-delunit="${u.id}">가구 삭제</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`;
+  b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b>${dimInputs(it)}${routeBadge(u)}<button class="btn small" data-act="rm" title="Delete 키">↩ 위치 정할 가구로</button>`;
   b.hidden=false;
 }
 
@@ -1322,9 +1381,9 @@ function renderRail(){
   const rail=$('#rail'); const tot=S.units.length, pl=S.units.filter(isPlaced).length;
   const tabs=[{id:'',name:'전체'},...S.places.filter(p=>itemsOf(p.id).length).map(p=>({id:p.id,name:p.name}))];
   if(!tabs.find(t=>t.id===UI.railTab)) UI.railTab='';
-  let h=`<div class="railhead"><div class="railtop"><b>가구 목록</b><button class="railfold" data-railfold title="가구 목록 접기">◀ 접기</button></div><div class="sum"><div class="sumnums"><span>전체<b>${tot}</b></span><span>배치<b>${pl}</b></span><span class="w">남음<b>${tot-pl}</b></span></div><div class="bar"><i style="width:${tot?pl/tot*100:0}%"></i></div></div>
+  let h=`<div class="railhead"><div class="railtop"><b>자산 목록</b><button class="railfold" data-railfold title="자산 목록 접기">◀ 접기</button></div><div class="sum"><div class="sumnums"><span>전체<b>${tot}</b></span><span>배치<b>${pl}</b></span><span class="w">남음<b>${tot-pl}</b></span></div><div class="bar"><i style="width:${tot?pl/tot*100:0}%"></i></div></div>
   <div class="seg">${tabs.map(t=>`<button data-railtab="${t.id}" class="${t.id===UI.railTab?'on':''}">${esc(t.name)}</button>`).join('')}</div>${UI.view==='space'&&UI.focus&&P(UI.focus)?`<form class="qadd ${(UI.wlayer||'a')==='b'?'newmode':''}" id="qadd"><b>${(UI.wlayer||'a')==='b'?`${esc(P(UI.focus).name)}에 <span class="newtagh">새로 살 가구</span> 추가`:`${esc(P(UI.focus).name)}에 지금 있는 가구 추가`}</b><div class="qrow qk"><input id="qaName" placeholder="이름" aria-label="이름" autocomplete="off"><select id="qaK" aria-label="종류"><option value="furn">가구</option><option value="item">올리는 물품</option></select><input id="qaQ" type="number" min="1" value="1" aria-label="수량" title="수량"></div><div class="qrow q3"><input id="qaW" type="number" min="1" placeholder="가로" aria-label="가로 cm"><input id="qaD" type="number" min="1" placeholder="세로" aria-label="세로 cm"><input id="qaH" type="number" min="0" placeholder="높이" aria-label="높이 cm (선택)"><button class="btn primary small">추가</button></div><span class="hint">${(UI.wlayer||'a')==='b'?'변경 후 화면에서 추가하면 <b>새로 살 가구</b>로 등록돼요':'cm 단위 · 추가하면 도면 옆 대기 공간에 나타나요 · 새로 살 가구는 변경 후 화면에서 추가'}</span></form>`:''}</div><div class="raillist">`;
-  if(!S.items.length&&UI.view!=='space'){ h+=`<div class="railempty"><span>가구가 아직 없어요. 공간별로 지금 있는 가구를 입력하세요.</span><button class="btn primary" data-view="items">가구 입력하기</button></div>` }
+  if(!S.items.length&&UI.view!=='space'){ h+=`<div class="railempty"><span>가구가 아직 없어요. 공간별로 지금 있는 가구를 입력하세요.</span><button class="btn primary" data-view="items">자산 입력하기</button></div>` }
   else if(UI.railTab==='') h+=railTotal(); else h+=railSpace(UI.railTab);
   rail.innerHTML=h+'</div>';
 }
@@ -1364,7 +1423,7 @@ document.addEventListener('click',e=>{ const t=e.target.closest('#afReset,#afXls
 function renderItems(){
   const v=$('#view-items'); const places=S.places;
   if(UI.itemsTab&&!P(UI.itemsTab)) UI.itemsTab='';
-  let h=`<div class="wrap"><div><h2>가구 목록</h2><p class="lead">공간별로 지금 있는 가구를 입력하세요. 수량을 넣으면 책상 1, 책상 2처럼 번호가 붙고, 전체 구성에서 이름과 치수가 같은 가구끼리 합산돼요.</p></div>
+  let h=`<div class="wrap"><div><h2>자산 목록</h2><p class="lead">공간별로 지금 있는 가구를 입력하세요. 수량을 넣으면 책상 1, 책상 2처럼 번호가 붙고, 전체 구성에서 이름과 치수가 같은 가구끼리 합산돼요.</p></div>
   <div class="tabsline seg"><button data-itab="" class="${UI.itemsTab===''?'on':''}">전체 구성</button>${places.map(p=>`<button data-itab="${p.id}" class="${UI.itemsTab===p.id?'on':''}">${esc(p.name)} <span class="mono">${itemsOf(p.id).reduce((a,i)=>a+i.qty,0)}</span></button>`).join('')}</div>`;
   if(!places.length){ h+=`<div class="card" style="padding:18px;display:grid;gap:10px"><b>먼저 공간을 등록하세요</b><span class="hint">예: 현재 사무실, 창고, 새 사무실. 도면이 없는 공간도 등록할 수 있어요.</span><div><button class="btn primary" data-view="spaces">공간 등록하기</button></div></div>` }
   else if(UI.itemsTab==='') h+=itemsTotal(); else h+=itemsSpace(UI.itemsTab);
@@ -1646,9 +1705,7 @@ $('#btnExport').onclick=async()=>{ const dt0=new Date(); const fname=`이사배�
   try{ const blob=new Blob([JSON.stringify(S)],{type:'application/json'}); const a=document.createElement('a'); const dt=new Date(); a.href=URL.createObjectURL(blob); a.download=`이사배치판-${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000) }catch(err){ toast('내보내기가 막혀 있어요. 웹에 올린 뒤 다시 시도하세요.') } };
 $('#btnImport').onclick=()=>{ $('#fileImport').value=''; $('#fileImport').click() };
 $('#fileImport').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; try{ const o=JSON.parse(await f.text()); if(!Array.isArray(o.places)||!Array.isArray(o.items)||!Array.isArray(o.units)||!Array.isArray(o.maps)) throw 0; S=Object.assign(empty(),o); UI.slots=[null,null]; UI.fitted=false; savePanels(); commit(); $('#dlgData').close(); toast('불러왔어요.') }catch(err){ toast('이 파일은 이사 배치판 데이터가 아니에요.') } };
-$('#btnLogin').onclick=async()=>{ try{ await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()) }catch(e){ console.error(e); toast(String(e&&e.code).includes('unauthorized-domain')?'이 주소가 Firebase 승인 도메인에 없어요. 안내대로 추가해 주세요.':'로그인하지 못했어요. 팝업 차단을 확인하세요.') } };
 $('#btnLogout').onclick=()=>{ try{ firebase.auth().signOut() }catch(e){} };
-$('#btnHide').onclick=async()=>{ try{ await Cloud.db.collection('settings').doc('lock').set({hidden:!Cloud.hidden,by:Cloud.user?Cloud.user.email:'',at:Date.now()},{merge:true}); toast(Cloud.hidden?'다시 공개했어요.':'비공개로 바꿨어요. 관리자만 볼 수 있어요.') }catch(e){ console.error(e); toast('관리자 계정이 아니라서 바꿀 수 없어요.') } };
 $('#btnLock').onclick=async()=>{ try{ await Cloud.db.collection('settings').doc('lock').set({locked:!Cloud.locked,by:Cloud.user?Cloud.user.email:'',at:Date.now()},{merge:true}); toast(Cloud.locked?'잠금을 풀었어요.':'수정을 잠갔어요.') }catch(e){ console.error(e); toast('관리자 계정이 아니라서 바꿀 수 없어요.') } };
 $('#btnVer').onclick=()=>{ renderVerList(); const n=(liveS().versions||[]).filter(v=>!v.auto).length+1; $('#verName').value=''; $('#verName').placeholder=`예: ${n}차 배치안`; $('#dlgVer').showModal() };
 $('#btnVerSave').onclick=()=>{ if(UI.viewVer){ toast('지난 버전을 보는 중이에요. 먼저 [현재로 돌아가기]를 누르세요.'); return } if(Cloud.on&&!canEdit()){ toast('관리자가 수정을 잠가 두었어요.'); return }

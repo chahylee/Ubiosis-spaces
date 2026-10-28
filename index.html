@@ -543,7 +543,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
           <button id="railTab" class="railtab" hidden title="가구 목록 펼치기">▶<span>가구 목록</span></button>
           <svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg>
           <div id="selbar" class="selbar" hidden></div>
-          <div class="legend"><span><i></i>1칸 = 50cm</span><span>휠: 칸별 위아래 · Shift+휠: 좌우 · Ctrl+휠: 확대·축소 (Ctrl+Alt+휠: 더 세밀하게) · 공간 이름: 그 공간만</span></div>
+          <div class="legend"><span><i></i>1칸 = 50cm</span><span>휠: 칸별 위아래 · Shift+휠: 좌우 · Ctrl+휠: 확대·축소 (Ctrl+Alt+휠: 더 세밀하게) · Ctrl+클릭: 여러 개 선택 · 공간 이름: 그 공간만</span></div>
           <div id="planEmpty" class="empty" hidden></div>
           <button id="photosTab" class="photos-tab" hidden>◀ 사진·들어온 가구</button>
           <div class="sbar" id="sbL" hidden><i></i></div><div class="sbar" id="sbR" hidden><i></i></div><div class="hbar" id="sbH" hidden><i></i></div>
@@ -886,6 +886,9 @@ function panelSVG(e,i){
   <rect class="pframe" x="${e.ox}" y="${e.oy}" width="${e.w}" height="${e.h}"/>
   <g clip-path="url(#clip${i})"><image class="pimg" href="${e.m.img}" x="${e.mx}" y="${e.my}" width="${c.w}" height="${c.h}" preserveAspectRatio="none"/>${gridPath(e)}</g>${rooms}</g>`;
 }
+/* 여러 개 선택 (Ctrl/⌘/Shift+클릭) */
+function getMulti(){ const m=(UI.multi||[]).filter(x=>{ const u=U(x.id); return u&&u[x.slot] }); UI.multi=m.length?m:null; return m }
+const inMulti=(id,slot)=>!!(UI.multi||[]).find(x=>x.id===id&&x.slot===slot);
 function unitSVG(u,slot,e,flags){
   const it=I(u.itemId), pos=u[slot]; const[w,d]=dims(it,pos.rot||0); const x=e.mx+pos.x, y=e.my+pos.y; const name=lbl(u);
   const dimTxt=`${it.w}*${it.d}`;
@@ -938,7 +941,7 @@ function renderPlan(){
     for(const u of [...S.units].sort((a,b)=>isTop(a)-isTop(b))){ const pos=u[slot]; if(!pos||pos.mapId!==e.m.id) continue; const[w,d]=dims(I(u.itemId),pos.rot||0); if(!inPanel(e,pos.x+w/2,pos.y+d/2)) continue; rects.push({u,r:{x:pos.x,y:pos.y,w,d},ghost:slot==='from'&&isPlaced(u)}) }
     const clash=new Set();
     for(let i=0;i<rects.length;i++){ if(rects[i].ghost||isTop(rects[i].u)) continue; for(let j=i+1;j<rects.length;j++){ if(rects[j].ghost||isTop(rects[j].u)) continue; const a=rects[i].r,b=rects[j].r; if(a.x<b.x+b.w-1&&b.x<a.x+a.w-1&&a.y<b.y+b.d-1&&b.y<a.y+a.d-1){clash.add(rects[i].u.id);clash.add(rects[j].u.id)} } }
-    for(const {u,ghost} of rects) us[e.col]+=unitSVG(u,slot,e,{ghost,clash:clash.has(u.id),sel:UI.sel&&UI.sel.id===u.id&&UI.sel.slot===slot,hl:hl&&hl.ids.has(u.id),dim:hl&&!hl.ids.has(u.id)});
+    for(const {u,ghost} of rects) us[e.col]+=unitSVG(u,slot,e,{ghost,clash:clash.has(u.id),sel:(UI.sel&&UI.sel.id===u.id&&UI.sel.slot===slot)||inMulti(u.id,slot),hl:hl&&hl.ids.has(u.id),dim:hl&&!hl.ids.has(u.id)});
   }
   planSvg.innerHTML=['L','R'].map(c=>`<g class="col" id="col${c}" transform="${colTransform(c)}">${cs[c]}<g class="units">${us[c]}</g></g>`).join('')+`<g id="guides"></g><g id="dragl"></g><g id="ovl"></g>`;
   planSvg.classList.toggle('measuring',!!UI.measure);
@@ -1053,6 +1056,7 @@ function renderSelbar(){
   const b=$('#selbar'); const sel=UI.sel; if(!sel){b.hidden=true;return}
   const u=U(sel.id); if(sel.slot==='tray'&&u){ const it=I(u.itemId); b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b><span class="mono">${it.w}×${it.d}${it.h?'×'+it.h:''}</span>${it.isNew?'<span class="rb new">새로 살 가구</span>':''}<span class="route">대기 중 · 끌어서 도면에 놓으세요</span><button class="btn small danger" data-delunit="${u.id}">가구 삭제</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`; b.hidden=false; return }
   if(!u||!u[sel.slot]){UI.sel=null;b.hidden=true;return}
+  { const m=getMulti(); if(m.length>1){ b.innerHTML=`<b>${m.length}개 선택</b><span class="route">${esc(m.map(x=>lbl(U(x.id))).join(', ').slice(0,60))}</span><span class="hint">끌면 함께 이동 · Ctrl+클릭으로 추가/빼기</span><button class="btn small" data-act="rot" title="Alt+→ / Alt+← : 각각 90° 회전">회전<kbd>Alt+←→</kbd></button><button class="btn small" data-act="rm">위치 모두 빼기</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`; b.hidden=false; return } }
   const it=I(u.itemId); const dp=destPlace(u);
   b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b><span class="mono">${it.w}×${it.d}${it.h?'×'+it.h:''}</span>${routeBadge(u)}<button class="btn small" data-act="rot" title="R 또는 Alt+→ : 90° 회전 · Alt+← : 반대로">회전<kbd>Alt+←→</kbd></button><button class="btn small" data-act="rm">${sel.slot==='from'?'기존 위치 지우기':'도착 위치 빼기'}</button><button class="btn small danger" data-delunit="${u.id}">가구 삭제</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`;
   b.hidden=false;
@@ -1098,7 +1102,7 @@ planSvg.addEventListener('pointerdown',e=>{
   if(g&&!UI.measure){ unitDrag(e,g); return }
   planPan(e,(moved,p)=>{ if(moved) return;
     if(UI.measure){ const m=UI.measure; if(m.pts.length>=2) m.pts=[]; m.pts.push({x:p.x,y:p.y}); renderOverlay(); return }
-    if(UI.sel||UI.hl){ UI.sel=null; UI.hl=null; renderPlan(); renderRail() }
+    if(UI.sel||UI.hl||UI.multi){ UI.sel=null; UI.multi=null; UI.hl=null; renderPlan(); renderRail() }
   });
 });
 function unitDrag(e,g){
@@ -1106,12 +1110,24 @@ function unitDrag(e,g){
   const u=U(g.dataset.id), slot=g.dataset.slot; if(!u) return;
   const inv=planSvg.getScreenCTM().inverse(), p0=V.pt(e,inv), r=slot==='tray'?trayRect(u):unitRect(u,slot), sx=e.clientX, sy=e.clientY; let moved=false; if(!r) return;
   try{planSvg.setPointerCapture(e.pointerId)}catch(_){}
-  const mv=ev=>{ if(V.pinching) return; if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<4) return; if(!moved){ moved=true; UI.dragging=true; $('#dragl').appendChild(g); g.classList.add('dragging') } const p=V.pt(ev,inv); let wx=r.x+p.x-p0.x, wy=r.y+p.y-p0.y; let z=colZ(r.e.col); const e2=panelAt(wx+r.w/2,wy+r.d/2); if(e2){ z=colZ(e2.col); const lc=fromW(e2.col,wx+r.w/2,wy+r.d/2); const a=alignSnap(e2,u.id,lc.x-e2.mx-r.lw/2,lc.y-e2.my-r.ld/2,r.lw,r.ld); const q=toW(e2.col,e2.mx+a.x,e2.my+a.y); wx=q.x; wy=q.y; drawGuides(e2,a,gapsSVG(e2,a.x,a.y,r.lw,r.ld,u.id)) } else drawGuides(null); g.setAttribute('transform',`translate(${wx} ${wy}) scale(${z})`) };
+  const mod=e.ctrlKey||e.metaKey||e.shiftKey;
+  const grp=(slot!=='tray'&&!mod&&inMulti(u.id,slot)&&getMulti().length>1)?getMulti().filter(x=>!(x.id===u.id&&x.slot===slot)&&x.slot===slot).map(x=>{ const el=planSvg.querySelector(`.unit[data-id="${x.id}"][data-slot="${x.slot}"]`); const m=el&&/translate\(([-\d.e]+)[ ,]+([-\d.e]+)\)/.exec(el.getAttribute('transform')); const uu=U(x.id); return {u:uu,el,tx:m?+m[1]:0,ty:m?+m[2]:0,pos:{...uu[x.slot]}} }):[];
+  const mv=ev=>{ if(V.pinching) return; if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<4) return; if(!moved){ moved=true; UI.dragging=true; $('#dragl').appendChild(g); g.classList.add('dragging'); grp.forEach(o=>o.el&&o.el.classList.add('dragging')) }
+    if(grp.length){ const p=V.pt(ev,inv); const z0=colZ(r.e.col); const dx=(p.x-p0.x)/z0, dy=(p.y-p0.y)/z0; grp.forEach(o=>o.el&&o.el.setAttribute('transform',`translate(${o.tx+dx} ${o.ty+dy})`)) } const p=V.pt(ev,inv); let wx=r.x+p.x-p0.x, wy=r.y+p.y-p0.y; let z=colZ(r.e.col); const e2=panelAt(wx+r.w/2,wy+r.d/2); if(e2){ z=colZ(e2.col); const lc=fromW(e2.col,wx+r.w/2,wy+r.d/2); const a=alignSnap(e2,u.id,lc.x-e2.mx-r.lw/2,lc.y-e2.my-r.ld/2,r.lw,r.ld); const q=toW(e2.col,e2.mx+a.x,e2.my+a.y); wx=q.x; wy=q.y; drawGuides(e2,a,gapsSVG(e2,a.x,a.y,r.lw,r.ld,u.id)) } else drawGuides(null); g.setAttribute('transform',`translate(${wx} ${wy}) scale(${z})`) };
   const up=ev=>{ planSvg.removeEventListener('pointermove',mv); planSvg.removeEventListener('pointerup',up); planSvg.removeEventListener('pointercancel',up); UI.dragging=false; if(Cloud.pendingApply) setTimeout(applyCloud,0);
-    if(!moved){ if(slot==='tray'){ UI.sel={id:u.id,slot:'tray'}; UI.hl=null; renderPlan(); return } UI.sel={id:u.id,slot}; UI.hl=null; renderPlan(); renderRail(); return }
+    if(!moved){ if(slot==='tray'){ UI.multi=null; UI.sel={id:u.id,slot:'tray'}; UI.hl=null; renderPlan(); return }
+      if(mod){ let m=getMulti(); if(!m.length&&UI.sel&&UI.sel.slot!=='tray'&&!(UI.sel.id===u.id&&UI.sel.slot===slot)) m=[{...UI.sel}]; const i=m.findIndex(x=>x.id===u.id&&x.slot===slot); if(i>=0) m.splice(i,1); else m.push({id:u.id,slot}); UI.multi=m.length?m:null; UI.sel=m.length?{...m[m.length-1]}:null; UI.hl=null; renderPlan(); renderRail(); return }
+      if(!inMulti(u.id,slot)) UI.multi=null; UI.sel={id:u.id,slot}; UI.hl=null; renderPlan(); renderRail(); return }
     const el=document.elementFromPoint(ev.clientX,ev.clientY);
     if(el&&el.closest('#rail')){ if(slot==='tray'){ renderPlan(); return } removeSlot(u,slot); return }
+    const before=slot!=='tray'&&u[slot]?{...u[slot]}:null; const keepMulti=grp.length?getMulti():null;
     const p=V.pt(ev,inv); dropUnit(u,slot==='tray'?null:slot,r.x+p.x-p0.x+r.w/2,r.y+p.y-p0.y+r.d/2,slot==='tray'?0:(u[slot].rot||0));
+    if(grp.length&&before){ const after=u[slot]; if(after){ const dx=after.x-before.x, dy=after.y-before.y, nm=M(after.mapId); let skip=0;
+        for(const o of grp){ const pos=o.u[slot]; if(!pos) continue; if(pos.mapId!==before.mapId){ pos.x+=dx; pos.y+=dy; continue }
+          if(slot==='from'&&nm&&I(o.u.itemId).placeId!==nm.placeId){ skip++; continue }
+          const[w,d]=dims(I(o.u.itemId),pos.rot||0); const W=nm?nm.w/nm.sx:Infinity, H=nm?nm.h/nm.sy:Infinity;
+          pos.mapId=after.mapId; pos.x=Math.round(clamp(pos.x+dx,0,Math.max(0,W-w))); pos.y=Math.round(clamp(pos.y+dy,0,Math.max(0,H-d))) }
+        UI.multi=keepMulti; UI.sel={id:u.id,slot}; commit(); if(skip) toast(`${skip}개는 다른 공간 가구라 기존 위치로는 옮기지 않았어요.`) } else { UI.multi=null; renderPlan() } }
   };
   planSvg.addEventListener('pointermove',mv); planSvg.addEventListener('pointerup',up); planSvg.addEventListener('pointercancel',up);
 }
@@ -1173,8 +1189,9 @@ function dropUnit(u,srcSlot,cx,cy,rot){
   }
   UI.hl=null; commit();
 }
+function removeSel(){ const m=getMulti(); if(m.length>1){ for(const x of m){ const u=U(x.id); if(u) u[x.slot]=null } UI.multi=null; UI.sel=null; toast(`${m.length}개의 위치를 뺐어요.`); commit(); return } if(UI.sel&&U(UI.sel.id)) removeSlot(U(UI.sel.id),UI.sel.slot) }
 function removeSlot(u,slot){ u[slot]=null; if(UI.sel&&UI.sel.id===u.id) UI.sel=null; toast(slot==='from'?`${lbl(u)}의 기존 위치를 지웠어요.`:`${lbl(u)}을(를) 도착 위치에서 뺐어요.`); commit() }
-function rotateSel(dir=1){ const s=UI.sel; if(!s) return; const u=U(s.id); const pos=u&&u[s.slot]; if(!pos) return; const it=I(u.itemId); const[w,d]=dims(it,pos.rot||0); const cx=pos.x+w/2, cy=pos.y+d/2; pos.rot=(((pos.rot||0)+90*dir)%360+360)%360; const[w2,d2]=dims(it,pos.rot); pos.x=Math.round(cx-w2/2); pos.y=Math.round(cy-d2/2); commit() }
+function rotateSel(dir=1){ const m=getMulti(); const list=m.length?m:(UI.sel?[UI.sel]:[]); let n=0; for(const s of list){ const u=U(s.id); const pos=u&&u[s.slot]; if(!pos) continue; const it=I(u.itemId); const[w,d]=dims(it,pos.rot||0); const cx=pos.x+w/2, cy=pos.y+d/2; pos.rot=(((pos.rot||0)+90*dir)%360+360)%360; const[w2,d2]=dims(it,pos.rot); pos.x=Math.round(cx-w2/2); pos.y=Math.round(cy-d2/2); n++ } if(n) commit() }
 function commit(){ save(); renderAll() }
 
 /* drag from rail */
@@ -1358,7 +1375,7 @@ $('#formBlank').addEventListener('submit',e=>{ e.preventDefault(); e.stopPropaga
 function switchView(view){
   if(view==='plan'){ UI.focus=null; UI.room=null }
   if(view==='space'){ if(UI.view!=='space') UI.wlayer='a'; if(!UI.focus||!P(UI.focus)) UI.focus=UI.lastFocus&&P(UI.lastFocus)?UI.lastFocus:firstWorkPlace(); if(UI.focus) UI.railTab=itemsOf(UI.focus).length?UI.focus:'' }
-  UI.view=view; UI.sel=null; UI.fitted=false;
+  UI.view=view; UI.sel=null; UI.multi=null; UI.fitted=false;
   $$('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.view===view));
   for(const n of ['plan','items','routes','check','spaces']) $('#view-'+n).hidden=!(n===view||(n==='plan'&&view==='space'));
   renderAll(); if(view==='plan'||view==='space'){ fitAll(); requestAnimationFrame(fitAll) }
@@ -1394,7 +1411,7 @@ document.addEventListener('click',e=>{
   if(d.chip){ const k=d.chip; if(UI.slots.includes(k)) return; putSlot(UI.slots[0]?(UI.slots[1]?1:1):0,k); return }
   if(d.clearslot!==undefined){ if(d.clearslot==='all') UI.slots=[null,null]; else UI.slots[+d.clearslot]=null; savePanels(); UI.fitted=true; renderPlan(); fitAll(); requestAnimationFrame(fitAll); return }
   if(d.swap!==undefined){ UI.slots=[UI.slots[1],UI.slots[0]]; savePanels(); UI.fitted=true; renderPlan(); fitAll(); requestAnimationFrame(fitAll); return }
-  if(d.act){ if(d.act==='rot') rotateSel(); else if(d.act==='rm'){ const u=U(UI.sel.id); removeSlot(u,UI.sel.slot) } else { UI.sel=null; renderPlan() } return }
+  if(d.act){ if(d.act==='rot') rotateSel(); else if(d.act==='rm'){ removeSel() } else { UI.sel=null; UI.multi=null; renderPlan() } return }
   if(d.focus!==undefined){ setFocus(d.focus); return }
   if(d.wl){ UI.wlayer=d.wl; UI.sel=null; UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.rename){ const[k,...rest]=d.rename.split(':'); openRename(k,rest.join(':')); return }
@@ -1433,8 +1450,8 @@ document.addEventListener('keydown',e=>{
   if(UI.view!=='plan'&&UI.view!=='space') return;
   if(e.altKey&&UI.sel&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){ e.preventDefault(); rotateSel(e.key==='ArrowLeft'||e.key==='ArrowDown'?-1:1) }
   else if(e.key==='r'||e.key==='R'){ rotateSel() }
-  else if((e.key==='Delete'||e.key==='Backspace')&&UI.sel){ e.preventDefault(); removeSlot(U(UI.sel.id),UI.sel.slot) }
-  else if(e.key==='Escape'){ UI.sel=null; UI.hl=null; UI.measure=null; renderPlan(); renderRail() }
+  else if((e.key==='Delete'||e.key==='Backspace')&&UI.sel){ e.preventDefault(); removeSel() }
+  else if(e.key==='Escape'){ UI.sel=null; UI.multi=null; UI.hl=null; UI.measure=null; renderPlan(); renderRail() }
   else if(e.key==='m'||e.key==='M'){ toggleMeasure() }
 });
 function toggleMeasure(){ UI.measure=UI.measure?null:{pts:[]}; if(UI.measure) toast('두 점을 클릭하면 길이가 나와요. Esc로 끝내요.'); renderPlan() }

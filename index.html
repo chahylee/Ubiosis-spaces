@@ -556,7 +556,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
       <button data-view="check">체크리스트</button>
       <button data-view="spaces">공간·도면</button>
     </nav>
-    <div class="topr"><span id="saveState" class="savestate">불러오는 중</span><button id="btnAdmin" class="btn small" hidden>관리자<span id="admBadge" class="badge" hidden></span></button><button id="btnVer" class="btn small">버전</button><button id="btnData" class="btn small">데이터</button></div>
+    <div class="topr"><span id="saveState" class="savestate">불러오는 중</span><button id="btnAdmin" class="btn small" hidden>관리자<span id="admBadge" class="badge" hidden></span></button><button id="btnUndo" class="btn small" title="되돌리기 (Ctrl+Z)" disabled>↶</button><button id="btnRedo" class="btn small" title="다시 하기 (Ctrl+Y)" disabled>↷</button><button id="btnVer" class="btn small">버전</button><button id="btnData" class="btn small">데이터</button></div>
   </header>
   <div id="gate" class="gate" hidden></div><div id="lockBar" class="lockbar" hidden></div><div id="verBar" class="lockbar verbar" hidden></div>
   <div id="exampleBar" class="examplebar" hidden>
@@ -805,7 +805,7 @@ async function applyCloud(){
   for(const coll of COLLS) Cloud.last[coll]=new Map(S2[coll].map((o,i)=>[o.id,stable(docOf(coll,o,i))]));
   Cloud.lastMeta=stable(S2.meta);
   const merge=(oldArr,newArr)=>{ const om=new Map((oldArr||[]).map(o=>[o.id,o])); return newArr.map(n=>{ const o=om.get(n.id); if(!o) return n; for(const k of Object.keys(o)) if(!(k in n)) delete o[k]; return Object.assign(o,n) }) };
-  for(const coll of COLLS) S[coll]=merge(S[coll],S2[coll]); S.meta=Object.assign(S.meta||{},S2.meta);
+  for(const coll of COLLS) S[coll]=merge(S[coll],S2[coll]); S.meta=Object.assign(S.meta||{},S2.meta); if(!UI.viewVer) UNDO.snap=snapNow();
   if(Cal.m&&!S.maps.includes(Cal.m)&&$('#dlgCal').open){ $('#dlgCal').close(); toast('다른 사람이 이 도면을 지워서 축척 창을 닫았어요.') }
   const first=!Cloud.ready; Cloud.ready=true; if(first) migrateFirst(); renderAll(); if(first){ UI.fitted=false; renderAll(); bootView(); setSave('저장됨 · 모두에게 공유 중'); if(!S.places.length) toast('아직 내용이 없어요. 공간을 등록하거나, 데이터 → 파일 불러오기로 기존 작업을 올리세요.') }
 }
@@ -862,9 +862,30 @@ document.addEventListener('click',async e=>{ const t=e.target.closest('[data-mde
   if(t.id==='btnMemAdd'){ const em=$('#memEmail').value; if(await setMember(em,$('#memRole').value)){ $('#memEmail').value=''; toast(`${em.trim()}에게 권한을 줬어요.`) } return }
   if(!armed(t)) return; try{ await Cloud.db.collection('members').doc(t.dataset.mdel).delete(); toast('권한을 뺐어요.') }catch(err){ console.error(err); toast('빼지 못했어요.') } });
 let saveT;
+/* ---------- 되돌리기 (Ctrl+Z) / 다시 하기 (Ctrl+Y) ----------
+   저장할 때마다 바로 전 상태와 비교해 '내가 바꾼 것'만 기록. 다른 사람이 바꾼 것(클라우드)은 기록하지 않음 */
+const UNDO={past:[],future:[],snap:null,busy:false}; const UCOLLS=['places','maps','items','units','photos'];
+const noImg=(k,v)=>k==='img'?undefined:v;
+function snapNow(){ const o={meta:JSON.stringify(S.meta||{})}; for(const c of UCOLLS){ const m=new Map(); (S[c]||[]).forEach((x,i)=>m.set(x.id,{j:JSON.stringify(x,noImg),img:x.img,i})); o[c]=m } return o }
+function snapDiff(a,b){ const d=[]; for(const c of UCOLLS){ const A=a[c],B=b[c]; for(const [id,x] of B) if(!A.has(id)||A.get(id).j!==x.j) d.push({c,id,before:A.get(id)||null,after:x}); for(const [id,x] of A) if(!B.has(id)) d.push({c,id,before:x,after:null}) }
+  if(a.meta!==b.meta) d.push({c:'meta',before:a.meta,after:b.meta}); return d }
+function trackUndo(){ const cur=snapNow(); if(UNDO.snap&&!UNDO.busy){ const d=snapDiff(UNDO.snap,cur); if(d.length){ UNDO.past.push(d); if(UNDO.past.length>60) UNDO.past.shift(); UNDO.future=[] } } UNDO.snap=cur; undoBtns() }
+function undoBtns(){ const u=$('#btnUndo'), r=$('#btnRedo'); if(u) u.disabled=!UNDO.past.length; if(r) r.disabled=!UNDO.future.length }
+function undoStep(redo){ if(UI.viewVer) return; if(Cloud.on&&!canEdit()){ toast('지금은 보기만 할 수 있어요.'); return }
+  const st=redo?UNDO.future:UNDO.past; const d=st.pop(); if(!d){ toast(redo?'다시 할 것이 없어요.':'되돌릴 것이 없어요.'); return }
+  for(const ch of d){ const t=redo?ch.after:ch.before; if(ch.c==='meta'){ S.meta=JSON.parse(t); continue }
+    const arr=S[ch.c]||(S[ch.c]=[]); const i=arr.findIndex(x=>x.id===ch.id);
+    if(!t){ if(i>=0) arr.splice(i,1); continue } const o=JSON.parse(t.j); if(t.img) o.img=t.img;
+    if(i>=0) arr[i]=o; else arr.splice(Math.min(t.i,arr.length),0,o) }
+  (redo?UNDO.past:UNDO.future).push(d); UI.sel=null; UI.multi=null; UI.hl=null; UI.rsel=null;
+  UNDO.busy=true; try{ commit() } finally{ UNDO.busy=false } UNDO.snap=snapNow(); undoBtns();
+  toast(redo?'다시 했어요. (Ctrl+Y)':`되돌렸어요.${UNDO.past.length?` ${UNDO.past.length}번 더 되돌릴 수 있어요.`:''}`) }
+document.addEventListener('keydown',e=>{ if(!(e.ctrlKey||e.metaKey)||e.altKey) return; const k=e.key.toLowerCase(); if(k!=='z'&&k!=='y') return;
+  if(e.target.closest&&e.target.closest('input,textarea,select,[contenteditable]')) return; e.preventDefault(); undoStep(k==='y'||(k==='z'&&e.shiftKey)) });
 function save(){
   if(UI.viewVer){ toast('지난 버전을 보는 중이라 저장되지 않아요. 위쪽 [현재로 돌아가기]를 누르세요.'); return }
   if(Cloud.on&&!canEdit()){ toast('관리자가 수정을 잠가 두었어요. 보기만 할 수 있어요.'); clearTimeout(saveT); Cloud.dirty=false; for(const c of COLLS) Cloud.last[c]=new Map(); applyCloud(); return }
+  trackUndo();
   if(Cloud.on){ Cloud.dirty=true; setSave('저장 중…'); clearTimeout(saveT); saveT=setTimeout(cloudPush,400); return }
   $('#saveState').textContent='저장 중…'; clearTimeout(saveT); saveT=setTimeout(async()=>{ const ok=await Store.set('state',S); $('#saveState').textContent=ok?'이 브라우저에 저장됨':'저장할 수 없음 (브라우저 저장 공간이 막혀 있어요)'; },350) }
 function savePanels(){ try{localStorage.setItem('mb-slots2',JSON.stringify(UI.slots||[null,null]))}catch(e){} }
@@ -1802,7 +1823,7 @@ document.addEventListener('submit',e=>{ if(e.target.id==='qadd'){ e.preventDefau
     if(!nm){ toast('가구 이름을 입력하세요.'); $('#qaName').focus(); return } if(!(w>0&&d>0)){ toast('가로와 세로를 cm로 입력하세요.'); (w>0?$('#qaD'):$('#qaW')).focus(); return }
     const kind=$('#qaK').value==='item'?'item':'furn'; const isNew=!!($('#qaNew')&&$('#qaNew').checked); const pid=UI.focus; const same=S.items.find(i=>i.placeId===pid&&gkey(i)===nm+'|'+w+'|'+d+(kind==='item'?'|i':'')+(isNew?'|n':''));
     if(same){ same.qty+=q; syncUnits(same) } else { const it={id:uid(),placeId:pid,name:nm,w,d,h,qty:q,kind,isNew,color:colorFor(nm+(isNew?'|n':''),w,d)}; S.items.push(it); syncUnits(it) }
-    if(!isNew) UI.wlayer='a'; else UI.wlayer='b'; UI.railTab=pid; commit(); if(UI.view==='space'){ UI.fitted=true; fitAll() } toast(isNew?`신규 구매 ${nm} ${q}개를 추가했어요. 변경 후 화면에서 놓을 자리에 끌어 놓으세요.`:`${nm} ${q}개를 기존 가구로 추가했어요. 변경 전 화면의 미배치 가구 칸에서 지금 위치에 끌어 놓으세요.`); requestAnimationFrame(()=>{ const n=$('#qaName'); if(n) n.focus() }); return }
+    UI.railTab=pid; /* 도면 화면(변경 전/후)은 바꾸지 않음 */ commit(); if(UI.view==='space'){ UI.fitted=true; fitAll() } toast(isNew?`신규 구매 ${nm} ${q}개를 추가했어요. 변경 후 화면에서 놓을 자리에 끌어 놓으세요.`:`${nm} ${q}개를 기존 가구로 추가했어요. 미배치 가구 칸에서 도면에 끌어 놓으세요.`); requestAnimationFrame(()=>{ const n=$('#qaName'); if(n) n.focus() }); return }
  if(e.target.id==='formSpace'){ e.preventDefault(); const nm=$('#newSpace').value.trim(); if(!nm){ $('#newSpace').focus(); return } S.places.push({id:uid(),name:nm}); commit(); requestAnimationFrame(()=>$('#newSpace')&&$('#newSpace').focus()) } });
 document.addEventListener('keydown',e=>{
   if(e.target.closest('input,select,textarea')||$('dialog[open]')) return;
@@ -1853,6 +1874,7 @@ $('#btnImport').onclick=()=>{ $('#fileImport').value=''; $('#fileImport').click(
 $('#fileImport').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; try{ const o=JSON.parse(await f.text()); if(!Array.isArray(o.places)||!Array.isArray(o.items)||!Array.isArray(o.units)||!Array.isArray(o.maps)) throw 0; S=Object.assign(empty(),o); UI.slots=[null,null]; UI.fitted=false; savePanels(); commit(); $('#dlgData').close(); toast('불러왔어요.') }catch(err){ toast('이 파일은 이사 배치판 데이터가 아니에요.') } };
 $('#btnLogout').onclick=()=>{ try{ firebase.auth().signOut() }catch(e){} };
 $('#btnLock').onclick=async()=>{ try{ await Cloud.db.collection('settings').doc('lock').set({locked:!Cloud.locked,by:Cloud.user?Cloud.user.email:'',at:Date.now()},{merge:true}); toast(Cloud.locked?'잠금을 풀었어요.':'수정을 잠갔어요.') }catch(e){ console.error(e); toast('관리자 계정이 아니라서 바꿀 수 없어요.') } };
+$('#btnUndo').onclick=()=>undoStep(false); $('#btnRedo').onclick=()=>undoStep(true);
 $('#btnVer').onclick=()=>{ renderVerList(); const n=(liveS().versions||[]).filter(v=>!v.auto).length+1; $('#verName').value=''; $('#verName').placeholder=`예: ${n}차 배치안`; $('#dlgVer').showModal() };
 $('#btnVerSave').onclick=()=>{ if(UI.viewVer){ toast('지난 버전을 보는 중이에요. 먼저 [현재로 돌아가기]를 누르세요.'); return } if(Cloud.on&&!canEdit()){ toast('관리자가 수정을 잠가 두었어요.'); return }
   const name=$('#verName').value.trim()||$('#verName').placeholder.replace(/^예: /,''); const v=makeVersion(name,false); if(!v) return;
@@ -2082,7 +2104,7 @@ function makeExample(){
   const saved=await Store.get('state');
   if(saved&&Array.isArray(saved.places)){ S=Object.assign(empty(),saved); $('#saveState').textContent='이 브라우저에 저장됨' }
   else { makeExample(); save() }
-  migrateFirst(); renderAll(); bootView();
+  UNDO.snap=snapNow(); migrateFirst(); renderAll(); bootView();
 })();
 })();
 </script>

@@ -1202,7 +1202,7 @@ function renderStagebar(){
     let o=''; for(const p of S.places){ const ms=S.maps.filter(m=>m.placeId===p.id&&cal(m)); if(!ms.length){ o+=`<option value="p:${p.id}" ${UI.focus===p.id?'selected':''}>${esc(p.name)} (도면 없음)</option>`; continue } o+=`<option value="p:${p.id}" ${UI.focus===p.id&&!UI.room?'selected':''}>${esc(p.name)} 전체</option>`;
       for(const m of ms) for(const r of roomsOf(m)) o+=`<option value="r:${m.id}:${r.id}" ${UI.room&&UI.room.roomId===r.id?'selected':''}>　└ ${mapNm(m)?esc(mapNm(m))+' › ':''}${esc(r.name)}</option>` }
     const unc=S.maps.filter(m=>!cal(m)).map(m=>`<button class="tchip need" data-cal="${m.id}"><b>${esc(P(m.placeId)?.name)}</b><span class="cm">${esc(m.name)}</span>축척 맞추기</button>`).join('');
-    h=o?`<div class="slots"><label class="slotsel"><span class="sl">작업할 공간</span><select id="wsel" data-wsel>${o}</select></label>${UI.room?`<button class="btn small" data-rename="room:${UI.room.mapId}:${UI.room.roomId}">방 이름 바꾸기</button>`:(UI.focus?`<button class="btn small" data-rename="place:${UI.focus}">공간 이름 바꾸기</button>`:'')}<span class="crumb">도면 위 버튼으로 변경 전·후 전환</span>${unc}</div>`:`<div class="slots"><span class="hint">축척을 맞춘 도면이 있는 공간이 없어요.</span>${unc}</div>`;
+    h=o?`<div class="slots"><label class="slotsel"><span class="sl">작업할 공간</span><select id="wsel" data-wsel>${o}</select></label>${UI.room?`<button class="btn small" data-rename="room:${UI.room.mapId}:${UI.room.roomId}">방 이름 바꾸기</button>`:(UI.focus?`<button class="btn small" data-rename="place:${UI.focus}">공간 이름 바꾸기</button>`:'')}<button class="btn small" data-pptx title="지금 보이는 도면(변경 전/후)을 1/100 축척 PPT로">📄 PPT로 받기</button><span class="crumb">도면 위 버튼으로 변경 전·후 전환</span>${unc}</div>`:`<div class="slots"><span class="hint">축척을 맞춘 도면이 있는 공간이 없어요.</span>${unc}</div>`;
   }
   else if(UI.room){ const m=M(UI.room.mapId), r=roomsOf(m).find(r=>r.id===UI.room.roomId); h=`<div class="slots"><button class="btn small" data-focus="">← 모든 공간</button><button class="btn small" data-focus="${m.placeId}">← ${esc(P(m.placeId)?.name)} 전체</button><span class="crumb">${esc(P(m.placeId)?.name)} › ${mapNm(m)?esc(mapNm(m))+' › ':''}<b>${esc(r?r.name:'')}</b></span></div>` }
   else if(UI.focus){ h=`<div class="slots"><button class="btn small" data-focus="">← 모든 공간</button><span class="crumb"><b>${esc(P(UI.focus)?.name)}</b> 전체 · 방 이름을 누르면 그 방만 보여요</span></div>` }
@@ -1218,7 +1218,7 @@ function renderStagebar(){
         for(const m of ms){ x+=row(`${m.id}:*`,`${mapNm(m)?esc(mapNm(m))+' ':''}전체`,false); for(const r of roomsOf(m)) x+=row(`${m.id}:${r.id}`,`└ ${esc(r.name)}`,true) }
         x+='</div>' }
       return x+'</div></details>' };
-    h+=`<div class="slots">${menu('L')}${menu('R')}<button class="btn small" data-colsreset>기본으로</button>`;
+    h+=`<div class="slots">${menu('L')}${menu('R')}<button class="btn small" data-colsreset>기본으로</button><button class="btn small" data-pptx title="오른쪽(변경)에 체크한 도면을 한 장씩, 1/100 축척 PPT 한 파일로">📄 PPT로 받기</button>`;
     for(const m of S.maps){ if(cal(m)) continue; const p=P(m.placeId); h+=`<button class="tchip need" data-cal="${m.id}"><b>${esc(p?p.name:'')}</b><span class="cm">${esc(m.name)}</span>축척 맞추기</button>` }
     h+='</div>';
   }
@@ -1677,6 +1677,42 @@ function exportAssetsXlsx(){ const rows=[['자산명','규격 (가로×세로×�
     for(let i=0;i<n;i++){ const f=r.fr[i], t=r.to[i]; rows.push([r.g.name,r.spec,r.g.w,r.g.d,r.h||'',r.us.length,f?f[0]:'',f?f[1].length:'',t?t[0]:'',t?t[1].length:'',i===0?r.und:'',r.g.newN||'',r.photo?'있음':'']) } }
   const dt=new Date(); const fname=`자산목록-${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}.xlsx`;
   saveFile(fname,makeXlsx('자산목록',rows,[18,22,7,7,7,10,26,7,30,7,7,9,7])) }
+/* ---------- 도면을 PPT로 받기 (1/100 축척: 실제 100cm = 슬라이드 1cm) ----------
+   도면·50cm 눈금·방 경계는 슬라이드 배경 그림(편집 안 됨), 가구는 편집 가능한 사각형 도형. 패널 하나 = 슬라이드 한 장 */
+let pptxLoading=null;
+function loadPptx(){ if(window.PptxGenJS) return Promise.resolve(); return pptxLoading||(pptxLoading=new Promise((res,rej)=>{ const sc=document.createElement('script'); sc.src='https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js'; sc.onload=res; sc.onerror=()=>{ pptxLoading=null; rej(new Error('load')) }; document.head.appendChild(sc) })) }
+const loadImg=src=>new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=src });
+function pptPanels(){ // 배치판: 오른쪽(변경)에 체크한 화면 / 공간 작업: 지금 보이는 도면(변경 전·후)
+  if(UI.view==='space') return (UI.L||[]).map(e=>makePanel(e.m,e.room?e.room.id:'*',e.layer,0,0)).filter(Boolean);
+  return getCols().R.map(k=>{ const q=parseKey(k); const m=M(q.id); return cal(m)?makePanel(m,q.room,'b',0,0):null }).filter(Boolean) }
+async function panelBg(e,W,H,k,ox=0,oy=0){ const m=e.m; const c=document.createElement('canvas'); c.width=Math.round(W*k); c.height=Math.round(H*k); const g=c.getContext('2d');
+  g.fillStyle='#ffffff'; g.fillRect(0,0,c.width,c.height); g.translate(ox*k,oy*k); // 도면을 가운데로 (위쪽은 제목 자리)
+  try{ const im=await loadImg(m.img); g.drawImage(im,e.cx*m.sx,e.cy*m.sy,e.w*m.sx,e.h*m.sy,0,0,e.w*k,e.h*k) }catch(_){}
+  const st=50; for(const [ax,len,g0,lim] of [['x',e.h,e.gx,e.w],['y',e.w,e.gy,e.h]]){ const c0=ax==='x'?e.cx:e.cy; let v=g0+Math.ceil((c0-g0)/st-1e-6)*st;
+    for(;v<=c0+lim+.01;v+=st){ const i=Math.round((v-g0)/st); g.strokeStyle=i%2===0?'rgba(40,60,80,.32)':'rgba(40,60,80,.14)'; g.lineWidth=Math.max(1,k*(i%2===0?.6:.4)); const t=(v-c0)*k; g.beginPath(); if(ax==='x'){ g.moveTo(t,0); g.lineTo(t,len*k) } else { g.moveTo(0,t); g.lineTo(len*k,t) } g.stroke() } }
+  if(!e.room){ g.strokeStyle='rgba(30,92,132,.7)'; g.lineWidth=Math.max(1.5,k*.8); g.setLineDash([k*6,k*4]); g.font=`600 ${Math.max(10,k*14)}px sans-serif`; g.fillStyle='rgba(30,92,132,.85)';
+    for(const r of roomsOf(m)){ const x=(r.x/m.sx-e.cx)*k, y=(r.y/m.sy-e.cy)*k; g.strokeRect(x,y,r.w/m.sx*k,r.h/m.sy*k); g.fillText(r.name,x+k*8,y+k*20) } g.setLineDash([]) }
+  g.strokeStyle='#333'; g.lineWidth=Math.max(1,k*.5); g.strokeRect(0,0,e.w*k,e.h*k);
+  return c.toDataURL('image/png') }
+async function exportPPT(){ const ps=pptPanels(); if(!ps.length){ toast(UI.view==='space'?'보이는 도면이 없어요.':'오른쪽(변경)에 볼 도면을 하나 이상 체크하세요.'); return }
+  const W=Math.max(...ps.map(e=>e.w)), H=Math.max(...ps.map(e=>e.h));   toast('PPT를 만드는 중이에요…'); try{ await loadPptx() }catch(_){ toast('PPT 도구를 불러오지 못했어요. 인터넷 연결을 확인하세요.'); return }
+  const IN=cm=>cm/100/2.54; // 실제 cm → 슬라이드 인치 (1/100)
+  // 여백·제목 자리 (실제 cm 단위). 슬라이드 = 가장 큰 도면 + 여백, 도면은 가운데
+  const MG=Math.max(80,Math.min(250,Math.max(W,H)*.06)), TOP=MG+Math.max(90,Math.min(200,W*.07)); const SW=W+MG*2, SH=H+TOP+MG;
+  if(SW/100>142.2||SH/100>142.2){ toast('도면이 너무 커서 PPT 한 장에 1/100로 넣을 수 없어요.'); return }
+  const pp=new PptxGenJS(); pp.defineLayout({name:'PLAN',width:IN(SW),height:IN(SH)}); pp.layout='PLAN'; pp.title='유바이오시스 공간구성';
+  const k=Math.min(6,3200/Math.max(SW,SH)); // 배경 그림 해상도 (px/cm)
+  for(const e of ps){ const slot=e.layer==='a'?'from':'to'; const ox=MG+(W-e.w)/2, oy=TOP+(H-e.h)/2; const sl=pp.addSlide(); sl.background={data:(await panelBg(e,SW,SH,k,ox,oy)).replace(/^data:/,'')};
+    const nm=`${P(e.m.placeId)?.name||''}${mapNm(e.m)?' › '+mapNm(e.m):''}${e.room?' › '+e.room.name:''}`; const ttl=`${nm} · ${e.layer==='a'?'변경 전':'변경 후'}`; sl.addNotes(`${ttl} · 축척 1/100 (실제 100cm = 1cm)`);
+    sl.addText([{text:ttl,options:{bold:true,fontSize:Math.max(9,Math.min(20,TOP*.2835*.42))}},{text:`   축척 1/100 · 도면 ${fmt(e.w)}×${fmt(e.h)}cm`,options:{fontSize:Math.max(7,Math.min(12,TOP*.2835*.26)),color:'5D6763'}}],{x:IN(MG),y:IN(MG*.4),w:IN(W),h:IN(TOP-MG*.6),valign:'middle',fontFace:'Malgun Gothic',color:'1A201E',margin:0,objectName:'제목'});
+    for(const u of [...S.units].sort((a,b)=>isTop(a)-isTop(b))){ const ps2=planSlot(u,slot); const pos=ps2&&slotPos(u,ps2); if(!pos||pos.mapId!==e.m.id) continue; const it=I(u.itemId); const[w,d]=dims(it,pos.rot||0); if(!inPanel(e,pos.x+w/2,pos.y+d/2)) continue;
+      const col=(it.color||'#888888').replace('#',''); const wp=w*.2835, hp=d*.2835; const vert=d>w*1.2; const name=lbl(u); const tw=vert?hp:wp, th=vert?wp:hp;
+      const fs=Math.max(3,Math.min(14,th*.32,tw*.9/Math.max(1.4,name.length*.95))); const fd=Math.max(2.5,fs*.72);
+      sl.addText([{text:name,options:{bold:true,fontSize:fs,breakLine:true}},{text:`${it.w}*${it.d}`,options:{fontSize:fd}}],
+        {x:IN(pos.x-e.cx+ox),y:IN(pos.y-e.cy+oy),w:IN(w),h:IN(d),shape:pp.ShapeType.rect,fill:{color:col,transparency:it.kind==='item'?60:45},line:{color:col,width:.75,dashType:it.kind==='item'?'dash':'solid'},
+         align:'center',valign:'middle',color:'1A201E',fontFace:'Malgun Gothic',margin:0,vert:vert?'vert270':'horz',fit:'none',objectName:name}) } }
+  const dt=new Date(); const fname=`유바이오시스공간구성-${UI.view==='space'?(P(UI.focus)?.name||'공간')+'-'+((UI.wlayer||'a')==='b'?'변경후':'변경전'):'변경후'}-${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}.pptx`;
+  try{ const blob=await pp.write({outputType:'blob'}); await saveFile(fname,blob); toast(`PPT를 만들었어요 · ${ps.length}쪽 · 축척 1/100`) }catch(err){ console.error(err); toast('PPT를 만들지 못했어요.') } }
 function itemsSpace(pid){
   const items=itemsOf(pid);
   let h=`<div class="tblwrap"><table><thead><tr><th></th><th style="min-width:160px">가구 이름</th><th>종류</th><th>신규</th><th class="n">가로</th><th class="n">세로</th><th class="n">높이</th><th class="n">수량</th><th>번호별 상태</th><th></th></tr></thead><tbody>`;
@@ -1798,6 +1834,7 @@ document.addEventListener('click',e=>{
   if(d.unassign){ const u=U(d.unassign); const sl=curSlot(); if(u&&u[sl]){ unplace(u,sl); if(UI.sel&&UI.sel.id===u.id) UI.sel=null; toast(`${lbl(u)}을(를) 미배치 가구로 돌려놓았어요.`); commit() } return }
   if(d.mq){ const[side,l]=d.mq.split(':'); const cols=getCols(); cols[side]=l==='none'?[]:S.maps.filter(cal).map(m=>`${m.id}:*:${l}`); UI.openMsel=side; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.swapcols!==undefined){ const c=getCols(); UI.cols={L:c.R,R:c.L}; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
+  if(d.pptx!==undefined){ exportPPT(); return }
   if(d.colsreset!==undefined){ UI.cols=defaultCols(); UI.openMsel=null; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.visall){ VIS.hidden.clear(); VIS.a=VIS.b=true; saveVis(); UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.railfold!==undefined){ $('#btnRail').click(); return }

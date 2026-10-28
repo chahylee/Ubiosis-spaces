@@ -19,7 +19,7 @@ window.__FB_CONFIG__={
 </script>
 </head>
 <body>
-<title>이사 배치판</title>
+<title>유바이오시스 공간구성</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -552,7 +552,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
 
 <div class="app">
   <header class="top">
-    <div class="brand"><span class="mark" aria-hidden="true"></span>이사 배치판</div>
+    <div class="brand"><span class="mark" aria-hidden="true"></span>유바이오시스 공간구성</div>
     <nav class="tabs" aria-label="화면">
       <button data-view="plan" class="on">배치판</button>
       <button data-view="space">공간 작업</button>
@@ -838,7 +838,7 @@ function startListeners(){ if(Cloud.started) return; Cloud.started=true; setSave
   if(Cloud.isAdmin) Cloud.db.collection('members').onSnapshot(snap=>{ Cloud.members=snap.docs.map(d=>({email:d.id,...d.data()})).sort((a,b)=>a.email.localeCompare(b.email)); renderMembers() },e=>console.error(e));
   renderLock() }
 function showGate(mode){ const g=$('#gate'); if(!g) return; g.hidden=!mode; if(!mode) return; const em=Cloud.user?esc(Cloud.user.email||''):'';
-  g.innerHTML=`<div class="gatebox"><div class="gatelogo">이사 배치판</div>${mode==='wait'?'<p>로그인 상태를 확인하고 있어요…</p>':mode==='login'?'<p>허가된 Google 계정으로 로그인해야 볼 수 있어요.<br>처음이면 로그인한 뒤 <b>권한 신청</b>을 누르세요.</p><button class="btn primary" data-gate="login">Google 계정으로 로그인</button><button class="linkbtn" data-gate="admin">관리자 로그인</button>':mode==='requested'?`<p><b>${em}</b></p><p>권한을 신청했어요. 관리자가 승인하면 자동으로 열려요.</p><div class="actions" style="justify-content:center"><button class="btn" data-gate="logout">다른 계정으로 로그인</button></div>`:`<p><b>${em}</b> 계정은 아직 권한이 없어요.</p><label class="field" style="width:100%;text-align:left">이름 (관리자가 알아볼 수 있게)<input id="reqName" placeholder="예: 홍길동 / 디자인팀" value="${esc(Cloud.user&&Cloud.user.displayName||'')}"></label><button class="btn primary" data-gate="request">권한 신청하기</button><div class="actions" style="justify-content:center"><button class="btn" data-gate="logout">다른 계정으로 로그인</button></div>`}</div>` }
+  g.innerHTML=`<div class="gatebox"><div class="gatelogo">유바이오시스 공간구성</div>${mode==='wait'?'<p>로그인 상태를 확인하고 있어요…</p>':mode==='login'?'<p>허가된 Google 계정으로 로그인해야 볼 수 있어요.<br>처음이면 로그인한 뒤 <b>권한 신청</b>을 누르세요.</p><button class="btn primary" data-gate="login">Google 계정으로 로그인</button><button class="linkbtn" data-gate="admin">관리자 로그인</button>':mode==='requested'?`<p><b>${em}</b></p><p>권한을 신청했어요. 관리자가 승인하면 자동으로 열려요.</p><div class="actions" style="justify-content:center"><button class="btn" data-gate="logout">다른 계정으로 로그인</button></div>`:`<p><b>${em}</b> 계정은 아직 권한이 없어요.</p><label class="field" style="width:100%;text-align:left">이름 (관리자가 알아볼 수 있게)<input id="reqName" placeholder="예: 홍길동 / 디자인팀" value="${esc(Cloud.user&&Cloud.user.displayName||'')}"></label><button class="btn primary" data-gate="request">권한 신청하기</button><div class="actions" style="justify-content:center"><button class="btn" data-gate="logout">다른 계정으로 로그인</button></div>`}</div>` }
 async function gLogin(){ try{ await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()) }catch(e){ console.error(e); const c=String(e&&e.code); toast(c.includes('unauthorized-domain')?'이 주소가 Firebase 승인 도메인에 없어요. Authentication → 설정 → 승인된 도메인에 추가해 주세요.':c.includes('popup-closed')?'로그인 창이 닫혔어요.':'로그인하지 못했어요. 팝업 차단을 확인하세요.') } }
 document.addEventListener('click',async e=>{ const t=e.target.closest('[data-gate]'); if(!t) return; const a=t.dataset.gate;
   if(a==='login'||a==='admin'){ Cloud.wantAdmin=a==='admin'; gLogin() }
@@ -1889,11 +1889,11 @@ $('#btnClearEx').onclick=()=>{ S=empty(); UI.slots=[null,null]; UI.sel=null; UI.
 
 /* ---------- data dialog ---------- */
 $('#btnData').onclick=()=>{ renderLock(); $('#dlgData .dbody .hint').textContent=Cloud.on?'모든 내용이 클라우드(Firebase)에 저장되고, 링크로 들어온 사람 모두에게 실시간으로 공유돼요. 중간중간 파일로 내보내 백업해 두세요.':'지금 단계에서는 모든 내용이 이 브라우저에만 저장돼요. 다른 기기로 옮기거나 백업하려면 파일로 내보내세요.'; $('#commitScope').innerHTML='<option value="">전체 (모든 공간)</option>'+S.places.map(p=>{ const n=S.units.filter(u=>destPlace(u)===p.id).length; return n?`<option value="${p.id}">${esc(p.name)}로 들어온 가구만 (${n}개)</option>`:'' }).join(''); $('#dlgData').showModal() };
-$('#btnExport').onclick=async()=>{ const dt0=new Date(); const fname=`이사배치판-${dt0.getFullYear()}${String(dt0.getMonth()+1).padStart(2,'0')}${String(dt0.getDate()).padStart(2,'0')}.json`;
+$('#btnExport').onclick=async()=>{ const dt0=new Date(); const fname=`유바이오시스공간구성-${dt0.getFullYear()}${String(dt0.getMonth()+1).padStart(2,'0')}${String(dt0.getDate()).padStart(2,'0')}.json`;
   try{ const dl=window.claude&&await window.claude.use('downloads'); if(dl){ try{ await dl.save({filename:fname,data:JSON.stringify(S)}); toast('내보냈어요.') }catch(err){ if(!err||err.code!=='declined') toast('내보내기가 막혀 있어요.') } return } }catch(_){}
-  try{ const blob=new Blob([JSON.stringify(S)],{type:'application/json'}); const a=document.createElement('a'); const dt=new Date(); a.href=URL.createObjectURL(blob); a.download=`이사배치판-${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000) }catch(err){ toast('내보내기가 막혀 있어요. 웹에 올린 뒤 다시 시도하세요.') } };
+  try{ const blob=new Blob([JSON.stringify(S)],{type:'application/json'}); const a=document.createElement('a'); const dt=new Date(); a.href=URL.createObjectURL(blob); a.download=`유바이오시스공간구성-${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000) }catch(err){ toast('내보내기가 막혀 있어요. 웹에 올린 뒤 다시 시도하세요.') } };
 $('#btnImport').onclick=()=>{ $('#fileImport').value=''; $('#fileImport').click() };
-$('#fileImport').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; try{ const o=JSON.parse(await f.text()); if(!Array.isArray(o.places)||!Array.isArray(o.items)||!Array.isArray(o.units)||!Array.isArray(o.maps)) throw 0; S=Object.assign(empty(),o); UI.slots=[null,null]; UI.fitted=false; savePanels(); commit(); $('#dlgData').close(); toast('불러왔어요.') }catch(err){ toast('이 파일은 이사 배치판 데이터가 아니에요.') } };
+$('#fileImport').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; try{ const o=JSON.parse(await f.text()); if(!Array.isArray(o.places)||!Array.isArray(o.items)||!Array.isArray(o.units)||!Array.isArray(o.maps)) throw 0; S=Object.assign(empty(),o); UI.slots=[null,null]; UI.fitted=false; savePanels(); commit(); $('#dlgData').close(); toast('불러왔어요.') }catch(err){ toast('이 파일은 유바이오시스 공간구성 데이터가 아니에요.') } };
 $('#btnLogout').onclick=()=>{ try{ firebase.auth().signOut() }catch(e){} };
 $('#btnLock').onclick=async()=>{ try{ await Cloud.db.collection('settings').doc('lock').set({locked:!Cloud.locked,by:Cloud.user?Cloud.user.email:'',at:Date.now()},{merge:true}); toast(Cloud.locked?'잠금을 풀었어요.':'수정을 잠갔어요.') }catch(e){ console.error(e); toast('관리자 계정이 아니라서 바꿀 수 없어요.') } };
 document.addEventListener('click',e=>{ const t=e.target.closest('[data-openitem]'); if(!t||e.target.closest('button,input,select,[data-swc]')) return; openItemDlg(t.dataset.openitem) });

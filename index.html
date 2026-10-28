@@ -961,7 +961,8 @@ try{ const v=JSON.parse(localStorage.getItem('mb-vis')||'null'); if(v){ VIS.hidd
 function allKeys(){ const out=[]; for(const p of S.places) for(const m of S.maps.filter(m=>m.placeId===p.id&&cal(m))){ for(const l of ['a','b']) out.push(`${m.id}:*:${l}`); for(const r of roomsOf(m)) for(const l of ['a','b']) out.push(`${m.id}:${r.id}:${l}`) } return out }
 function defaultCols(){ const fl=S.maps.filter(cal); return {L:fl.map(m=>`${m.id}:*:a`),R:fl.map(m=>`${m.id}:*:b`)} }
 function getCols(){ if(!UI.cols){ try{ const v=JSON.parse(localStorage.getItem('mb-cols')||'null'); if(v&&Array.isArray(v.L)&&Array.isArray(v.R)) UI.cols={L:v.L.filter(k=>k.endsWith(':a')),R:v.R.filter(k=>k.endsWith(':b'))} }catch(e){} if(!UI.cols) UI.cols=defaultCols() }
-  const ok=new Set(allKeys()); UI.cols.L=UI.cols.L.filter(k=>ok.has(k)); UI.cols.R=UI.cols.R.filter(k=>ok.has(k)); if(!UI.cols.L.length&&!UI.cols.R.length) UI.cols=defaultCols(); return UI.cols }
+  const ok=new Set(allKeys()); if(!ok.size) return UI.cols; // 도면을 아직 불러오기 전에는 저장된 선택을 지우지 않음
+  UI.cols.L=UI.cols.L.filter(k=>ok.has(k)); UI.cols.R=UI.cols.R.filter(k=>ok.has(k)); if(!UI.cols.L.length&&!UI.cols.R.length) UI.cols=defaultCols(); return UI.cols }
 function saveCols(){ try{localStorage.setItem('mb-cols',JSON.stringify(UI.cols))}catch(e){} }
 function saveVis(){ try{localStorage.setItem('mb-vis',JSON.stringify({hidden:[...VIS.hidden],a:VIS.a,b:VIS.b}))}catch(e){} }
 function layout(){ const L=layoutRaw(); computeAnchors(L); return L }

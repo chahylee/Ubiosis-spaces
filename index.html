@@ -1202,7 +1202,7 @@ function renderStagebar(){
     let o=''; for(const p of S.places){ const ms=S.maps.filter(m=>m.placeId===p.id&&cal(m)); if(!ms.length){ o+=`<option value="p:${p.id}" ${UI.focus===p.id?'selected':''}>${esc(p.name)} (도면 없음)</option>`; continue } o+=`<option value="p:${p.id}" ${UI.focus===p.id&&!UI.room?'selected':''}>${esc(p.name)} 전체</option>`;
       for(const m of ms) for(const r of roomsOf(m)) o+=`<option value="r:${m.id}:${r.id}" ${UI.room&&UI.room.roomId===r.id?'selected':''}>　└ ${mapNm(m)?esc(mapNm(m))+' › ':''}${esc(r.name)}</option>` }
     const unc=S.maps.filter(m=>!cal(m)).map(m=>`<button class="tchip need" data-cal="${m.id}"><b>${esc(P(m.placeId)?.name)}</b><span class="cm">${esc(m.name)}</span>축척 맞추기</button>`).join('');
-    h=o?`<div class="slots"><label class="slotsel"><span class="sl">작업할 공간</span><select id="wsel" data-wsel>${o}</select></label>${UI.room?`<button class="btn small" data-rename="room:${UI.room.mapId}:${UI.room.roomId}">방 이름 바꾸기</button>`:(UI.focus?`<button class="btn small" data-rename="place:${UI.focus}">공간 이름 바꾸기</button>`:'')}<button class="btn small" data-pptx title="지금 보이는 도면(변경 전/후)을 1/100 축척 PPT로">📄 PPT로 받기</button><span class="crumb">도면 위 버튼으로 변경 전·후 전환</span>${unc}</div>`:`<div class="slots"><span class="hint">축척을 맞춘 도면이 있는 공간이 없어요.</span>${unc}</div>`;
+    h=o?`<div class="slots"><label class="slotsel"><span class="sl">작업할 공간</span><select id="wsel" data-wsel>${o}</select></label>${UI.room?`<button class="btn small" data-rename="room:${UI.room.mapId}:${UI.room.roomId}">방 이름 바꾸기</button>`:(UI.focus?`<button class="btn small" data-rename="place:${UI.focus}">공간 이름 바꾸기</button>`:'')}<button class="btn small" data-pptx title="지금 보이는 도면(변경 전/후)을 1/100 축척 PPT로">📄 PPT로 받기</button><button class="btn small" data-rot="-1" title="고른 가구를 왼쪽으로 90° (붙어 있는 것은 한 덩어리로)">↺ 왼쪽 90°</button><button class="btn small" data-rot="1" title="고른 가구를 오른쪽으로 90° (붙어 있는 것은 한 덩어리로) · 단축키 R">↻ 오른쪽 90°</button><span class="crumb">도면 위 버튼으로 변경 전·후 전환</span>${unc}</div>`:`<div class="slots"><span class="hint">축척을 맞춘 도면이 있는 공간이 없어요.</span>${unc}</div>`;
   }
   else if(UI.room){ const m=M(UI.room.mapId), r=roomsOf(m).find(r=>r.id===UI.room.roomId); h=`<div class="slots"><button class="btn small" data-focus="">← 모든 공간</button><button class="btn small" data-focus="${m.placeId}">← ${esc(P(m.placeId)?.name)} 전체</button><span class="crumb">${esc(P(m.placeId)?.name)} › ${mapNm(m)?esc(mapNm(m))+' › ':''}<b>${esc(r?r.name:'')}</b></span></div>` }
   else if(UI.focus){ h=`<div class="slots"><button class="btn small" data-focus="">← 모든 공간</button><span class="crumb"><b>${esc(P(UI.focus)?.name)}</b> 전체 · 방 이름을 누르면 그 방만 보여요</span></div>` }
@@ -1218,7 +1218,7 @@ function renderStagebar(){
         for(const m of ms){ x+=row(`${m.id}:*`,`${mapNm(m)?esc(mapNm(m))+' ':''}전체`,false); for(const r of roomsOf(m)) x+=row(`${m.id}:${r.id}`,`└ ${esc(r.name)}`,true) }
         x+='</div>' }
       return x+'</div></details>' };
-    h+=`<div class="slots">${menu('L')}${menu('R')}<button class="btn small" data-colsreset>기본으로</button><button class="btn small" data-pptx title="오른쪽(변경)에 체크한 도면을 한 장씩, 1/100 축척 PPT 한 파일로">📄 PPT로 받기</button>`;
+    h+=`<div class="slots">${menu('L')}${menu('R')}<button class="btn small" data-colsreset>기본으로</button><button class="btn small" data-pptx title="오른쪽(변경)에 체크한 도면을 한 장씩, 1/100 축척 PPT 한 파일로">📄 PPT로 받기</button><button class="btn small" data-rot="-1" title="고른 가구를 왼쪽으로 90° (붙어 있는 것은 한 덩어리로)">↺ 왼쪽 90°</button><button class="btn small" data-rot="1" title="고른 가구를 오른쪽으로 90° (붙어 있는 것은 한 덩어리로) · 단축키 R">↻ 오른쪽 90°</button>`;
     for(const m of S.maps){ if(cal(m)) continue; const p=P(m.placeId); h+=`<button class="tchip need" data-cal="${m.id}"><b>${esc(p?p.name:'')}</b><span class="cm">${esc(m.name)}</span>축척 맞추기</button>` }
     h+='</div>';
   }
@@ -1848,6 +1848,7 @@ document.addEventListener('click',e=>{
   if(d.mq){ const[side,l]=d.mq.split(':'); const cols=getCols(); cols[side]=l==='none'?[]:S.maps.filter(cal).map(m=>`${m.id}:*:${l}`); UI.openMsel=side; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.swapcols!==undefined){ const c=getCols(); UI.cols={L:c.R,R:c.L}; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.pptx!==undefined){ exportPPT(); return }
+  if(d.rot){ if(!(UI.sel&&(UI.sel.slot==='from'||UI.sel.slot==='to'))&&!getMulti().some(x=>x.slot==='from'||x.slot==='to')){ toast('먼저 도면에서 돌릴 가구를 클릭하거나 끌어서 고르세요.'); return } rotateSel(+d.rot); return }
   if(d.colsreset!==undefined){ UI.cols=defaultCols(); UI.openMsel=null; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.visall){ VIS.hidden.clear(); VIS.a=VIS.b=true; saveVis(); UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.railfold!==undefined){ $('#btnRail').click(); return }

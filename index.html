@@ -247,10 +247,13 @@ button.num.zero{opacity:.35}
 #plan.panning{cursor:grabbing}
 #plan.measuring{cursor:crosshair}
 #plan.measuring .unit{pointer-events:none}
-.sbar{position:absolute;top:6px;bottom:6px;width:10px;margin-left:-3px;z-index:3}
-.sbar i{position:absolute;left:4px;width:2px;border-radius:2px;background:color-mix(in srgb,var(--muted) 55%,transparent);transition:width .12s,left .12s,background .12s;cursor:grab}
-.sbar:hover i,.sbar.drag i{left:2px;width:6px;background:color-mix(in srgb,var(--muted) 80%,transparent)}
-.legend{position:absolute;left:12px;bottom:12px;font-size:11.5px;color:var(--muted);background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);border-radius:7px;padding:4px 9px;display:flex;gap:10px;align-items:center}
+.sbar{position:absolute;top:6px;bottom:6px;width:14px;margin-left:-4px;z-index:3;border-radius:7px;background:color-mix(in srgb,var(--muted) 14%,transparent)}
+.sbar i{position:absolute;left:3px;width:8px;border-radius:4px;background:color-mix(in srgb,var(--muted) 75%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--bg,#fff) 70%,transparent);transition:width .12s,left .12s,background .12s;cursor:grab}
+.hbar{position:absolute;height:14px;z-index:3;cursor:pointer;border-radius:7px;background:color-mix(in srgb,var(--muted) 14%,transparent)}
+.hbar i{position:absolute;top:3px;height:8px;border-radius:4px;background:color-mix(in srgb,var(--muted) 75%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--bg,#fff) 70%,transparent);transition:height .12s,top .12s,background .12s;cursor:grab}
+.hbar:hover i,.hbar.drag i{top:2px;height:10px;background:var(--accent,#1f5f86)}
+.sbar:hover i,.sbar.drag i{left:2px;width:10px;background:var(--accent,#1f5f86)}
+.legend{position:absolute;left:12px;bottom:24px;font-size:11.5px;color:var(--muted);background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);border-radius:7px;padding:4px 9px;display:flex;gap:10px;align-items:center}
 .legend i{display:inline-block;width:14px;height:14px;border:1px solid var(--grid2);vertical-align:-3px;margin-right:4px}
 .selbar{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:var(--raise);border:1px solid var(--line);border-radius:10px;padding:6px 8px 6px 12px;box-shadow:0 4px 18px rgba(0,0,0,.12);max-width:calc(100% - 24px);flex-wrap:wrap;font-size:13px}
 .selbar .route{color:var(--muted)}
@@ -540,10 +543,10 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
           <button id="railTab" class="railtab" hidden title="가구 목록 펼치기">▶<span>가구 목록</span></button>
           <svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg>
           <div id="selbar" class="selbar" hidden></div>
-          <div class="legend"><span><i></i>1칸 = 50cm</span><span>휠: 칸별 위아래 · Ctrl+휠: 확대·축소 (Ctrl+Alt+휠: 더 세밀하게) · 공간 이름: 그 공간만</span></div>
+          <div class="legend"><span><i></i>1칸 = 50cm</span><span>휠: 칸별 위아래 · Shift+휠: 좌우 · Ctrl+휠: 확대·축소 (Ctrl+Alt+휠: 더 세밀하게) · 공간 이름: 그 공간만</span></div>
           <div id="planEmpty" class="empty" hidden></div>
           <button id="photosTab" class="photos-tab" hidden>◀ 사진·들어온 가구</button>
-          <div class="sbar" id="sbL" hidden><i></i></div><div class="sbar" id="sbR" hidden><i></i></div>
+          <div class="sbar" id="sbL" hidden><i></i></div><div class="sbar" id="sbR" hidden><i></i></div><div class="hbar" id="sbH" hidden><i></i></div>
           <div id="photos" class="photos" aria-label="공간 사진"></div>
         </div>
       </div>
@@ -758,12 +761,14 @@ function loadPanels(){ try{const v=JSON.parse(localStorage.getItem('mb-slots2')|
 
 /* ---------- derived: groups and labels ---------- */
 let LBL=new Map(), GROUPS=[];
+/* 전체 합산 기준: 이름(띄어쓰기·대소문자 무시) + 치수(가로·세로 순서 무시) + 종류. 새로 살 가구도 같은 줄에 합산 */
+const tkey=it=>(it.name||'').replace(/\s+/g,'').toLowerCase()+'|'+Math.min(it.w,it.d)+'|'+Math.max(it.w,it.d)+(it.kind==='item'?'|i':'');
 function rebuild(){
   LBL=new Map(); const gm=new Map(); const po=new Map(S.places.map((p,i)=>[p.id,i]));
   const items=[...S.items].sort((a,b)=>(po.get(a.placeId)??999)-(po.get(b.placeId)??999));
-  for(const it of items){ const k=gkey(it); if(!gm.has(k)) gm.set(k,{key:k,name:(it.name||'').trim()||'(이름 없음)',w:it.w,d:it.d,color:it.color,items:[],units:[]}); const g=gm.get(k); g.items.push(it); g.units.push(...unitsOf(it)) }
+  for(const it of items){ const k=tkey(it); if(!gm.has(k)) gm.set(k,{key:k,name:(it.name||'').trim()||'(이름 없음)',w:Math.max(it.w,it.d),d:Math.min(it.w,it.d),color:it.color,items:[],units:[]}); const g=gm.get(k); g.items.push(it); g.units.push(...unitsOf(it)) }
   GROUPS=[...gm.values()];
-  for(const g of GROUPS){ g.units.forEach((u,i)=>LBL.set(u.id,g.units.length>1?`${g.name} ${i+1}`:g.name)); g.placed=g.units.filter(isPlaced); g.remain=g.units.filter(u=>!isPlaced(u)) }
+  for(const g of GROUPS){ g.units.forEach((u,i)=>LBL.set(u.id,g.units.length>1?`${g.name} ${i+1}`:g.name)); g.placed=g.units.filter(isPlaced); g.remain=g.units.filter(u=>!isPlaced(u)); g.newN=g.items.filter(i=>i.isNew).reduce((a,i)=>a+unitsOf(i).length,0) }
 }
 const lbl=u=>LBL.get(u.id)||I(u.itemId)?.name||'';
 function colorFor(name,w,d){ const k=(name||'').trim()+'|'+w+'|'+d; const same=S.items.find(i=>gkey(i)===k); if(same) return same.color; const n=new Set(S.items.map(gkey)).size; return hslHex((n*137.508+205)%360,60,50) }
@@ -812,8 +817,10 @@ V.onzoom=()=>{ renderOverlay(); syncZoom(); updateSbars&&updateSbars() };
 function centerX(){ const L=UI.L||[]; if(!L.length) return null; if(UI.view==='space'&&UI.trayBox) return (Math.min(...L.map(e=>e.ox))+UI.trayBox.x2)/2; const a=L.filter(e=>e.col==='L'), b=L.filter(e=>e.col==='R');
   if(a.length&&b.length) return (Math.max(...a.map(e=>e.ox+e.w))+Math.min(...b.map(e=>e.ox)))/2;
   return (Math.min(...L.map(e=>e.ox))+Math.max(...L.map(e=>e.ox+e.w)))/2 }
-{ const baseApply=V.apply; V.apply=()=>{ const cx=centerX(); if(cx!=null) V.x=cx-V.w/2; baseApply() } }
-const GAP=70;
+function hExt(){ const es=['L','R'].map(colExt).filter(Boolean); if(!es.length) return null; const pad=40; return {x1:Math.min(...es.map(e=>e.x1))-pad, x2:Math.max(...es.map(e=>e.x2))+pad} }
+{ const baseApply=V.apply; V.apply=()=>{ const cx=centerX(); if(cx!=null){ const base=cx-V.w/2; let x=base+(UI.hx||0); const h=hExt(); if(h&&h.x2-h.x1>V.w*1.01){ x=clamp(x,Math.min(h.x1,base),Math.max(h.x2-V.w,base)) } else x=base; UI.hx=x-base; V.x=x } baseApply() } }
+function setHx(v){ UI.hx=v; V.apply(); renderOverlay(); updateSbars() }
+const GAP=70; const gapFor=w=>Math.max(220,Math.round(w*.16));
 const off=e=>(UI.scroll&&UI.scroll[e.col])||0;
 const colZ=c=>(UI.colz&&UI.colz[c])||1;
 const anc=c=>(UI.anchor&&UI.anchor[c])||{ax:0,y0:0};
@@ -834,7 +841,7 @@ function makePanel(m,roomId,layer,ox,oy){ const c=cmOf(m); let cx=0,cy=0,w=c.w,h
   if(roomId&&roomId!=='*'){ room=roomsOf(m).find(r=>r.id===roomId); if(!room) return null; cx=room.x/m.sx; cy=room.y/m.sy; w=room.w/m.sx; h=room.h/m.sy }
   return {key:`${m.id}:${room?room.id:'*'}:${layer}`,m,room,layer,ox,oy,w,h,cx,cy,mx:ox-cx,my:oy-cy,gx:c.gx,gy:c.gy} }
 function rowsLayout(rows,layers=['a','b']){ const L=[]; if(!layers.length) return L; const firsts=rows.map(r=>makePanel(r.m,r.roomId,'a',0,0)).filter(Boolean); if(!firsts.length) return L; const wA=Math.max(...firsts.map(p=>p.w)); let y=0;
-  for(const r of rows){ const pa=makePanel(r.m,r.roomId,'a',0,y); if(!pa) continue; for(const l of layers){ const pn=makePanel(r.m,r.roomId,l,layers.length===2&&l==='b'?wA+GAP:(layers.length===2?wA-pa.w:0),y); pn.col=layers.length===2&&l==='b'?'R':'L'; L.push(pn) } y+=pa.h+300 } return L }
+  for(const r of rows){ const pa=makePanel(r.m,r.roomId,'a',0,y); if(!pa) continue; for(const l of layers){ const pn=makePanel(r.m,r.roomId,l,layers.length===2&&l==='b'?wA+gapFor(wA):(layers.length===2?wA-pa.w:0),y); pn.col=layers.length===2&&l==='b'?'R':'L'; L.push(pn) } y+=pa.h+380 } return L }
 const VIS={hidden:new Set(),a:true,b:true};
 try{ const v=JSON.parse(localStorage.getItem('mb-vis')||'null'); if(v){ VIS.hidden=new Set(v.hidden||[]); VIS.a=v.a!==false; VIS.b=v.b!==false } }catch(e){}
 function allKeys(){ const out=[]; for(const p of S.places) for(const m of S.maps.filter(m=>m.placeId===p.id&&cal(m))){ for(const l of ['a','b']) out.push(`${m.id}:*:${l}`); for(const r of roomsOf(m)) for(const l of ['a','b']) out.push(`${m.id}:${r.id}:${l}`) } return out }
@@ -852,8 +859,8 @@ function layoutRaw(){
   if(UI.focus) return rowsLayout(S.maps.filter(m=>m.placeId===UI.focus&&cal(m)).map(m=>({m,roomId:'*'})),WL);
   const cols=getCols(); const L=[]; const sizes={};
   for(const side of ['L','R']) sizes[side]=cols[side].map(k=>{ const q=parseKey(k); const m=M(q.id); return cal(m)?makePanel(m,q.room,q.layer,0,0):null }).filter(Boolean);
-  const wL=sizes.L.length?Math.max(...sizes.L.map(p=>p.w)):0; const xR=sizes.L.length?wL+GAP:0;
-  for(const side of ['L','R']){ let y=0; for(const t of sizes[side]){ const ox=side==='L'?wL-t.w:xR; const pn=makePanel(t.m,t.room?t.room.id:'*',t.layer,ox,y); pn.col=side; L.push(pn); y+=pn.h+300 } }
+  const wL=sizes.L.length?Math.max(...sizes.L.map(p=>p.w)):0; const wR=sizes.R.length?Math.max(...sizes.R.map(p=>p.w)):0; const xR=sizes.L.length?wL+gapFor(Math.max(wL,wR)):0;
+  for(const side of ['L','R']){ let y=0; for(const t of sizes[side]){ const ox=side==='L'?wL-t.w:xR; const pn=makePanel(t.m,t.room?t.room.id:'*',t.layer,ox,y); pn.col=side; L.push(pn); y+=pn.h+380 } }
   return L;
 }
 const inPanel=(e,cx,cy)=>cx>=e.cx-.5&&cx<=e.cx+e.w+.5&&cy>=e.cy-.5&&cy<=e.cy+e.h+.5;
@@ -939,10 +946,10 @@ function renderPlan(){
   renderOverlay(); renderStagebar(); renderSelbar(); renderPhotos(); updateSbars(); syncColZoom();
   const ls=$('#layerSeg'); ls.hidden=!(UI.view==='space'&&L.length); $$('#layerSeg button').forEach(b=>b.classList.toggle('on',b.dataset.wl===(UI.wlayer||'a')));
 }
-function fitAll(){ const L=UI.L; if(!L.length){ updateSbars(); return } UI.scroll={L:0,R:0}; UI.colz={L:1,R:1}; ['L','R'].forEach(c=>{ const g=$('#col'+c); if(g) g.setAttribute('transform',colTransform(c)) });
+function fitAll(){ const L=UI.L; if(!L.length){ updateSbars(); return } UI.scroll={L:0,R:0}; UI.colz={L:1,R:1}; UI.hx=0; ['L','R'].forEach(c=>{ const g=$('#col'+c); if(g) g.setAttribute('transform',colTransform(c)) });
   const x1=Math.min(...L.map(e=>e.ox)), y1=Math.min(...L.map(e=>e.oy))-80, x2=Math.max(...L.map(e=>e.ox+e.w),UI.view==='space'&&UI.trayBox?UI.trayBox.x2:-Infinity);
   const colH=Math.max(...['L','R'].map(c=>{ const x=colExt(c); return x?x.y2-x.y1:0 }));
-  V.fit(x1,y1,x2-x1,Math.min(colH,(x2-x1)*.9),.03); V.y=y1-70; V.apply(); baseW=V.w; syncZoom(); renderOverlay(); updateSbars() }
+  { const r=planSvg.getBoundingClientRect(); const asp=r.width>0?r.height/r.width:.6; V.fit(x1,y1,x2-x1,Math.min(colH,(x2-x1)*asp),.015) } V.y=y1-70; V.apply(); baseW=V.w; syncZoom(); renderOverlay(); updateSbars() }
 function colExt(c){ const ps=(UI.L||[]).filter(e=>e.col===c); if(!ps.length) return null; const z=colZ(c), a=anc(c); const X=v=>a.ax+(v-a.ax)*z, Y=v=>a.y0+(v-a.y0)*z; const tb=c==='L'&&UI.view==='space'&&UI.trayBox?UI.trayBox:null; return {x1:X(Math.min(...ps.map(e=>e.ox))),x2:X(Math.max(...ps.map(e=>e.ox+e.w),tb?tb.x2:-Infinity)),y1:Y(Math.min(...ps.map(e=>e.oy))-90),y2:Y(Math.max(...ps.map(e=>e.oy+e.h),tb?tb.y2:-Infinity)+40)} }
 function colAtX(x){ let best=null,bd=Infinity; for(const c of ['L','R']){ const e=colExt(c); if(!e) continue; const d=x<e.x1?e.x1-x:x>e.x2?x-e.x2:0; if(d<bd){bd=d;best=c} } return best }
 function scrollRange(c){ const x=colExt(c); if(!x) return [0,0]; const lo=x.y1-V.y; return [lo,Math.max(lo,x.y2-(V.y+V.h))] }
@@ -950,15 +957,24 @@ function setScroll(c,v){ UI.scroll[c]=v; const g=$('#col'+c); if(g) g.setAttribu
 function scrollBy(c,ds){ const s0=UI.scroll[c]||0; const[lo,hi]=scrollRange(c); let ns=s0+ds; if(ds>0) ns=Math.min(ns,Math.max(hi,s0)); else ns=Math.max(ns,Math.min(lo,s0)); setScroll(c,ns) }
 function updateSbars(){ const wrap=$('#svgwrap'); if(!wrap) return; const wr=wrap.getBoundingClientRect(), sr=planSvg.getBoundingClientRect();
   for(const c of ['L','R']){ const bar=$('#sb'+c); const x=UI.view==='plan'||UI.view==='space'?colExt(c):null; if(!x||!sr.width){ bar.hidden=true; continue }
-    const H=x.y2-x.y1; if(H<=V.h*1.01){ bar.hidden=true; continue } const s=UI.scroll[c]||0;
+    const H=Math.max(x.y2-x.y1,V.h); const s=UI.scroll[c]||0;
     const left=clamp((x.x2-V.x)/V.w*sr.width+sr.left-wr.left+6,4,sr.right-wr.left-8); bar.style.left=left+'px'; bar.hidden=false;
     const th=clamp(V.h/H,.06,1), tt=clamp((V.y-(x.y1-s))/H,0,1-th); const t=bar.firstElementChild; t.style.top=(tt*100)+'%'; t.style.height=(th*100)+'%'; bar.dataset.h=H }
+  const hb=$('#sbH'); if(hb){ const h=(UI.view==='plan'||UI.view==='space')&&sr.width?hExt():null; const Wd=h?h.x2-h.x1:0;
+    if(!h) hb.hidden=true; else { const Wd2=Math.max(Wd,V.w); hb.hidden=false; hb.style.left=(sr.left-wr.left+8)+'px'; hb.style.width=(sr.width-16)+'px'; hb.style.top=(sr.bottom-wr.top-18)+'px';
+      const tw=clamp(V.w/Wd2,.06,1), tl=clamp((V.x-h.x1)/Wd2,0,1-tw); const t=hb.firstElementChild; t.style.left=(tl*100)+'%'; t.style.width=(tw*100)+'%'; hb.dataset.w=Wd2 } }
 }
+$('#sbH i').addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); const t=e.currentTarget, bar=t.parentElement; const Wd=+bar.dataset.w, trackW=bar.getBoundingClientRect().width; const x0=e.clientX, h0=UI.hx||0; try{t.setPointerCapture(e.pointerId)}catch(_){} bar.classList.add('drag');
+  const mv=ev=>setHx(h0+(ev.clientX-x0)/trackW*Wd); const up=()=>{ t.removeEventListener('pointermove',mv); t.removeEventListener('pointerup',up); bar.classList.remove('drag') }; t.addEventListener('pointermove',mv); t.addEventListener('pointerup',up) });
+$('#sbH').addEventListener('pointerdown',e=>{ if(e.target!==e.currentTarget) return; const r=e.currentTarget.getBoundingClientRect(); const t=e.currentTarget.firstElementChild.getBoundingClientRect(); setHx((UI.hx||0)+(e.clientX<t.left?-1:1)*V.w*.8) });
 $$('.sbar i').forEach(t=>t.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); const bar=t.parentElement, c=bar.id.slice(2); const H=+bar.dataset.h, trackH=bar.getBoundingClientRect().height; const y0=e.clientY, s0=UI.scroll[c]||0; try{t.setPointerCapture(e.pointerId)}catch(_){} bar.classList.add('drag');
   const mv=ev=>setScroll(c,s0+(ev.clientY-y0)/trackH*H); const up=()=>{ t.removeEventListener('pointermove',mv); t.removeEventListener('pointerup',up); bar.classList.remove('drag') }; t.addEventListener('pointermove',mv); t.addEventListener('pointerup',up) }));
 planSvg.addEventListener('wheel',e=>{ e.preventDefault(); const dy=e.deltaY*(e.deltaMode===1?33:e.deltaMode===2?400:1); const p=V.pt(e);
   if(e.ctrlKey||e.metaKey){ const notch=Math.abs(dy)>=40; const f=notch?Math.sign(dy)*(e.altKey?.02:.05):clamp(dy,-40,40)*(e.altKey?.002:.006); const c=colAtX(p.x); if(c&&UI.L.some(x=>x.col==='L')&&UI.L.some(x=>x.col==='R')) zoomCol(c,Math.exp(f),p.y); else { const cx=centerX(); V.zoomAt(cx!=null?cx:p.x,p.y,Math.exp(f)) } return }
   const k=V.h/(planSvg.getBoundingClientRect().height||1);
+  const dx=e.deltaX*(e.deltaMode===1?33:e.deltaMode===2?400:1);
+  if(e.shiftKey&&Math.abs(dy)>=1){ setHx((UI.hx||0)+dy*k); return }
+  if(Math.abs(dx)>Math.abs(dy)){ setHx((UI.hx||0)+dx*k); return }
   if(Math.abs(dy)<1) return;
   const c=colAtX(p.x); if(c) scrollBy(c,dy*k) },{passive:false});
 function zoomCol(c,k,wy){ const z0=colZ(c), z1=clamp(z0/k,.1,20); if(wy==null) wy=V.y+V.h/2; const a=anc(c); const s0=UI.scroll[c]||0; const ly=a.y0+(wy+s0-a.y0)/z0; UI.colz[c]=z1; setScroll(c,a.y0+(ly-a.y0)*z1-wy) }
@@ -967,10 +983,10 @@ function syncColZoom(){ const both=(UI.L||[]).some(x=>x.col==='L')&&(UI.L||[]).s
   $('#svgwrap').classList.toggle('hascz',both) }
 $$('.czoom input').forEach(r=>r.addEventListener('input',()=>{ const c=r.dataset.czr; const z=Math.exp(+r.value); zoomCol(c,colZ(c)/z) }));
 $$('.czoom button').forEach(b=>b.addEventListener('click',()=>{ const[c,a]=b.dataset.cz.split(':'); if(a==='in') zoomCol(c,1/1.08); else if(a==='out') zoomCol(c,1.08); else { zoomCol(c,colZ(c)/1) } }));
-function planPan(e,done){ const inv=planSvg.getScreenCTM().inverse(), p0=V.pt(e,inv), c=colAtX(p0.x), s0=c?(UI.scroll[c]||0):0, x0=V.x, sx=e.clientX, sy=e.clientY; let moved=false;
+function planPan(e,done){ const inv=planSvg.getScreenCTM().inverse(), p0=V.pt(e,inv), c=colAtX(p0.x), s0=c?(UI.scroll[c]||0):0, x0=V.x, hx0=UI.hx||0, sx=e.clientX, sy=e.clientY; let moved=false;
   try{planSvg.setPointerCapture(e.pointerId)}catch(_){}
   let axis=null;
-  const mv=ev=>{ if(V.pinching){moved=true;return} const dxs=ev.clientX-sx, dys=ev.clientY-sy; if(!moved&&Math.hypot(dxs,dys)<6) return; moved=true; if(!axis) axis=Math.abs(dxs)>Math.abs(dys)?'x':'y'; planSvg.classList.add('panning'); const p=V.pt(ev,inv); if(axis==='y'&&c) setScroll(c,s0-(p.y-p0.y)) };
+  const mv=ev=>{ if(V.pinching){moved=true;return} const dxs=ev.clientX-sx, dys=ev.clientY-sy; if(!moved&&Math.hypot(dxs,dys)<6) return; moved=true; if(!axis) axis=Math.abs(dxs)>Math.abs(dys)?'x':'y'; planSvg.classList.add('panning'); if(axis==='y'&&c){ const p=V.pt(ev,inv); setScroll(c,s0-(p.y-p0.y)) } else if(axis==='x'){ setHx(hx0-dxs*V.w/(planSvg.getBoundingClientRect().width||1)) } };
   const up=()=>{ planSvg.removeEventListener('pointermove',mv); planSvg.removeEventListener('pointerup',up); planSvg.removeEventListener('pointercancel',up); planSvg.classList.remove('panning'); done&&done(moved,p0) };
   planSvg.addEventListener('pointermove',mv); planSvg.addEventListener('pointerup',up); planSvg.addEventListener('pointercancel',up) }
 function renderOverlay(){
@@ -1159,7 +1175,7 @@ planSvg.addEventListener('drop',e=>{
   let u=null;
   if(pl.u) u=U(pl.u);
   else { const g=GROUPS.find(g=>g.key===pl.g); if(!g) return;
-    if(panel.layer==='a'){ const c=g.units.filter(u=>I(u.itemId).placeId===panel.m.placeId&&!u.from); u=c.find(u=>!isPlaced(u))||c[0]; if(!u){ toast(`${P(panel.m.placeId)?.name}에 아직 위치를 안 정한 ${g.name}이(가) 없어요.`); return } }
+    if(panel.layer==='a'){ const c=g.units.filter(u=>I(u.itemId).placeId===panel.m.placeId&&!u.from&&!I(u.itemId).isNew); u=c.find(u=>!isPlaced(u))||c[0]; if(!u){ toast(`${P(panel.m.placeId)?.name}에 아직 위치를 안 정한 ${g.name}이(가) 없어요.`); return } }
     else { u=g.remain.find(u=>u.from)||g.remain[0]; if(!u){ toast(`남은 ${g.name}이(가) 없어요.`); return } }
   }
   if(!u) return; const slot=panel.layer==='a'?'from':'to'; const rot=(u[slot]&&u[slot].rot)||(u.from&&u.from.rot)||0;
@@ -1193,7 +1209,7 @@ function renderRail(){
 function railTotal(){
   let h=`<div class="thead"><span></span><span>가구 · 끌어서 도면에 놓기</span><span>합계</span><span>배치</span><span>남음</span></div>`;
   for(const g of GROUPS){ const on=UI.hl&&UI.hl.label; const open=UI.open.has(g.key);
-    h+=`<div class="trow" draggable="true" data-dg="${esc(g.key)}"><span class="sw" style="--c:${g.color}"></span><button class="tname" data-openg="${esc(g.key)}" aria-expanded="${open}"><b>${esc(g.name)}</b><span class="mono">${g.w}×${g.d}</span></button><span class="num">${g.units.length}</span><button class="num ok ${g.placed.length?'':'zero'} ${on==='p:'+g.key?'on':''}" data-hl="p" data-g="${esc(g.key)}" title="배치된 것 도면에 표시">${g.placed.length}</button><button class="num wr ${g.remain.length?'':'zero'} ${on==='r:'+g.key?'on':''}" data-hl="r" data-g="${esc(g.key)}" title="남은 것 도면에 표시">${g.remain.length}</button>`;
+    h+=`<div class="trow" draggable="true" data-dg="${esc(g.key)}"><span class="sw" style="--c:${g.color}"></span><button class="tname" data-openg="${esc(g.key)}" aria-expanded="${open}"><b>${esc(g.name)}</b><span class="mono">${g.w}×${g.d}</span>${g.newN?`<span class="newtagh">새 ${g.newN}</span>`:''}</button><span class="num">${g.units.length}</span><button class="num ok ${g.placed.length?'':'zero'} ${on==='p:'+g.key?'on':''}" data-hl="p" data-g="${esc(g.key)}" title="배치된 것 도면에 표시">${g.placed.length}</button><button class="num wr ${g.remain.length?'':'zero'} ${on==='r:'+g.key?'on':''}" data-hl="r" data-g="${esc(g.key)}" title="남은 것 도면에 표시">${g.remain.length}</button>`;
     if(on==='p:'+g.key||on==='r:'+g.key){ const placed=on[0]==='p'; const by=new Map();
       for(const u of (placed?g.placed:g.remain)){ const it=I(u.itemId); const k=placed?destLabel(u):`${P(it.placeId)?.name||''} › ${fromLabel(u)}`; if(!by.has(k)) by.set(k,[]); by.get(k).push(u) }
       h+=`<div class="hlbox ${placed?'ok':'wr'}"><b>${placed?'배치된 곳':'남은 위치'}</b>${by.size?[...by].map(([k,us])=>`<div class="hlline"><span>${esc(k)}</span><span class="mono">${us.length}개</span><span class="hlnames">${us.map(u=>esc(lbl(u))).join(', ')}</span></div>`).join(''):'<span class="hint">없어요.</span>'}</div>` }
@@ -1231,7 +1247,7 @@ function itemsTotal(){
   if(!GROUPS.length) return `<div class="card" style="padding:18px"><span class="hint">공간 탭을 눌러 가구를 입력하면 여기에 합산돼요.</span></div>`;
   let h=`<div class="tblwrap"><table><thead><tr><th></th><th>가구</th><th class="n">치수 (cm)</th>${cols.map(p=>`<th class="n">${esc(p.name)}</th>`).join('')}<th class="n">합계</th><th class="n">배치</th><th class="n">남음</th></tr></thead><tbody>`;
   for(const g of GROUPS){ const by=new Map(); for(const it of g.items) by.set(it.placeId,(by.get(it.placeId)||0)+it.qty);
-    h+=`<tr><td><span class="sw" style="--c:${g.color}"></span></td><td>${esc(g.name)}</td><td class="n">${g.w}×${g.d}</td>${cols.map(p=>`<td class="n">${by.get(p.id)||'<span style="opacity:.3">0</span>'}</td>`).join('')}<td class="n"><b>${g.units.length}</b></td><td class="n"><button class="num ok ${g.placed.length?'':'zero'}" style="padding:2px 10px" data-hl="p" data-g="${esc(g.key)}">${g.placed.length}</button></td><td class="n"><button class="num wr ${g.remain.length?'':'zero'}" style="padding:2px 10px" data-hl="r" data-g="${esc(g.key)}">${g.remain.length}</button></td></tr>` }
+    h+=`<tr><td><span class="sw" style="--c:${g.color}"></span></td><td>${esc(g.name)}${g.newN?` <span class="newtagh">새 ${g.newN}</span>`:''}</td><td class="n">${g.w}×${g.d}</td>${cols.map(p=>`<td class="n">${by.get(p.id)||'<span style="opacity:.3">0</span>'}</td>`).join('')}<td class="n"><b>${g.units.length}</b></td><td class="n"><button class="num ok ${g.placed.length?'':'zero'}" style="padding:2px 10px" data-hl="p" data-g="${esc(g.key)}">${g.placed.length}</button></td><td class="n"><button class="num wr ${g.remain.length?'':'zero'}" style="padding:2px 10px" data-hl="r" data-g="${esc(g.key)}">${g.remain.length}</button></td></tr>` }
   const tot=S.units.length, pl=S.units.filter(isPlaced).length;
   h+=`</tbody><tfoot><tr><th></th><th>합계</th><th></th>${cols.map(p=>`<th class="n">${itemsOf(p.id).reduce((a,i)=>a+i.qty,0)}</th>`).join('')}<th class="n">${tot}</th><th class="n">${pl}</th><th class="n">${tot-pl}</th></tr></tfoot></table></div><p class="hint">배치·남음 숫자를 누르면 배치판에서 해당 가구가 강조돼요.</p>`;
   return h;

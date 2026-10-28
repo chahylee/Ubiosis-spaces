@@ -204,6 +204,7 @@ button.num.zero{opacity:.35}
 .flag.need{border-color:var(--warn);color:var(--warn)}
 .rfilter{display:flex;align-items:center;gap:3px;flex-wrap:wrap;padding:2px 3px 8px;font-size:11px;color:var(--muted)} .rfilter span{margin-right:3px} .rfilter button{border:1px solid var(--line);background:var(--raise);color:var(--muted);border-radius:999px;padding:1px 8px;font-size:11px} .rfilter button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .runits .rck{margin:0;width:13px;height:13px;cursor:pointer}
+.dragi{cursor:grab} #rail .droptab{outline:2px dashed var(--accent);outline-offset:1px;background:var(--accent-soft)}
 .rbulk{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:0 3px 8px;font-size:11.5px} .rbulk select{font-size:12px;padding:2px 4px;border:1px solid var(--accent);border-radius:6px;background:var(--raise);max-width:150px} .rbulk.on{background:var(--accent-soft);border-radius:8px;padding:5px 6px;margin-bottom:6px}
 #ctxMenu{position:fixed;z-index:1000;min-width:180px;max-height:70vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:5px;display:grid;font-size:13px}
 #ctxMenu .ch{padding:5px 9px 6px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line);margin-bottom:3px}
@@ -1303,10 +1304,11 @@ function openCtx(el,x,y){
   CTX.ids=many?selUnitIds():[id]; CTX.slots=g?(many?getMulti().filter(x=>x.slot==='from'||x.slot==='to'):(slot==='from'||slot==='to'?[{id,slot}]:[])):[]; CTX.at=Date.now();
   const dp=CTX.ids.length===1?destPlace(u):null;
   closeCtx(); const m=document.createElement('div'); m.id='ctxMenu'; m.setAttribute('role','menu');
-  m.innerHTML=`<div class="ch">${CTX.ids.length>1?`${CTX.ids.length}개 선택됨 · 장소 옮기기`:`${esc(lbl(u))} · 장소 옮기기`}</div>${S.places.map(p=>`<button role="menuitem" data-cdest="${p.id}" class="${dp===p.id?'cur':''}">→ ${esc(p.name)}${dp===p.id?' ✓':''}</button>`).join('')}<button role="menuitem" data-cdest="">도착지 미정</button>${CTX.slots.length?`<hr><button role="menuitem" data-cunplace>↩ 미배치 가구로 돌려놓기</button>`:''}`;
+  m.innerHTML=`<div class="ch">${CTX.ids.length>1?`${CTX.ids.length}개 선택됨 · 장소 옮기기`:`${esc(lbl(u))} · 장소 옮기기`}</div>${S.places.map(p=>`<button role="menuitem" data-cdest="${p.id}" class="${dp===p.id?'cur':''}">→ ${esc(p.name)}${dp===p.id?' ✓':''}</button>`).join('')}<button role="menuitem" data-cdest="">도착지 미정</button><hr><div class="ch">소속(처음) 공간 바꾸기</div>${S.places.map(p=>`<button role="menuitem" data-cown="${p.id}">⇢ ${esc(p.name)} 가구로</button>`).join('')}${CTX.slots.length?`<hr><button role="menuitem" data-cunplace>↩ 미배치 가구로 돌려놓기</button>`:''}`;
   document.body.appendChild(m); const r=m.getBoundingClientRect(); m.style.left=Math.max(4,Math.min(x,innerWidth-r.width-4))+'px'; m.style.top=Math.max(4,Math.min(y,innerHeight-r.height-4))+'px';
   m.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; e.stopPropagation(); closeCtx();
     if(b.dataset.cdest!==undefined){ moveUnitsTo(CTX.ids,b.dataset.cdest); return }
+    if(b.dataset.cown){ setOwner(CTX.ids.map(U).filter(Boolean),b.dataset.cown); return }
     if(b.dataset.cunplace!==undefined){ for(const s of CTX.slots){ const uu=U(s.id); if(uu) unplace(uu,s.slot) } UI.multi=null; UI.sel=null; toast(CTX.slots.length>1?`${CTX.slots.length}개를 미배치 가구로 돌려놓았어요.`:`${lbl(U(CTX.slots[0].id))}을(를) 미배치 가구로 돌려놓았어요.`); commit() } });
   const f=m.querySelector('button'); if(f) f.focus({preventScroll:true}); return true }
 document.addEventListener('contextmenu',e=>{ if(openCtx(e.target,e.clientX,e.clientY)) e.preventDefault() });
@@ -1559,15 +1561,26 @@ function railSpace(pid){
     h+=`<div class="rbulk${rs?' on':''}"><button class="btn small" data-rselall="${allOn?'off':'on'}">${allOn?'선택 해제':'보이는 것 전체 선택'}</button>${rs?`<b>${rs.size}개 선택</b>${bulkDestSel()}`:'<span class="hint">체크하거나 오른쪽 버튼으로 장소를 옮겨요</span>'}</div>` }
   for(const it of items){ const us=unitsOf(it).filter(u=>!rf||(sl==='from'&&isNewU(u)?false:(rf==='a')===!!u[sl])); if(!us.length) continue;
     const allU=unitsOf(it);
-    h+=`<div class="ritem"><div class="rih"><span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b title="${esc(it.name)}">${esc(it.name)}</b><button class="newtg ${it.isNew?'on':''}" data-newtg="${it.id}" title="신규 구매 여부 (눌러서 바꾸기)">${it.isNew?'신규':'기존'}</button>${it.kind==='item'?'<span class="toptag">올림</span>':''}${assetPhotoBtn(it,'rp')}<span class="qstep" title="전체 수량"><button data-qstep="${it.id}:-1" aria-label="수량 줄이기">−</button><input data-qtyit="${it.id}" type="number" min="1" value="${it.qty}" aria-label="${esc(it.name)} 전체 수량"><button data-qstep="${it.id}:1" aria-label="수량 늘리기">+</button></span><div class="rih2">${dimInputs(it,{cls:'sm',noNote:true})}<span class="c">${allU.filter(isPlaced).length}/${allU.length} 배치</span><button class="idel" data-delitem="${it.id}" title="${esc(it.name)} 전체 삭제" aria-label="${esc(it.name)} 전체 삭제">삭제</button></div></div><ul class="runits tree">`;
+    h+=`<div class="ritem"><div class="rih"><span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b class="dragi" draggable="true" data-di="${it.id}" title="${esc(it.name)} · 위쪽 공간 탭에 끌어 놓으면 그 공간 가구로 바뀌어요">${esc(it.name)}</b><button class="newtg ${it.isNew?'on':''}" data-newtg="${it.id}" title="신규 구매 여부 (눌러서 바꾸기)">${it.isNew?'신규':'기존'}</button>${it.kind==='item'?'<span class="toptag">올림</span>':''}${assetPhotoBtn(it,'rp')}<span class="qstep" title="전체 수량"><button data-qstep="${it.id}:-1" aria-label="수량 줄이기">−</button><input data-qtyit="${it.id}" type="number" min="1" value="${it.qty}" aria-label="${esc(it.name)} 전체 수량"><button data-qstep="${it.id}:1" aria-label="수량 늘리기">+</button></span><div class="rih2">${dimInputs(it,{cls:'sm',noNote:true})}<span class="c">${allU.filter(isPlaced).length}/${allU.length} 배치</span><button class="idel" data-delitem="${it.id}" title="${esc(it.name)} 전체 삭제" aria-label="${esc(it.name)} 전체 삭제">삭제</button></div></div><ul class="runits tree">`;
     for(const u of us){ const on=UI.hl&&UI.hl.ids.size===1&&UI.hl.ids.has(u.id);
       h+=`<li draggable="true" data-du="${u.id}" data-u="${u.id}" class="${isPlaced(u)?'':'rem'} ${on?'on':''}"><input type="checkbox" class="rck" data-rsel="${u.id}" ${UI.rsel&&UI.rsel.has(u.id)?'checked':''} aria-label="${esc(lbl(u))} 고르기"><span class="sw" style="--c:${it.color}"></span><span class="nm" title="${esc(lbl(u))}">${esc((lbl(u).slice((it.name||'').trim().length).trim())||'1')}</span>${sl==='from'&&isNewU(u)?'<span class="flag newf" title="신규 구매 · 변경 후에서 배치">새</span>':u[sl]?`<button class="flag on" data-unassign="${u.id}" title="눌러서 미배치 가구로 돌려놓기">배정 ↩</button>`:`<span class="flag need" title="도면에 아직 놓지 않았어요">배정 필요</span>`}<select data-dest="${u.id}" aria-label="${esc(lbl(u))} 도착지">${destOptions(u)}</select><button class="udel" data-delunit="${u.id}" title="이 가구 삭제" aria-label="${esc(lbl(u))} 삭제">×</button></li>` }
     h+='</ul></div>';
   }
   return h;
 }
-$('#rail').addEventListener('dragstart',e=>{ const t=e.target.closest('[data-dg],[data-du]'); if(!t) return; UI.drag=t.dataset.du?{u:t.dataset.du}:{g:t.dataset.dg}; try{e.dataTransfer.setData('text/plain','furniture');e.dataTransfer.effectAllowed='move'}catch(_){} });
-$('#rail').addEventListener('dragend',()=>{ setTimeout(()=>UI.drag=null,0) });
+$('#rail').addEventListener('dragstart',e=>{ const t=e.target.closest('[data-di],[data-dg],[data-du]'); if(!t) return; UI.drag=t.dataset.di?{i:t.dataset.di}:t.dataset.du?{u:t.dataset.du}:{g:t.dataset.dg}; try{e.dataTransfer.setData('text/plain','furniture');e.dataTransfer.effectAllowed='move'}catch(_){} });
+$('#rail').addEventListener('dragend',()=>{ setTimeout(()=>UI.drag=null,0); $$('#rail .droptab').forEach(b=>b.classList.remove('droptab')) });
+/* 잘못 등록한 가구를 위쪽 공간 탭에 끌어 놓아 소속(처음) 공간 바꾸기 */
+function dragUnits(d){ if(!d) return []; if(d.i){ const it=I(d.i); return it?unitsOf(it):[] } if(d.u){ return UI.rsel&&UI.rsel.has(d.u)?[...UI.rsel].map(U).filter(Boolean):[U(d.u)].filter(Boolean) } const g=GROUPS.find(g=>g.key===d.g); return g?[...g.units]:[] }
+$('#rail').addEventListener('dragover',e=>{ const t=e.target.closest('[data-railtab]'); $$('#rail .droptab').forEach(b=>b!==t&&b.classList.remove('droptab')); if(!t||!t.dataset.railtab||!UI.drag) return; e.preventDefault(); e.dataTransfer.dropEffect='move'; t.classList.add('droptab') });
+$('#rail').addEventListener('drop',e=>{ const t=e.target.closest('[data-railtab]'); if(!t||!t.dataset.railtab||!UI.drag) return; e.preventDefault(); const us=dragUnits(UI.drag); UI.drag=null; setOwner(us,t.dataset.railtab) });
+function setOwner(us,pid){ if(Cloud.on&&!canEdit()){ toast('지금은 보기만 할 수 있어요.'); return } const p=P(pid); if(!p) return; let n=0;
+  for(const u of us){ const it=I(u.itemId); if(!it||it.placeId===pid) continue; const old=it.placeId; const moveAll=unitsOf(it).every(x=>us.includes(x));
+    let tgt=S.items.find(x=>x!==it&&x.placeId===pid&&gkey(x)===gkey(it)); if(!tgt){ if(moveAll){ it.placeId=pid; tgt=it } else { tgt={...it,id:uid(),placeId:pid,qty:0}; S.items.push(tgt) } }
+    u.itemId=tgt.id; u.from=null; if(u.first&&u.first.p===old) delete u.first; n++ }
+  if(!n){ toast(`이미 ${p.name} 가구예요.`); return }
+  S.items=S.items.filter(it=>S.units.some(u=>u.itemId===it.id)); for(const it of S.items){ const x=unitsOf(it); it.qty=x.length; x.forEach((u,i)=>u.idx=i+1) }
+  UI.rsel=null; UI.sel=null; UI.multi=null; UI.railTab=pid; commit(); toast(`${n}개를 ${p.name} 가구로 옮겼어요. 변경 전 위치는 그 공간에서 다시 놓아 주세요. (Ctrl+Z로 되돌리기)`) }
 
 /* ---------- items view ---------- */
 document.addEventListener('input',e=>{ const t=e.target; if(t.id==='afQ'){ AF.q=t.value; $('#assetTbl').innerHTML=assetTable(); savePrefs() } });

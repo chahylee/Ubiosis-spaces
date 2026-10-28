@@ -162,7 +162,7 @@ h3{font-size:15px;margin:0}
 .qadd input:focus{border-color:var(--accent);outline:none}
 .qadd .hint{font-size:10.5px}
 .raillist{overflow:auto;padding:4px 6px 20px;min-height:0}
-.thead,.trow{display:grid;grid-template-columns:10px 1fr 26px 32px 32px;align-items:center;gap:4px;padding:4px}
+.thead,.trow{display:grid;grid-template-columns:10px 1fr 44px 26px 32px 32px;align-items:center;gap:4px;padding:4px}
 .thead{font-size:10.5px;color:var(--muted);letter-spacing:.04em;position:sticky;top:-6px;background:var(--panel);z-index:1}
 .thead span:nth-child(n+3),.trow .num{text-align:center}
 .trow{border-radius:7px;cursor:grab}
@@ -188,7 +188,7 @@ button.num.zero{opacity:.35}
 .rih .mono{font-size:10.5px;color:var(--muted)}
 .rih .c{margin-left:auto;font-size:12px;color:var(--muted)}
 .runits{list-style:none;margin:0;padding:0;display:grid;gap:2px}
-.runits li{display:grid;grid-template-columns:10px 1fr auto 80px 18px;align-items:center;gap:5px;padding:3px 4px;border-radius:6px;cursor:grab;border-left:3px solid transparent}
+.runits li{display:grid;grid-template-columns:14px 10px 1fr auto 80px 18px;align-items:center;gap:5px;padding:3px 4px;border-radius:6px;cursor:grab;border-left:3px solid transparent}
 .runits li:hover{background:var(--soft)}
 .runits li.rem{border-left-color:var(--warn)}
 .runits li.on{background:color-mix(in srgb,var(--hl) 14%,transparent)}
@@ -201,6 +201,11 @@ button.num.zero{opacity:.35}
 .flag.on{border-color:var(--accent);color:var(--accent)} button.flag{background:none;cursor:pointer;font:inherit;font-size:9.5px} button.flag.on:hover{background:var(--accent);color:var(--accent-ink)} .traybg.drophot{fill:color-mix(in srgb,var(--warn) 16%,transparent);stroke:var(--warn);stroke-width:2.5;stroke-dasharray:8 6;vector-effect:non-scaling-stroke}
 .flag.need{border-color:var(--warn);color:var(--warn)}
 .rfilter{display:flex;align-items:center;gap:3px;flex-wrap:wrap;padding:2px 3px 8px;font-size:11px;color:var(--muted)} .rfilter span{margin-right:3px} .rfilter button{border:1px solid var(--line);background:var(--raise);color:var(--muted);border-radius:999px;padding:1px 8px;font-size:11px} .rfilter button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.runits .rck{margin:0;width:13px;height:13px;cursor:pointer}
+.rbulk{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:0 3px 8px;font-size:11.5px} .rbulk select{font-size:12px;padding:2px 4px;border:1px solid var(--accent);border-radius:6px;background:var(--raise);max-width:150px} .rbulk.on{background:var(--accent-soft);border-radius:8px;padding:5px 6px;margin-bottom:6px}
+#ctxMenu{position:fixed;z-index:1000;min-width:180px;max-height:70vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:5px;display:grid;font-size:13px}
+#ctxMenu .ch{padding:5px 9px 6px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line);margin-bottom:3px}
+#ctxMenu button{all:unset;padding:6px 9px;border-radius:6px;cursor:pointer;white-space:nowrap} #ctxMenu button:hover,#ctxMenu button:focus{background:var(--soft)} #ctxMenu button.cur{font-weight:600} #ctxMenu hr{border:0;border-top:1px solid var(--line);margin:3px 0}
 .runits select{font-size:11px;padding:1px 3px;border:1px solid var(--line);border-radius:6px;background:var(--raise);min-width:0;width:100%}
 .railempty{padding:20px 12px;color:var(--muted);font-size:13px;display:grid;gap:10px}
 .raildrop{position:absolute;inset:0;border:2px dashed var(--warn);border-radius:8px;pointer-events:none}
@@ -294,6 +299,8 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .incu em.rmt{color:var(--muted)}
 .incu em{margin-left:auto;font-style:normal;font-size:10.5px;color:var(--warn)}
 .ph-title{font-size:12.5px;font-weight:500;color:var(--muted)}
+.phtag{display:inline-block;padding:0 6px;border-radius:5px;font-size:11.5px;font-weight:600;border:1px solid var(--line)}
+.phtag.after{color:var(--accent,#2563eb);border-color:currentColor}
 .pcard{position:relative;flex:none;border:1px solid var(--line);border-radius:8px;overflow:hidden;padding:0;aspect-ratio:4/3;background:var(--raise);display:block;width:100%}
 .pcard img{width:100%;height:100%;object-fit:cover;display:block}
 .prow{display:grid;grid-template-columns:22px 1fr;gap:6px;align-items:center}
@@ -343,6 +350,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .athumb img{width:100%;height:100%;object-fit:cover;display:block}
 .aadd{font-size:11.5px;height:30px;width:62px;padding:0 6px;border:1px dashed var(--muted);border-radius:6px;background:none;color:var(--muted);white-space:nowrap;cursor:pointer}
 .aadd:hover{color:var(--accent);border-color:var(--accent)}
+.athumb.rp,.aadd.rp{width:44px;height:24px;font-size:10.5px;padding:0 3px;flex:none} .athumb.mini,.aadd.mini{width:40px;height:26px;flex:none;padding:0}
 .ptag{fill:var(--ink)} .ptag.b{fill:var(--accent)}
 .ptagt{fill:var(--bg);font:600 22px var(--sans);text-anchor:middle;dominant-baseline:central}
 .panel.b .ptagt{fill:var(--accent-ink)}
@@ -359,6 +367,8 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .toptag{font-size:9.5px;border:1px dashed var(--muted);border-radius:4px;padding:0 4px;color:var(--muted)}
 .kindsel{border:1px solid transparent;background:transparent;border-radius:6px;padding:3px 4px;font-size:12.5px}
 .kindsel:hover{border-color:var(--line)}
+.unit.first,.unit.cur{cursor:context-menu}
+.boxsel{position:fixed;z-index:50;pointer-events:none;border:1.5px dashed var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:3px}
 .unit.ghost .ub{fill-opacity:.1;stroke-dasharray:5 4}
 .unit.ghost .un,.unit.ghost .ud{opacity:.45}
 .unit.clash .ub{stroke:var(--bad);stroke-width:3}
@@ -576,7 +586,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
           <button id="railTab" class="railtab" hidden title="자산 목록 펼치기">▶<span>자산 목록</span></button>
           <svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg>
           <div id="selbar" class="selbar" hidden></div>
-          <div class="legend" title="휠: 칸별 위아래 · Shift+휠: 좌우 · Ctrl+휠: 확대·축소 (Ctrl+Alt+휠: 더 세밀하게) · Ctrl+클릭: 여러 개 선택 · Ctrl+방향키: 1cm씩 이동 (Shift 같이: 10cm) · Alt+방향키: 90° 회전 · 공간 이름: 그 공간만"><span><i></i>1칸 = 50cm</span><span>Ctrl+클릭 여러 개 · Ctrl+방향키 미세 이동 · Alt+방향키 회전 · Shift+휠 좌우</span></div>
+          <div class="legend" title="휠: 확대·축소 (Alt 같이: 더 세밀하게) · Ctrl+휠: 칸별 위아래 이동 · Ctrl+끌기: 화면 이동 · 스크롤바: 끌거나 클릭해서 이동 · 빈 곳 끌기: 범위 안 가구 한 번에 고르기 (Shift 같이: 더하기) · Ctrl/Shift+클릭: 하나씩 더 고르기 · 오른쪽 버튼: 장소 옮기기 · Ctrl+방향키: 1cm씩 이동 (Shift 같이: 10cm) · Alt+방향키: 90° 회전 · 공간 이름: 그 공간만"><span><i></i>1칸 = 50cm</span><span>휠 확대·축소 · Ctrl+휠/끌기 이동 · 빈 곳 끌기 범위 선택 · 오른쪽 버튼 장소 옮기기</span></div>
           <div id="planEmpty" class="empty" hidden></div>
           <button id="photosTab" class="photos-tab" hidden>◀ 사진·들어온 가구</button>
           <div class="sbar" id="sbL" hidden><i></i></div><div class="sbar" id="sbR" hidden><i></i></div><div class="hbar" id="sbH" hidden><i></i></div>
@@ -795,7 +805,7 @@ async function applyCloud(){
   const merge=(oldArr,newArr)=>{ const om=new Map((oldArr||[]).map(o=>[o.id,o])); return newArr.map(n=>{ const o=om.get(n.id); if(!o) return n; for(const k of Object.keys(o)) if(!(k in n)) delete o[k]; return Object.assign(o,n) }) };
   for(const coll of COLLS) S[coll]=merge(S[coll],S2[coll]); S.meta=Object.assign(S.meta||{},S2.meta);
   if(Cal.m&&!S.maps.includes(Cal.m)&&$('#dlgCal').open){ $('#dlgCal').close(); toast('다른 사람이 이 도면을 지워서 축척 창을 닫았어요.') }
-  const first=!Cloud.ready; Cloud.ready=true; renderAll(); if(first){ UI.fitted=false; renderAll(); bootView(); setSave('저장됨 · 모두에게 공유 중'); if(!S.places.length) toast('아직 내용이 없어요. 공간을 등록하거나, 데이터 → 파일 불러오기로 기존 작업을 올리세요.') }
+  const first=!Cloud.ready; Cloud.ready=true; if(first) migrateFirst(); renderAll(); if(first){ UI.fitted=false; renderAll(); bootView(); setSave('저장됨 · 모두에게 공유 중'); if(!S.places.length) toast('아직 내용이 없어요. 공간을 등록하거나, 데이터 → 파일 불러오기로 기존 작업을 올리세요.') }
 }
 function cloudStart(){
   try{ firebase.initializeApp(FIREBASE_CONFIG); Cloud.db=firebase.firestore(); Cloud.on=true }catch(e){ console.error(e); return false }
@@ -933,7 +943,8 @@ function computeAnchors(L){ const A={}; const a=L.filter(e=>e.col==='L'), b=L.fi
   UI.anchor=A }
 const roomsOf=m=>(m&&m.rooms)||[];
 function roomAt(m,x,y){ return roomsOf(m).find(r=>x>=r.x/m.sx&&x<=(r.x+r.w)/m.sx&&y>=r.y/m.sy&&y<=(r.y+r.h)/m.sy)||null }
-function unitRoom(u,slot){ const pos=u[slot]; if(!pos) return null; const m=M(pos.mapId); if(!cal(m)) return null; const[w,d]=dims(I(u.itemId),pos.rot||0); return roomAt(m,pos.x+w/2,pos.y+d/2) }
+function unitRoom(u,slot){ return posRoom(u,u[slot]) }
+function posRoom(u,pos){ if(!pos) return null; const m=M(pos.mapId); if(!cal(m)) return null; const[w,d]=dims(I(u.itemId),pos.rot||0); return roomAt(m,pos.x+w/2,pos.y+d/2) }
 function destLabel(u){ const dp=destPlace(u); if(!dp) return ''; let s=P(dp)?.name||''; if(u.to){ const m=M(u.to.mapId); const r=unitRoom(u,'to'); if(m&&(r||S.maps.filter(x=>x.placeId===m.placeId).length>1)) s+=' › '+(r?r.name:m.name) } return s }
 function parseKey(k){ const p=String(k).split(':'); return p.length===2?{id:p[0],room:'*',layer:p[1]}:{id:p[0],room:p[1],layer:p[2]} }
 function ensurePanels(){ if(!UI.slots) UI.slots=loadPanels(); UI.slots=UI.slots.map(k=>{ if(!k) return null; const q=parseKey(k); const m=M(q.id); if(!cal(m)) return null; if(q.room!=='*'&&!roomsOf(m).some(r=>r.id===q.room)) return null; return `${q.id}:${q.room}:${q.layer}` }) }
@@ -965,7 +976,7 @@ function layoutRaw(){
 }
 const inPanel=(e,cx,cy)=>cx>=e.cx-.5&&cx<=e.cx+e.w+.5&&cy>=e.cy-.5&&cy<=e.cy+e.h+.5;
 const panelAt=(x,y)=>UI.L.find(e=>{ const l=fromW(e.col,x,y); return l.x>=e.ox&&l.x<=e.ox+e.w&&l.y>=e.oy&&l.y<=e.oy+e.h });
-function unitRect(u,slot){ const pos=u[slot]; if(!pos) return null; const[w,d]=dims(I(u.itemId),pos.rot||0); const layer=slot==='from'?'a':'b';
+function unitRect(u,slot){ const pos=slotPos(u,slot); if(!pos) return null; const[w,d]=dims(I(u.itemId),pos.rot||0); const layer=slot==='from'||slot==='first'?'a':'b';
   const e=UI.L.find(e=>e.m.id===pos.mapId&&e.layer===layer&&inPanel(e,pos.x+w/2,pos.y+d/2)); if(!e) return null; const z=colZ(e.col), q=toW(e.col,e.mx+pos.x,e.my+pos.y); return{x:q.x,y:q.y,w:w*z,d:d*z,e,lx:pos.x,ly:pos.y,lw:w,ld:d} }
 
 function gridPath(e){
@@ -987,10 +998,23 @@ function panelSVG(e,i){
   <g clip-path="url(#clip${i})"><image class="pimg" href="${e.m.img}" x="${e.mx}" y="${e.my}" width="${c.w}" height="${c.h}" preserveAspectRatio="none"/>${gridPath(e)}</g>${rooms}</g>`;
 }
 /* 여러 개 선택 (Ctrl/⌘/Shift+클릭) */
-function getMulti(){ const m=(UI.multi||[]).filter(x=>{ const u=U(x.id); return u&&u[x.slot] }); UI.multi=m.length?m:null; return m }
+function getMulti(){ const m=(UI.multi||[]).filter(x=>{ const u=U(x.id); return u&&(x.slot==='tray'||u[x.slot]) }); UI.multi=m.length?m:null; return m }
+/* 여러 개를 골라 도착 장소를 한 번에 바꾸기 (도면·미배치 가구·자산 목록 체크) */
+function selUnitIds(){ const ids=new Set(getMulti().map(x=>x.id)); for(const id of UI.rsel||[]) if(U(id)) ids.add(id); return [...ids] }
+function bulkDestSel(){ return `<select data-bulkdest aria-label="고른 가구 장소 옮기기"><option value="">장소 옮기기…</option>${S.places.map(p=>`<option value="${p.id}">→ ${esc(p.name)}</option>`).join('')}<option value="__none">도착지 미정</option></select>` }
+function setDest(u,v){ if(!v){ u.to=null; u.toPlaceId=null } else if(!(u.to&&M(u.to.mapId)?.placeId===v)){ u.to=null; u.toPlaceId=v } }
+function moveUnitsTo(ids,v){ if(Cloud.on&&!canEdit()){ toast('지금은 보기만 할 수 있어요.'); return } const us=ids.map(U).filter(Boolean); if(!us.length) return;
+  for(const u of us) setDest(u,v); UI.multi=null; UI.sel=null; UI.rsel=null; commit();
+  toast(v?`${us.length>1?us.length+'개를':lbl(us[0])+'을(를)'} ${P(v)?.name||''}(으)로 옮기기로 했어요.`:`${us.length>1?us.length+'개':lbl(us[0])}의 도착지를 미정으로 바꿨어요.`) }
 const inMulti=(id,slot)=>!!(UI.multi||[]).find(x=>x.id===id&&x.slot===slot);
+/* 배치판(plan)은 처음 위치 ↔ 마지막 위치를 비교: 버전을 넘겨도 처음 위치(u.first)는 고정.
+   'first' = 처음 위치(왼쪽, 고정), 'cur' = 변경 후가 없을 때의 지금 위치(오른쪽) — 둘 다 끌어서 옮기지 않음 */
+const slotPos=(u,s)=>s==='first'?(u.first&&u.first.at):s==='cur'?u.from:u[s];
+function planSlot(u,slot){ if(UI.view!=='plan') return slot; const f=u.first;
+  if(slot==='from') return f?(!f.n&&f.at?'first':null):'from';
+  return u.to?'to':(f&&u.from&&!destPlace(u)?'cur':null) }
 function unitSVG(u,slot,e,flags){
-  const it=I(u.itemId), pos=u[slot]; const[w,d]=dims(it,pos.rot||0); const x=e.mx+pos.x, y=e.my+pos.y; const name=lbl(u);
+  const it=I(u.itemId), pos=slotPos(u,slot); const[w,d]=dims(it,pos.rot||0); const x=e.mx+pos.x, y=e.my+pos.y; const name=lbl(u);
   const dimTxt=`${it.w}*${it.d}`; const vert=d>w*1.2; const tw=vert?d:w, th=vert?w:d; // 세로로 긴 가구는 글씨를 긴 쪽 방향으로
   let fs=Math.min(th*.3,tw*.9/Math.max(1.4,name.length*.98)); fs=clamp(fs,3,30);
   let fd=Math.min(fs*.72,tw*.9/(dimTxt.length*.62)); fd=clamp(fd,2.5,20);
@@ -1001,14 +1025,16 @@ function unitSVG(u,slot,e,flags){
   s+=`<g${vert?` transform="rotate(-90 ${w/2} ${d/2})"`:''}><text class="un" x="${w/2}" y="${d/2-fd*.55}" font-size="${fs.toFixed(1)}">${esc(name)}</text>`;
   s+=`<text class="ud" x="${w/2}" y="${d/2+fs*.55}" font-size="${fd.toFixed(1)}">${dimTxt}</text></g>`;
   if(it.isNew){ const th=clamp(Math.min(d,w)*.28,7,18); s+=`<g class="newtag"><rect x="-1" y="${-th-1}" width="${th*1.9}" height="${th}" rx="${th*.25}"/><text x="${th*.95-1}" y="${-th/2-1}" font-size="${(th*.68).toFixed(1)}">새</text></g>` }
-  if(slot==='to'&&it.placeId!==e.m.placeId&&!it.isNew){ const on='← '+(P(it.placeId)?.name||''); const f2=clamp(Math.min(fs*.72,w*.95/Math.max(2,on.length*.95)),4,16); s+=`<text class="ufrom" x="${w/2}" y="${d+f2*.9}" font-size="${f2.toFixed(1)}">${esc(on)}</text>` }
-  if(flags.ghost){ const on='→ '+destLabel(u); const f2=clamp(Math.min(fs*.72,w*1.1/Math.max(2,on.length*.95)),4,16); s+=`<text class="ugo" x="${w/2}" y="${d+f2*.9}" font-size="${f2.toFixed(1)}">${esc(on)}</text>` }
+  const op=UI.view==='plan'&&u.first?(u.first.n?null:u.first.p):(it.isNew?null:it.placeId);
+  if(slot==='to'&&op&&op!==e.m.placeId){ const on='← '+(P(op)?.name||''); const f2=clamp(Math.min(fs*.72,w*.95/Math.max(2,on.length*.95)),4,16); s+=`<text class="ufrom" x="${w/2}" y="${d+f2*.9}" font-size="${f2.toFixed(1)}">${esc(on)}</text>` }
+  if(slot==='cur'&&u.first&&!u.first.n&&u.first.p!==e.m.placeId){ const on='← '+(P(u.first.p)?.name||''); const f2=clamp(Math.min(fs*.72,w*.95/Math.max(2,on.length*.95)),4,16); s+=`<text class="ufrom" x="${w/2}" y="${d+f2*.9}" font-size="${f2.toFixed(1)}">${esc(on)}</text>` }
+  if(flags.ghost){ const on='→ '+lastLabel(u); const f2=clamp(Math.min(fs*.72,w*1.1/Math.max(2,on.length*.95)),4,16); s+=`<text class="ugo" x="${w/2}" y="${d+f2*.9}" font-size="${f2.toFixed(1)}">${esc(on)}</text>` }
   return s+'</g>';
 }
 function trayUnitSVG(u,x,y){ const it=I(u.itemId); const w=it.w, d=it.d; const name=lbl(u); const dimTxt=`${it.w}*${it.d}`;
   const vert=d>w*1.2, tw=vert?d:w, th=vert?w:d;
   let fs=Math.min(th*.3,tw*.9/Math.max(1.4,name.length*.98)); fs=clamp(fs,3,30); let fd=Math.min(fs*.72,tw*.9/(dimTxt.length*.62)); fd=clamp(fd,2.5,20); const tot=fs*1.05+fd*1.1; if(tot>th*.9){ const k=th*.9/tot; fs*=k; fd*=k }
-  return `<g class="unit traywait${it.kind==='item'?' top':''}${it.isNew?' isnew':''}${UI.sel&&UI.sel.slot==='tray'&&UI.sel.id===u.id?' sel':''}" data-id="${u.id}" data-slot="tray" transform="translate(${x} ${y})" style="--c:${it.color}"><rect class="ub" width="${w}" height="${d}" rx="2"/><g${vert?` transform="rotate(-90 ${w/2} ${d/2})"`:''}><text class="un" x="${w/2}" y="${d/2-fd*.55}" font-size="${fs.toFixed(1)}">${esc(name)}</text><text class="ud" x="${w/2}" y="${d/2+fs*.55}" font-size="${fd.toFixed(1)}">${dimTxt}</text></g></g>` }
+  return `<g class="unit traywait${it.kind==='item'?' top':''}${it.isNew?' isnew':''}${(UI.sel&&UI.sel.slot==='tray'&&UI.sel.id===u.id)||inMulti(u.id,'tray')?' sel':''}" data-id="${u.id}" data-slot="tray" transform="translate(${x} ${y})" style="--c:${it.color}"><rect class="ub" width="${w}" height="${d}" rx="2"/><g${vert?` transform="rotate(-90 ${w/2} ${d/2})"`:''}><text class="un" x="${w/2}" y="${d/2-fd*.55}" font-size="${fs.toFixed(1)}">${esc(name)}</text><text class="ud" x="${w/2}" y="${d/2+fs*.55}" font-size="${fd.toFixed(1)}">${dimTxt}</text></g></g>` }
 function buildTray(L){ UI.trayPos={}; UI.trayBox=null; if(UI.view!=='space'||!L.length||!UI.focus) return '';
   const layer=UI.wlayer||'a'; let list;
   if(layer==='a') list=S.units.filter(u=>I(u.itemId).placeId===UI.focus&&!u.from&&!isNewU(u));
@@ -1040,10 +1066,10 @@ function renderPlan(){
   const hl=UI.hl; const us={L:'',R:''};
   for(const e of L){
     const slot=e.layer==='a'?'from':'to'; const rects=[];
-    for(const u of [...S.units].sort((a,b)=>isTop(a)-isTop(b))){ const pos=u[slot]; if(!pos||pos.mapId!==e.m.id) continue; const[w,d]=dims(I(u.itemId),pos.rot||0); if(!inPanel(e,pos.x+w/2,pos.y+d/2)) continue; rects.push({u,r:{x:pos.x,y:pos.y,w,d},ghost:slot==='from'&&isPlaced(u)}) }
+    for(const u of [...S.units].sort((a,b)=>isTop(a)-isTop(b))){ const ps=planSlot(u,slot); const pos=ps&&slotPos(u,ps); if(!pos||pos.mapId!==e.m.id) continue; const[w,d]=dims(I(u.itemId),pos.rot||0); if(!inPanel(e,pos.x+w/2,pos.y+d/2)) continue; rects.push({u,ps,r:{x:pos.x,y:pos.y,w,d},ghost:ps==='first'?!!lastLabel(u):slot==='from'&&isPlaced(u)}) }
     const clash=new Set();
     for(let i=0;i<rects.length;i++){ if(rects[i].ghost||isTop(rects[i].u)) continue; for(let j=i+1;j<rects.length;j++){ if(rects[j].ghost||isTop(rects[j].u)) continue; const a=rects[i].r,b=rects[j].r; if(a.x<b.x+b.w-1&&b.x<a.x+a.w-1&&a.y<b.y+b.d-1&&b.y<a.y+a.d-1){clash.add(rects[i].u.id);clash.add(rects[j].u.id)} } }
-    for(const {u,ghost} of rects) us[e.col]+=unitSVG(u,slot,e,{ghost,clash:clash.has(u.id),sel:(UI.sel&&UI.sel.id===u.id&&UI.sel.slot===slot)||inMulti(u.id,slot),hl:hl&&hl.ids.has(u.id),dim:hl&&!hl.ids.has(u.id)});
+    for(const {u,ps,ghost} of rects) us[e.col]+=unitSVG(u,ps,e,{ghost,clash:clash.has(u.id),sel:(UI.sel&&UI.sel.id===u.id&&UI.sel.slot===slot)||inMulti(u.id,slot),hl:hl&&hl.ids.has(u.id),dim:hl&&!hl.ids.has(u.id)});
   }
   planSvg.innerHTML=['L','R'].map(c=>`<g class="col" id="col${c}" transform="${colTransform(c)}">${cs[c]}<g class="units">${us[c]}</g></g>`).join('')+`<g id="guides"></g><g id="dragl"></g><g id="ovl"></g>`;
   planSvg.classList.toggle('measuring',!!UI.measure);
@@ -1092,13 +1118,13 @@ $('#sbH').addEventListener('pointerdown',e=>{ if(e.target!==e.currentTarget) ret
 $$('.sbar i').forEach(t=>t.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); const bar=t.parentElement, c=bar.id.slice(2); const H=+bar.dataset.h, trackH=bar.getBoundingClientRect().height; const y0=e.clientY, s0=UI.scroll[c]||0; try{t.setPointerCapture(e.pointerId)}catch(_){} bar.classList.add('drag');
   const mv=ev=>setScroll(c,s0+(ev.clientY-y0)/trackH*H); const up=()=>{ t.removeEventListener('pointermove',mv); t.removeEventListener('pointerup',up); bar.classList.remove('drag') }; t.addEventListener('pointermove',mv); t.addEventListener('pointerup',up) }));
 planSvg.addEventListener('wheel',e=>{ e.preventDefault(); const dy=e.deltaY*(e.deltaMode===1?33:e.deltaMode===2?400:1); const p=V.pt(e);
-  if(e.ctrlKey||e.metaKey){ const notch=Math.abs(dy)>=40; const f=notch?Math.sign(dy)*(e.altKey?.02:.05):clamp(dy,-40,40)*(e.altKey?.002:.006); const c=colAtX(p.x); if(c&&UI.L.some(x=>x.col==='L')&&UI.L.some(x=>x.col==='R')) zoomCol(c,Math.exp(f),p.y); else { const cx=centerX(); V.zoomAt(cx!=null?cx:p.x,p.y,Math.exp(f)) } return }
   const k=V.h/(planSvg.getBoundingClientRect().height||1);
   const dx=e.deltaX*(e.deltaMode===1?33:e.deltaMode===2?400:1);
-  if(e.shiftKey&&Math.abs(dy)>=1){ setHx((UI.hx||0)+dy*k); return }
-  if(Math.abs(dx)>Math.abs(dy)){ setHx((UI.hx||0)+dx*k); return }
-  if(Math.abs(dy)<1) return;
-  const c=colAtX(p.x); if(c) scrollBy(c,dy*k) },{passive:false});
+  // Ctrl+휠 = 위아래 이동
+  if(e.ctrlKey||e.metaKey){ const v=Math.abs(dy)>=Math.abs(dx)?dy:dx; if(Math.abs(v)<1) return; const c=colAtX(p.x); if(c) scrollBy(c,v*k); return }
+  if(Math.abs(dx)>Math.abs(dy)){ setHx((UI.hx||0)+dx*k); return } // 터치패드 옆으로 밀기
+  // 휠 = 확대·축소 (Alt 같이: 더 세밀하게)
+  { const notch=Math.abs(dy)>=40; const f=notch?Math.sign(dy)*(e.altKey?.02:.05):clamp(dy,-40,40)*(e.altKey?.002:.006); const c=colAtX(p.x); if(c&&UI.L.some(x=>x.col==='L')&&UI.L.some(x=>x.col==='R')) zoomCol(c,Math.exp(f),p.y); else { const cx=centerX(); V.zoomAt(cx!=null?cx:p.x,p.y,Math.exp(f)) } } },{passive:false});
 function zoomCol(c,k,wy){ const z0=colZ(c), z1=clamp(z0/k,.1,20); if(wy==null) wy=V.y+V.h/2; const a=anc(c); const s0=UI.scroll[c]||0; const ly=a.y0+(wy+s0-a.y0)/z0; UI.colz[c]=z1; setScroll(c,a.y0+(ly-a.y0)*z1-wy) }
 function syncColZoom(){ const both=(UI.L||[]).some(x=>x.col==='L')&&(UI.L||[]).some(x=>x.col==='R');
   for(const c of ['L','R']){ const box=$('#cz'+c); if(!box) continue; box.hidden=!both; if(!both) continue; const z=colZ(c); const r=box.querySelector('input'); if(document.activeElement!==r) r.value=Math.log(z).toFixed(2); box.querySelector('.czp').textContent=Math.round(z*100)+'%' }
@@ -1119,10 +1145,10 @@ function renderOverlay(){ fixLabels();
   let linkU=null;
   if(UI.sel) linkU=U(UI.sel.id); else if(UI.hl&&UI.hl.ids.size===1) linkU=U([...UI.hl.ids][0]);
   if(linkU){ const mySlot=UI.sel&&UI.sel.id===linkU.id?UI.sel.slot:null; const tw=[];
-    for(const sl of ['from','to']){ if(sl===mySlot) continue; const pos=linkU[sl]; if(!pos) continue; let r=unitRect(linkU,sl);
+    for(const sl0 of ['from','to']){ const sl=planSlot(linkU,sl0); if(!sl||sl===mySlot) continue; const pos=slotPos(linkU,sl); if(!pos) continue; let r=unitRect(linkU,sl);
       if(!r){ const[w,d]=dims(I(linkU.itemId),pos.rot||0); const e=UI.L.find(e=>e.m.id===pos.mapId&&inPanel(e,pos.x+w/2,pos.y+d/2)); if(e){ const z=colZ(e.col), q=toW(e.col,e.mx+pos.x,e.my+pos.y); r={x:q.x,y:q.y,w:w*z,d:d*z,ghost:true} } }
       if(r) tw.push({r,sl}) }
-    for(const {r,sl} of tw){ const pad=4*k; s+=`<g class="twin${r.ghost?' ghost':''}"><rect x="${r.x-pad}" y="${r.y-pad}" width="${r.w+pad*2}" height="${r.d+pad*2}" rx="${4*k}"/><text x="${r.x+r.w/2}" y="${r.y-pad-5*k}" font-size="${11*k}">${sl==='from'?'기존 위치':'변경 위치'}</text></g>` } }
+    for(const {r,sl} of tw){ const pad=4*k; s+=`<g class="twin${r.ghost?' ghost':''}"><rect x="${r.x-pad}" y="${r.y-pad}" width="${r.w+pad*2}" height="${r.d+pad*2}" rx="${4*k}"/><text x="${r.x+r.w/2}" y="${r.y-pad-5*k}" font-size="${11*k}">${{from:'기존 위치',to:'변경 위치',first:'처음 위치',cur:'지금 위치'}[sl]}</text></g>` } }
   if(UI.sel){ const su=U(UI.sel.id); const r=su&&unitRect(su,UI.sel.slot); if(r) s+=gapsSVG(r.e,r.lx,r.ly,r.lw,r.ld,su.id) }
   if(UI.measure) s+=measureSVG(k);
   g.innerHTML=s;
@@ -1174,57 +1200,106 @@ document.addEventListener('change',e=>{ const t=e.target.closest('[data-dimf]');
 document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.closest&&e.target.closest('[data-dimf]')) e.target.blur() },true);
 function renderSelbar(){
   const b=$('#selbar'); const sel=UI.sel; if(!sel){b.hidden=true;return}
-  const u=U(sel.id); if(sel.slot==='tray'&&u){ const it=I(u.itemId); b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b>${dimInputs(it)}${it.isNew?'<span class="rb new">신규 구매</span>':''}`; b.hidden=false; return }
+  { const m=getMulti(); if(m.length>1){ const onMap=m.filter(x=>x.slot!=='tray').length; b.innerHTML=`<b title="${esc(m.map(x=>lbl(U(x.id))).join(', '))}">${m.length}개 선택</b>${bulkDestSel()}${onMap?`<button class="btn small" data-act="rm">↩ 모두 미배치 가구로</button>`:''}<span class="hint">오른쪽 버튼으로도 옮길 수 있어요</span>`; b.hidden=false; return } }
+  const u=U(sel.id); if(sel.slot==='tray'&&u){ const it=I(u.itemId); b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b>${dimInputs(it)}${assetPhotoBtn(it,'mini')}${it.isNew?'<span class="rb new">신규 구매</span>':''}`; b.hidden=false; return }
   if(!u||!u[sel.slot]){UI.sel=null;b.hidden=true;return}
-  { const m=getMulti(); if(m.length>1){ b.innerHTML=`<b title="${esc(m.map(x=>lbl(U(x.id))).join(', '))}">${m.length}개 선택</b><button class="btn small" data-act="rm">↩ 모두 미배치 가구로</button>`; b.hidden=false; return } }
   const it=I(u.itemId); const dp=destPlace(u);
-  b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b>${dimInputs(it)}${routeBadge(u)}<button class="btn small" data-act="rm" title="Delete 키">↩ 미배치 가구로</button>`;
+  b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b>${dimInputs(it)}${assetPhotoBtn(it,'mini')}${routeBadge(u)}<button class="btn small" data-act="rm" title="Delete 키">↩ 미배치 가구로</button>`;
   b.hidden=false;
 }
 
 /* photos */
 const DIRS=['북','서','전체','동','남'];
 const DIRA={북:'↑',서:'←',동:'→',남:'↓',전체:'전체'}, DIRN={북:'도면 위쪽',서:'도면 왼쪽',동:'도면 오른쪽',남:'도면 아래쪽',전체:'전체'};
-function photoSlots(pid){ return `<div class="pslots">${DIRS.map(dir=>{ const x=S.photos.find(p=>p.placeId===pid&&p.dir===dir); return x?`<button class="pslot d${DIRS.indexOf(dir)}" data-photo="${x.id}" aria-label="${DIRN[dir]} 사진 크게 보기" title="${DIRN[dir]}"><img src="${x.img}" alt=""><span>${DIRA[dir]}</span></button>`:`<button class="pslot add d${DIRS.indexOf(dir)}" data-addphoto="${pid}" data-dir="${dir}" aria-label="${DIRN[dir]} 사진 올리기" title="${DIRN[dir]} 사진 올리기"><span>${DIRA[dir]}</span></button>` }).join('')}</div>` }
+/* 공간 사진은 변경 전/후로 나뉨 (ph 없으면 변경 전) */
+const PHN={before:'변경 전',after:'변경 후'};
+const phOf=x=>x.ph==='after'?'after':'before';
+const curPh=()=>UI.view==='space'&&(UI.wlayer||'a')==='b'?'after':'before';
+const spPhoto=(pid,dir,ph)=>S.photos.find(p=>p.placeId===pid&&p.dir===dir&&phOf(p)===ph);
+function photoSlots(pid,ph='before'){ return `<div class="pslots">${DIRS.map(dir=>{ const x=spPhoto(pid,dir,ph); return x?`<button class="pslot d${DIRS.indexOf(dir)}" data-photo="${x.id}" aria-label="${DIRN[dir]} 사진 크게 보기" title="${DIRN[dir]}"><img src="${x.img}" alt=""><span>${DIRA[dir]}</span></button>`:`<button class="pslot add d${DIRS.indexOf(dir)}" data-addphoto="${pid}" data-dir="${dir}" data-ph="${ph}" aria-label="${DIRN[dir]} 사진 올리기" title="${DIRN[dir]} 사진 올리기"><span>${DIRA[dir]}</span></button>` }).join('')}</div>` }
 function setRoom(k){ const[mid,rid]=k.split(':'); const m=M(mid); if(!m) return; UI.room={mapId:mid,roomId:rid}; UI.focus=UI.lastFocus=m.placeId; UI.railTab=itemsOf(m.placeId).length?m.placeId:''; UI.sel=null; if(UI.view!=='space') switchView('space'); else { UI.fitted=true; renderRail(); renderPlan(); fitAll(); requestAnimationFrame(fitAll) } }
 function setFocus(pid){ UI.room=null; UI.sel=null; if(!pid){ switchView('plan'); return } UI.focus=UI.lastFocus=pid; UI.railTab=itemsOf(pid).length?pid:''; if(UI.view!=='space') switchView('space'); else { UI.fitted=true; renderRail(); renderPlan(); fitAll(); requestAnimationFrame(fitAll) } }
 function renderPhotos(){
   const box=$('#photos'); const pid0=UI.focus&&UI.L.length?UI.focus:null; const pid=pid0&&!UI.photosOff?pid0:null;
   $('#photosTab').hidden=!(pid0&&UI.photosOff);
   $('#svgwrap').classList.toggle('hasphotos',!!pid); box.hidden=!pid; if(!pid){ box.innerHTML=''; return }
-  const order=['전체','북','동','남','서'];
+  const order=['전체','북','동','남','서']; const ph=curPh();
   const rm=UI.room; const inc=S.units.filter(u=>destPlace(u)===pid&&(I(u.itemId).placeId!==pid||isNewU(u))&&(!rm||(u.to&&u.to.mapId===rm.mapId&&unitRoom(u,'to')?.id===rm.roomId))); const byO=new Map(); for(const u of inc){ const o=isNewU(u)?'__new':I(u.itemId).placeId; if(!byO.has(o)) byO.set(o,[]); byO.get(o).push(u) }
   const out=S.units.filter(u=>I(u.itemId).placeId===pid&&destPlace(u)&&destPlace(u)!==pid).length;
   const incHtml=`<div class="inc"><b class="ph-title">${rm?esc(roomsOf(M(rm.mapId)).find(r=>r.id===rm.roomId)?.name||'')+'로 ':''}외부에서 온 가구 ${inc.length}</b>${inc.length?[...byO].map(([o,us])=>`<div class="incg"><span class="incf">${o==='__new'?'<span class="newtagh">신규 구매</span>':'← '+esc(P(o)?.name)} ${us.length}</span>${us.map(u=>`<button class="incu ${UI.hl&&UI.hl.ids.size===1&&UI.hl.ids.has(u.id)?'on':''}" data-u="${u.id}"><span class="sw" style="--c:${I(u.itemId).color}"></span><span>${esc(lbl(u))}</span>${u.to?(!rm&&unitRoom(u,'to')?`<em class="rmt">${esc(unitRoom(u,'to').name)}</em>`:''):'<em>위치 미정</em>'}</button>`).join('')}</div>`).join(''):'<span class="hint">아직 없어요.</span>'}${out?`<span class="hint">이 공간에서 나가는 가구 ${out}개</span>`:''}</div>`;
-  box.innerHTML=`<div class="ph-head"><b class="ph-title">${esc(P(pid)?.name)}</b><button id="photosOff" title="접기">접기 ▶</button></div>`+incHtml+`<b class="ph-title">사진</b>`+order.map(dir=>{ const x=S.photos.find(p=>p.placeId===pid&&p.dir===dir);
-    return `<div class="prow"><span class="parrow ${dir==='전체'?'all':''}" title="${DIRN[dir]}">${DIRA[dir]}</span>${x?`<button class="pcard" data-photo="${x.id}" aria-label="${DIRN[dir]} 사진 크게 보기"><img src="${x.img}" alt=""></button>`:`<button class="pcard add" data-addphoto="${pid}" data-dir="${dir}" aria-label="${DIRN[dir]} 사진 올리기"><span class="pplus">+</span></button>`}</div>` }).join('');
+  box.innerHTML=`<div class="ph-head"><b class="ph-title">${esc(P(pid)?.name)}</b><button id="photosOff" title="접기">접기 ▶</button></div>`+incHtml+`<b class="ph-title">사진 · <span class="phtag ${ph}">${PHN[ph]}</span></b>`+order.map(dir=>{ const x=spPhoto(pid,dir,ph);
+    return `<div class="prow"><span class="parrow ${dir==='전체'?'all':''}" title="${DIRN[dir]}">${DIRA[dir]}</span>${x?`<button class="pcard" data-photo="${x.id}" aria-label="${PHN[ph]} ${DIRN[dir]} 사진 크게 보기"><img src="${x.img}" alt=""></button>`:`<button class="pcard add" data-addphoto="${pid}" data-dir="${dir}" data-ph="${ph}" aria-label="${DIRN[dir]} 사진 올리기"><span class="pplus">+</span></button>`}</div>` }).join('');
 }
-async function addPhotos(pid,files,dir){
-  let n=0;
-  for(const f of files.slice(0,1)){ try{ const url=URL.createObjectURL(f); const img=new Image(); await new Promise((r,j)=>{img.onload=r;img.onerror=j;img.src=url}); const k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight)); const c=document.createElement('canvas'); c.width=Math.round(img.naturalWidth*k); c.height=Math.round(img.naturalHeight*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url); S.photos=S.photos.filter(p=>!(p.placeId===pid&&p.dir===dir)); S.photos.push({id:uid(),placeId:pid,dir,img:c.toDataURL('image/jpeg',.82),name:f.name}); n++ }catch(e){} }
-  if(n){ toast(pid==='@asset'?'사진을 올렸어요.':`${DIRA[dir]} 사진을 올렸어요.`); commit(); if($('#dlgPhoto').open){ const x=S.photos.find(p=>p.placeId===pid&&p.dir===dir); openPhoto(x.id) } } else toast('사진을 열 수 없어요.');
+async function addPhotos(pid,files,dir,ph){
+  let n=0; const asset=pid==='@asset'; ph=ph==='after'?'after':'before'; const same=p=>p.placeId===pid&&p.dir===dir&&(asset||phOf(p)===ph);
+  for(const f of files.slice(0,1)){ try{ const url=URL.createObjectURL(f); const img=new Image(); await new Promise((r,j)=>{img.onload=r;img.onerror=j;img.src=url}); const k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight)); const c=document.createElement('canvas'); c.width=Math.round(img.naturalWidth*k); c.height=Math.round(img.naturalHeight*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url); S.photos=S.photos.filter(p=>!same(p)); const o={id:uid(),placeId:pid,dir,img:c.toDataURL('image/jpeg',.82),name:f.name}; if(!asset) o.ph=ph; S.photos.push(o); n++ }catch(e){} }
+  if(n){ toast(asset?'사진을 올렸어요.':`${PHN[ph]} ${DIRA[dir]} 사진을 올렸어요.`); commit(); if($('#dlgPhoto').open){ const x=S.photos.find(same); openPhoto(x.id) } } else toast('사진을 열 수 없어요.');
 }
+/* 자산(가구) 사진: 같은 이름·크기 가구마다 1장 — 자산 목록·공간 작업·가구 선택에서 같은 사진을 씀 */
+const assetPhoto=it=>S.photos.find(p=>p.placeId==='@asset'&&p.dir===tkey(it));
+function assetPhotoBtn(it,cls=''){ const x=assetPhoto(it), nm=esc((it.name||'').trim()||'가구');
+  return x?`<button class="athumb ${cls}" data-photo="${x.id}" title="${nm} 사진 크게 보기" aria-label="${nm} 사진 크게 보기"><img src="${x.img}" alt=""></button>`:`<button class="aadd ${cls}" data-addphoto="@asset" data-dir="${esc(tkey(it))}" title="${nm} 사진 올리기" aria-label="${nm} 사진 올리기">📷${cls==='mini'?'':' 사진'}</button>` }
 const PH={list:[],i:0};
-function openPhoto(id){ const x=S.photos.find(p=>p.id===id); if(!x) return; PH.list=x.placeId==='@asset'?[x]:DIRS.map(d=>S.photos.find(p=>p.placeId===x.placeId&&p.dir===d)).filter(Boolean); PH.i=PH.list.indexOf(x); const asset=x.placeId==='@asset'; $('#dlgPhoto').classList.toggle('mid',asset); $('#photoPrev').hidden=$('#photoNext').hidden=asset; showPhoto(); $('#dlgPhoto').showModal() }
-function showPhoto(){ const x=PH.list[PH.i]; if(!x){ $('#dlgPhoto').close(); return } $('#photoImg').src=x.img; $('#photoTitle').textContent=x.placeId==='@asset'?((GROUPS.find(g=>g.key===x.dir)||{}).name||'자산')+' 사진':`${P(x.placeId)?.name||''} · ${DIRA[x.dir]}${x.dir==='전체'?'':' '+DIRN[x.dir]}`; $('#photoCount').textContent=`${PH.i+1} / ${PH.list.length}`; $('#photoPrev').disabled=PH.i<=0; $('#photoNext').disabled=PH.i>=PH.list.length-1 }
+function openPhoto(id){ const x=S.photos.find(p=>p.id===id); if(!x) return; PH.list=x.placeId==='@asset'?[x]:DIRS.map(d=>spPhoto(x.placeId,d,phOf(x))).filter(Boolean); PH.i=PH.list.indexOf(x); const asset=x.placeId==='@asset'; $('#dlgPhoto').classList.toggle('mid',asset); $('#photoPrev').hidden=$('#photoNext').hidden=asset; showPhoto(); $('#dlgPhoto').showModal() }
+function showPhoto(){ const x=PH.list[PH.i]; if(!x){ $('#dlgPhoto').close(); return } $('#photoImg').src=x.img; $('#photoTitle').textContent=x.placeId==='@asset'?((GROUPS.find(g=>g.key===x.dir)||{}).name||'자산')+' 사진':`${P(x.placeId)?.name||''} · ${PHN[phOf(x)]} · ${DIRA[x.dir]}${x.dir==='전체'?'':' '+DIRN[x.dir]}`; $('#photoCount').textContent=`${PH.i+1} / ${PH.list.length}`; $('#photoPrev').disabled=PH.i<=0; $('#photoNext').disabled=PH.i>=PH.list.length-1 }
 $('#photoPrev').onclick=()=>{ if(PH.i>0){PH.i--;showPhoto()} };
 $('#photoNext').onclick=()=>{ if(PH.i<PH.list.length-1){PH.i++;showPhoto()} };
 $('#photoDel').onclick=e=>{ if(!armed(e.currentTarget)) return; const x=PH.list[PH.i]; S.photos=S.photos.filter(p=>p!==x); PH.list.splice(PH.i,1); PH.i=Math.min(PH.i,PH.list.length-1); commit(); if(!PH.list.length) $('#dlgPhoto').close(); else showPhoto() };
-$('#filePhoto').onchange=e=>{ const fs=[...e.target.files]; if(fs.length) addPhotos(UI.photoTarget,fs,UI.photoDir) };
-$('#photoSwap').onclick=()=>{ const x=PH.list[PH.i]; if(!x) return; UI.photoTarget=x.placeId; UI.photoDir=x.dir; $('#filePhoto').value=''; $('#filePhoto').click() };
+$('#filePhoto').onchange=e=>{ const fs=[...e.target.files]; if(fs.length) addPhotos(UI.photoTarget,fs,UI.photoDir,UI.photoPh) };
+$('#photoSwap').onclick=()=>{ const x=PH.list[PH.i]; if(!x) return; UI.photoTarget=x.placeId; UI.photoDir=x.dir; UI.photoPh=phOf(x); $('#filePhoto').value=''; $('#filePhoto').click() };
 document.addEventListener('keydown',e=>{ if(!$('#dlgPhoto').open) return; if(e.key==='ArrowLeft') $('#photoPrev').click(); if(e.key==='ArrowRight') $('#photoNext').click() });
+
+/* 오른쪽 버튼(휴대폰·태블릿은 길게 누르기) 메뉴: 장소 옮기기 */
+const CTX={ids:[],slots:[],at:0};
+function closeCtx(){ const m=$('#ctxMenu'); if(m) m.remove() }
+function openCtx(el,x,y){
+  const g=planSvg.contains(el)?el.closest('.unit'):null; const li=g?null:el.closest('#rail [data-u],#photos [data-u]'); if(!g&&!li) return false;
+  const id=g?g.dataset.id:li.dataset.u, slot=g?g.dataset.slot:null; const u=U(id); if(!u) return false;
+  if(Cloud.on&&!canEdit()){ toast('지금은 보기만 할 수 있어요.'); return true }
+  const many=g?(inMulti(id,slot)&&getMulti().length>1):!!(UI.rsel&&UI.rsel.has(id)&&selUnitIds().length>1);
+  CTX.ids=many?selUnitIds():[id]; CTX.slots=g?(many?getMulti().filter(x=>x.slot==='from'||x.slot==='to'):(slot==='from'||slot==='to'?[{id,slot}]:[])):[]; CTX.at=Date.now();
+  const dp=CTX.ids.length===1?destPlace(u):null;
+  closeCtx(); const m=document.createElement('div'); m.id='ctxMenu'; m.setAttribute('role','menu');
+  m.innerHTML=`<div class="ch">${CTX.ids.length>1?`${CTX.ids.length}개 선택됨 · 장소 옮기기`:`${esc(lbl(u))} · 장소 옮기기`}</div>${S.places.map(p=>`<button role="menuitem" data-cdest="${p.id}" class="${dp===p.id?'cur':''}">→ ${esc(p.name)}${dp===p.id?' ✓':''}</button>`).join('')}<button role="menuitem" data-cdest="">도착지 미정</button>${CTX.slots.length?`<hr><button role="menuitem" data-cunplace>↩ 미배치 가구로 돌려놓기</button>`:''}`;
+  document.body.appendChild(m); const r=m.getBoundingClientRect(); m.style.left=Math.max(4,Math.min(x,innerWidth-r.width-4))+'px'; m.style.top=Math.max(4,Math.min(y,innerHeight-r.height-4))+'px';
+  m.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; e.stopPropagation(); closeCtx();
+    if(b.dataset.cdest!==undefined){ moveUnitsTo(CTX.ids,b.dataset.cdest); return }
+    if(b.dataset.cunplace!==undefined){ for(const s of CTX.slots){ const uu=U(s.id); if(uu) uu[s.slot]=null } UI.multi=null; UI.sel=null; toast(CTX.slots.length>1?`${CTX.slots.length}개를 미배치 가구로 돌려놓았어요.`:`${lbl(U(CTX.slots[0].id))}을(를) 미배치 가구로 돌려놓았어요.`); commit() } });
+  const f=m.querySelector('button'); if(f) f.focus({preventScroll:true}); return true }
+document.addEventListener('contextmenu',e=>{ if(openCtx(e.target,e.clientX,e.clientY)) e.preventDefault() });
+document.addEventListener('pointerdown',e=>{ const m=$('#ctxMenu'); if(m&&!m.contains(e.target)&&Date.now()-CTX.at>400) closeCtx() },true);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeCtx() });
+window.addEventListener('resize',closeCtx);
+{ let lp=null; // 터치 길게 누르기
+  document.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse') return; const el=e.target; if(!(planSvg.contains(el)?el.closest('.unit'):el.closest('#rail [data-u],#photos [data-u]'))) return; const x=e.clientX,y=e.clientY;
+    clearTimeout(lp&&lp.t); lp={x,y,t:setTimeout(()=>{ lp=null; if(!$('#ctxMenu')) openCtx(el,x,y) },550)} },true);
+  const stop=e=>{ if(!lp) return; if(e.type==='pointermove'&&Math.hypot(e.clientX-lp.x,e.clientY-lp.y)<10) return; clearTimeout(lp.t); lp=null };
+  ['pointermove','pointerup','pointercancel'].forEach(t=>document.addEventListener(t,stop,true)) }
 
 /* plan interactions */
 planSvg.addEventListener('pointerdown',e=>{
   if(e.pointerType==='mouse'&&e.button!==0) return;
   const ft=e.target.closest('[data-focus],[data-room]'); if(ft&&!UI.measure){ ft.dataset.room?setRoom(ft.dataset.room):setFocus(ft.dataset.focus); return }
-  const g=e.target.closest('.unit');
+  const g=e.target.closest('.unit:not(.first):not(.cur)');
   if(g&&!UI.measure){ unitDrag(e,g); return }
-  planPan(e,(moved,p)=>{ if(moved) return;
+  const clickEmpty=(moved,p)=>{ if(moved) return;
     if(UI.measure){ UI.measure.shift=UI.measure.shift||false; measureAdd(p); return }
-    if(UI.sel||UI.hl||UI.multi){ UI.sel=null; UI.multi=null; UI.hl=null; renderPlan(); renderRail() }
-  });
+    if(UI.sel||UI.hl||UI.multi){ UI.sel=null; UI.multi=null; UI.hl=null; renderPlan(); renderRail() } };
+  if(e.pointerType==='mouse'&&!e.ctrlKey&&!e.metaKey&&!UI.measure) boxSelect(e,clickEmpty); else planPan(e,clickEmpty);
 });
+/* 빈 곳을 끌어 네모 범위 안의 가구를 한 번에 고르기 (Shift 같이: 더하기). Ctrl+끌기는 화면 이동 */
+function boxSelect(e,click){ const sx=e.clientX, sy=e.clientY, add=e.shiftKey; let box=null;
+  try{planSvg.setPointerCapture(e.pointerId)}catch(_){}
+  const mv=ev=>{ if(!box&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<5) return; if(!box){ box=document.createElement('div'); box.className='boxsel'; document.body.appendChild(box) }
+    const x=Math.min(sx,ev.clientX), y=Math.min(sy,ev.clientY); Object.assign(box.style,{left:x+'px',top:y+'px',width:Math.abs(ev.clientX-sx)+'px',height:Math.abs(ev.clientY-sy)+'px'}) };
+  const up=ev=>{ planSvg.removeEventListener('pointermove',mv); planSvg.removeEventListener('pointerup',up); planSvg.removeEventListener('pointercancel',up);
+    if(!box){ click(false,V.pt(e)); return } const r=box.getBoundingClientRect(); box.remove(); if(ev.type==='pointercancel') return;
+    const m=add?getMulti():[];
+    planSvg.querySelectorAll('.unit:not(.first):not(.cur)').forEach(g=>{ const b=(g.querySelector('.ub')||g).getBoundingClientRect(); const cx=b.x+b.width/2, cy=b.y+b.height/2;
+      if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom) return; const id=g.dataset.id, slot=g.dataset.slot; if(!m.some(x=>x.id===id&&x.slot===slot)) m.push({id,slot}) });
+    UI.multi=m.length?m:null; UI.sel=m.length?{...m[m.length-1]}:null; UI.hl=null; renderPlan(); renderRail();
+    if(m.length>1) toast(`${m.length}개를 골랐어요. 위쪽 ‘장소 옮기기’나 오른쪽 버튼으로 한 번에 옮길 수 있어요.`) };
+  planSvg.addEventListener('pointermove',mv); planSvg.addEventListener('pointerup',up); planSvg.addEventListener('pointercancel',up) }
 function unitDrag(e,g){
   e.preventDefault();
   const u=U(g.dataset.id), slot=g.dataset.slot; if(!u) return;
@@ -1236,8 +1311,8 @@ function unitDrag(e,g){
     if(slot!=='tray'&&UI.trayBox){ const pq=V.pt(ev,inv); const l=fromW('L',pq.x,pq.y); const tb=UI.trayBox; const on=l.x>=tb.x1&&l.x<=tb.x2&&l.y>=tb.y1&&l.y<=tb.y2; const bg=planSvg.querySelector('.traybg'); if(bg) bg.classList.toggle('drophot',on) }
     if(grp.length){ const p=V.pt(ev,inv); const z0=colZ(r.e.col); const dx=(p.x-p0.x)/z0, dy=(p.y-p0.y)/z0; grp.forEach(o=>o.el&&o.el.setAttribute('transform',`translate(${o.tx+dx} ${o.ty+dy})`)) } const p=V.pt(ev,inv); let wx=r.x+p.x-p0.x, wy=r.y+p.y-p0.y; let z=colZ(r.e.col); const e2=panelAt(wx+r.w/2,wy+r.d/2); if(e2){ z=colZ(e2.col); const lc=fromW(e2.col,wx+r.w/2,wy+r.d/2); const a=alignSnap(e2,u.id,lc.x-e2.mx-r.lw/2,lc.y-e2.my-r.ld/2,r.lw,r.ld); const q=toW(e2.col,e2.mx+a.x,e2.my+a.y); wx=q.x; wy=q.y; drawGuides(e2,a,gapsSVG(e2,a.x,a.y,r.lw,r.ld,u.id)) } else drawGuides(null); g.setAttribute('transform',`translate(${wx} ${wy}) scale(${z})`) };
   const up=ev=>{ planSvg.removeEventListener('pointermove',mv); planSvg.removeEventListener('pointerup',up); planSvg.removeEventListener('pointercancel',up); UI.dragging=false; if(Cloud.pendingApply) setTimeout(applyCloud,0);
-    if(!moved){ if(slot==='tray'){ UI.multi=null; UI.sel={id:u.id,slot:'tray'}; UI.hl=null; renderPlan(); return }
-      if(mod){ let m=getMulti(); if(!m.length&&UI.sel&&UI.sel.slot!=='tray'&&!(UI.sel.id===u.id&&UI.sel.slot===slot)) m=[{...UI.sel}]; const i=m.findIndex(x=>x.id===u.id&&x.slot===slot); if(i>=0) m.splice(i,1); else m.push({id:u.id,slot}); UI.multi=m.length?m:null; UI.sel=m.length?{...m[m.length-1]}:null; UI.hl=null; renderPlan(); renderRail(); return }
+    if(!moved){ if(slot==='tray'&&!mod){ UI.multi=null; UI.sel={id:u.id,slot:'tray'}; UI.hl=null; renderPlan(); return }
+      if(mod){ let m=getMulti(); if(!m.length&&UI.sel&&!(UI.sel.id===u.id&&UI.sel.slot===slot)) m=[{...UI.sel}]; const i=m.findIndex(x=>x.id===u.id&&x.slot===slot); if(i>=0) m.splice(i,1); else m.push({id:u.id,slot}); UI.multi=m.length?m:null; UI.sel=m.length?{...m[m.length-1]}:null; UI.hl=null; renderPlan(); renderRail(); return }
       if(!inMulti(u.id,slot)) UI.multi=null; UI.sel={id:u.id,slot}; UI.hl=null; renderPlan(); renderRail(); return }
     const el=document.elementFromPoint(ev.clientX,ev.clientY);
     if(el&&el.closest('#rail')){ if(slot==='tray'){ renderPlan(); return } removeSlot(u,slot); return }
@@ -1314,7 +1389,7 @@ function nudgeSel(dx,dy){ const m=getMulti(); const list=m.length?m:(UI.sel?[UI.
   for(const sl of list){ const u=U(sl.id); const pos=u&&u[sl.slot]; if(!pos) continue; const mp=M(pos.mapId); const[w,d]=dims(I(u.itemId),pos.rot||0); const W=mp?mp.w/mp.sx:Infinity, H=mp?mp.h/mp.sy:Infinity;
     pos.x=Math.round(clamp(pos.x+dx,0,Math.max(0,W-w))); pos.y=Math.round(clamp(pos.y+dy,0,Math.max(0,H-d))); n++ }
   if(n) commit() }
-function removeSel(){ const m=getMulti(); if(m.length>1){ for(const x of m){ const u=U(x.id); if(u) u[x.slot]=null } UI.multi=null; UI.sel=null; toast(`${m.length}개의 위치를 뺐어요.`); commit(); return } if(UI.sel&&U(UI.sel.id)) removeSlot(U(UI.sel.id),UI.sel.slot) }
+function removeSel(){ const m=getMulti(); if(m.length>1){ for(const x of m){ const u=U(x.id); if(u&&x.slot!=='tray') u[x.slot]=null } UI.multi=null; UI.sel=null; toast(`${m.length}개의 위치를 뺐어요.`); commit(); return } if(UI.sel&&U(UI.sel.id)) removeSlot(U(UI.sel.id),UI.sel.slot) }
 function removeSlot(u,slot){ u[slot]=null; if(UI.sel&&UI.sel.id===u.id) UI.sel=null; toast(`${lbl(u)}을(를) 미배치 가구로 돌려놓았어요.`); commit() }
 function rotateSel(dir=1){ const m=getMulti(); const list=m.length?m:(UI.sel?[UI.sel]:[]); let n=0; for(const s of list){ const u=U(s.id); const pos=u&&u[s.slot]; if(!pos) continue; const it=I(u.itemId); const[w,d]=dims(it,pos.rot||0); const cx=pos.x+w/2, cy=pos.y+d/2; pos.rot=(((pos.rot||0)+90*dir)%360+360)%360; const[w2,d2]=dims(it,pos.rot); pos.x=Math.round(cx-w2/2); pos.y=Math.round(cy-d2/2); n++ } if(n) commit() }
 function commit(){ save(); renderAll() }
@@ -1326,7 +1401,7 @@ function makeVersion(name,auto){ const L=liveS(); const data=JSON.stringify({pla
   const placed=L.units.filter(isPlaced).length; const v={id:uid(),name:name||'이름 없는 버전',at:Date.now(),auto:!!auto,data,stats:{units:L.units.length,placed}};
   (L.versions||(L.versions=[])).push(v); return v }
 function advanceAll(){ // 변경 후 → 새 변경 전 (전체)
-  for(const u of S.units){ const it=I(u.itemId); if(!it) continue; const dp=destPlace(u);
+  for(const u of S.units){ const it=I(u.itemId); if(!it) continue; const dp=destPlace(u); if(dp) markFirst(u,it);
     if((it.isNew&&dp)||(dp&&dp!==it.placeId)){ const place=dp||it.placeId; const base={...it,isNew:false}; let tgt=S.items.find(x=>x!==it&&x.placeId===place&&!x.isNew&&gkey(x)===gkey(base)); if(!tgt){ tgt={...base,id:uid(),placeId:place,qty:0}; S.items.push(tgt) } u.itemId=tgt.id }
     if(u.to) u.from={...u.to}; else if(dp&&dp!==it.placeId) u.from=null;
     u.to=null; u.toPlaceId=null; u.chk={} }
@@ -1395,9 +1470,9 @@ function renderRail(){
   rail.innerHTML=h+'</div>';
 }
 function railTotal(){
-  let h=`<div class="thead"><span></span><span>가구 · 끌어서 도면에 놓기</span><span>합계</span><span>배치</span><span>남음</span></div>`;
+  let h=`<div class="thead"><span></span><span>가구 · 끌어서 도면에 놓기</span><span>사진</span><span>합계</span><span>배치</span><span>남음</span></div>`;
   for(const g of GROUPS){ const on=UI.hl&&UI.hl.label; const open=UI.open.has(g.key);
-    h+=`<div class="trow" draggable="true" data-dg="${esc(g.key)}"><span class="sw" style="--c:${g.color}"></span><button class="tname" data-openg="${esc(g.key)}" aria-expanded="${open}"><b>${esc(g.name)}</b><span class="mono">${g.w}×${g.d}</span>${g.newN?`<span class="newtagh">신규 ${g.newN}</span>`:''}</button><span class="num">${g.units.length}</span><button class="num ok ${g.placed.length?'':'zero'} ${on==='p:'+g.key?'on':''}" data-hl="p" data-g="${esc(g.key)}" title="배치된 것 도면에 표시">${g.placed.length}</button><button class="num wr ${g.remain.length?'':'zero'} ${on==='r:'+g.key?'on':''}" data-hl="r" data-g="${esc(g.key)}" title="남은 것 도면에 표시">${g.remain.length}</button>`;
+    h+=`<div class="trow" draggable="true" data-dg="${esc(g.key)}"><span class="sw" style="--c:${g.color}"></span><button class="tname" data-openg="${esc(g.key)}" aria-expanded="${open}"><b>${esc(g.name)}</b><span class="mono">${g.w}×${g.d}</span>${g.newN?`<span class="newtagh">신규 ${g.newN}</span>`:''}</button>${assetPhotoBtn(g.items[0],'rp')}<span class="num">${g.units.length}</span><button class="num ok ${g.placed.length?'':'zero'} ${on==='p:'+g.key?'on':''}" data-hl="p" data-g="${esc(g.key)}" title="배치된 것 도면에 표시">${g.placed.length}</button><button class="num wr ${g.remain.length?'':'zero'} ${on==='r:'+g.key?'on':''}" data-hl="r" data-g="${esc(g.key)}" title="남은 것 도면에 표시">${g.remain.length}</button>`;
     if(on==='p:'+g.key||on==='r:'+g.key){ const placed=on[0]==='p'; const by=new Map();
       for(const u of (placed?g.placed:g.remain)){ const it=I(u.itemId); const k=placed?destLabel(u):`${P(it.placeId)?.name||''} › ${fromLabel(u)}`; if(!by.has(k)) by.set(k,[]); by.get(k).push(u) }
       h+=`<div class="hlbox ${placed?'ok':'wr'}"><b>${placed?'배치된 곳':'남은 위치'}</b>${by.size?[...by].map(([k,us])=>`<div class="hlline"><span>${esc(k)}</span><span class="mono">${us.length}개</span><span class="hlnames">${us.map(u=>esc(lbl(u))).join(', ')}</span></div>`).join(''):'<span class="hint">없어요.</span>'}</div>` }
@@ -1420,11 +1495,13 @@ function railSpace(pid){
   let h=''; const items=itemsOf(pid); const sl=curSlot(); const rf=UI.railFilter||'';
   const all=items.flatMap(unitsOf).filter(u=>!(sl==='from'&&isNewU(u))); const na=all.filter(u=>u[sl]).length;
   h+=`<div class="rfilter"><span>${sl==='from'?'변경 전':'변경 후'} 기준</span><button data-rfilter="" class="${rf===''?'on':''}">전체 ${all.length}</button><button data-rfilter="a" class="${rf==='a'?'on':''}">배정 ${na}</button><button data-rfilter="n" class="${rf==='n'?'on':''}">배정 필요 ${all.length-na}</button></div>`;
+  { const rs=UI.rsel; const shown=all.filter(u=>!rf||(rf==='a')===!!u[sl]); const allOn=shown.length&&rs&&shown.every(u=>rs.has(u.id));
+    h+=`<div class="rbulk${rs?' on':''}"><button class="btn small" data-rselall="${allOn?'off':'on'}">${allOn?'선택 해제':'보이는 것 전체 선택'}</button>${rs?`<b>${rs.size}개 선택</b>${bulkDestSel()}`:'<span class="hint">체크하거나 오른쪽 버튼으로 장소를 옮겨요</span>'}</div>` }
   for(const it of items){ const us=unitsOf(it).filter(u=>!rf||(sl==='from'&&isNewU(u)?false:(rf==='a')===!!u[sl])); if(!us.length) continue;
     const allU=unitsOf(it);
-    h+=`<div class="ritem"><div class="rih"><span class="sw" style="--c:${it.color}"></span><b title="${esc(it.name)}">${esc(it.name)}</b><button class="newtg ${it.isNew?'on':''}" data-newtg="${it.id}" title="신규 구매 여부 (눌러서 바꾸기)">${it.isNew?'신규':'기존'}</button>${it.kind==='item'?'<span class="toptag">올림</span>':''}<span class="qstep" title="전체 수량"><button data-qstep="${it.id}:-1" aria-label="수량 줄이기">−</button><input data-qtyit="${it.id}" type="number" min="1" value="${it.qty}" aria-label="${esc(it.name)} 전체 수량"><button data-qstep="${it.id}:1" aria-label="수량 늘리기">+</button></span><div class="rih2">${dimInputs(it,{cls:'sm',noNote:true})}<span class="c">${allU.filter(isPlaced).length}/${allU.length} 배치</span><button class="idel" data-delitem="${it.id}" title="${esc(it.name)} 전체 삭제" aria-label="${esc(it.name)} 전체 삭제">삭제</button></div></div><ul class="runits tree">`;
+    h+=`<div class="ritem"><div class="rih"><span class="sw" style="--c:${it.color}"></span><b title="${esc(it.name)}">${esc(it.name)}</b><button class="newtg ${it.isNew?'on':''}" data-newtg="${it.id}" title="신규 구매 여부 (눌러서 바꾸기)">${it.isNew?'신규':'기존'}</button>${it.kind==='item'?'<span class="toptag">올림</span>':''}${assetPhotoBtn(it,'rp')}<span class="qstep" title="전체 수량"><button data-qstep="${it.id}:-1" aria-label="수량 줄이기">−</button><input data-qtyit="${it.id}" type="number" min="1" value="${it.qty}" aria-label="${esc(it.name)} 전체 수량"><button data-qstep="${it.id}:1" aria-label="수량 늘리기">+</button></span><div class="rih2">${dimInputs(it,{cls:'sm',noNote:true})}<span class="c">${allU.filter(isPlaced).length}/${allU.length} 배치</span><button class="idel" data-delitem="${it.id}" title="${esc(it.name)} 전체 삭제" aria-label="${esc(it.name)} 전체 삭제">삭제</button></div></div><ul class="runits tree">`;
     for(const u of us){ const on=UI.hl&&UI.hl.ids.size===1&&UI.hl.ids.has(u.id);
-      h+=`<li draggable="true" data-du="${u.id}" data-u="${u.id}" class="${isPlaced(u)?'':'rem'} ${on?'on':''}"><span class="sw" style="--c:${it.color}"></span><span class="nm" title="${esc(lbl(u))}">${esc((lbl(u).slice((it.name||'').trim().length).trim())||'1')}</span>${sl==='from'&&isNewU(u)?'<span class="flag newf" title="신규 구매 · 변경 후에서 배치">새</span>':u[sl]?`<button class="flag on" data-unassign="${u.id}" title="눌러서 미배치 가구로 돌려놓기">배정 ↩</button>`:`<span class="flag need" title="도면에 아직 놓지 않았어요">배정 필요</span>`}<select data-dest="${u.id}" aria-label="${esc(lbl(u))} 도착지">${destOptions(u)}</select><button class="udel" data-delunit="${u.id}" title="이 가구 삭제" aria-label="${esc(lbl(u))} 삭제">×</button></li>` }
+      h+=`<li draggable="true" data-du="${u.id}" data-u="${u.id}" class="${isPlaced(u)?'':'rem'} ${on?'on':''}"><input type="checkbox" class="rck" data-rsel="${u.id}" ${UI.rsel&&UI.rsel.has(u.id)?'checked':''} aria-label="${esc(lbl(u))} 고르기"><span class="sw" style="--c:${it.color}"></span><span class="nm" title="${esc(lbl(u))}">${esc((lbl(u).slice((it.name||'').trim().length).trim())||'1')}</span>${sl==='from'&&isNewU(u)?'<span class="flag newf" title="신규 구매 · 변경 후에서 배치">새</span>':u[sl]?`<button class="flag on" data-unassign="${u.id}" title="눌러서 미배치 가구로 돌려놓기">배정 ↩</button>`:`<span class="flag need" title="도면에 아직 놓지 않았어요">배정 필요</span>`}<select data-dest="${u.id}" aria-label="${esc(lbl(u))} 도착지">${destOptions(u)}</select><button class="udel" data-delunit="${u.id}" title="이 가구 삭제" aria-label="${esc(lbl(u))} 삭제">×</button></li>` }
     h+='</ul></div>';
   }
   return h;
@@ -1445,30 +1522,41 @@ function renderItems(){
   else if(UI.itemsTab==='') h+=itemsTotal(); else h+=itemsSpace(UI.itemsTab);
   v.innerHTML=h+'</div>';
 }
-function origLabel(u){ const it=I(u.itemId); if(it.isNew) return '새로 구매'; const r=unitRoom(u,'from'); return (P(it.placeId)?.name||'')+(r?' › '+r.name:'') }
+/* 처음 위치(버전을 넘겨도 고정) / 마지막 위치(변경 후, 없으면 넘긴 뒤의 지금 위치) */
+function origLabel(u){ const f=u.first; if(f){ if(f.n) return '새로 구매'; const r=posRoom(u,f.at); return (P(f.p)?.name||'')+(r?' › '+r.name:'') } const it=I(u.itemId); if(it.isNew) return '새로 구매'; const r=unitRoom(u,'from'); return (P(it.placeId)?.name||'')+(r?' › '+r.name:'') }
+function lastLabel(u){ const dl=destLabel(u); if(dl||!u.first) return dl; const it=I(u.itemId); if(!it||it.isNew) return ''; const r=unitRoom(u,'from'); return (P(it.placeId)?.name||'')+(r?' › '+r.name:'') }
+function markFirst(u,it){ if(!u.first&&it) u.first={p:it.placeId,n:!!it.isNew,at:u.from?{...u.from}:null} }
+function migrateFirst(){ // 한 번만: 이미 저장한 버전 중 가장 먼저 그 가구가 나온 버전에서 처음 위치를 채움
+  if(UI.viewVer||(S.meta||{}).firstV||(Cloud.on&&!canEdit())) return; let n=0;
+  const vs=[...(S.versions||[])].sort((a,b)=>a.at-b.at).map(v=>{ try{ return JSON.parse(v.data) }catch(e){ return null } }).filter(Boolean);
+  for(const u of S.units){ if(u.first) continue; const it=I(u.itemId); if(!it) continue;
+    for(const d of vs){ const vu=(d.units||[]).find(x=>x.id===u.id); if(!vu) continue; const vit=(d.items||[]).find(x=>x.id===vu.itemId); if(!vit) break;
+      const f=vu.first||{p:vit.placeId,n:!!vit.isNew,at:vu.from||null};
+      if(f.p!==it.placeId||f.n!==!!it.isNew||stable(f.at||null)!==stable(u.from||null)){ u.first=JSON.parse(JSON.stringify(f)); n++ } break } }
+  S.meta=S.meta||{}; S.meta.firstV=1; save(); if(n) toast(`지난 버전에서 가구 ${n}개의 처음 위치를 찾아 넣었어요.`) }
 function assetRows(){ // 필터·정렬 적용된 자산 행
   const q=AF.q.trim().replace(/\s+/g,'').toLowerCase(); const out=[];
   for(const g of GROUPS){ if(q&&!g.name.replace(/\s+/g,'').toLowerCase().includes(q)) continue;
-    const us=g.units.filter(u=>(!AF.from||origLabel(u).split(' › ')[0]===AF.from||origLabel(u)===AF.from)&&(!AF.to||(destLabel(u)||'미정').split(' › ')[0]===AF.to||(destLabel(u)||'미정')===AF.to)); if(!us.length) continue;
+    const us=g.units.filter(u=>(!AF.from||origLabel(u).split(' › ')[0]===AF.from||origLabel(u)===AF.from)&&(!AF.to||(lastLabel(u)||'미정').split(' › ')[0]===AF.to||(lastLabel(u)||'미정')===AF.to)); if(!us.length) continue;
     const grp=f=>{ const m=new Map(); for(const u of us){ const k=f(u); if(!m.has(k)) m.set(k,[]); m.get(k).push(u) } return [...m] };
     const hh=(g.items.find(i=>i.h)||{}).h;
-    out.push({g,us,spec:`${g.w}×${g.d}${hh?'×'+hh:''}`,h:hh||0,fr:grp(origLabel),to:grp(u=>destLabel(u)||'미정').filter(x=>x[0]!=='미정'),undU:us.filter(u=>!destLabel(u)),und:us.filter(u=>!destLabel(u)).length,photo:S.photos.find(p=>p.placeId==='@asset'&&p.dir===g.key)}) }
+    out.push({g,us,spec:`${g.w}×${g.d}${hh?'×'+hh:''}`,h:hh||0,fr:grp(origLabel),to:grp(u=>lastLabel(u)||'미정').filter(x=>x[0]!=='미정'),undU:us.filter(u=>!lastLabel(u)),und:us.filter(u=>!lastLabel(u)).length,photo:S.photos.find(p=>p.placeId==='@asset'&&p.dir===g.key)}) }
   const ko=(a,b)=>a.localeCompare(b,'ko');
   const so={base:null,name:(a,b)=>ko(a.g.name,b.g.name),qty:(a,b)=>b.us.length-a.us.length,und:(a,b)=>b.und-a.und||b.us.length-a.us.length,size:(a,b)=>b.g.w*b.g.d-a.g.w*a.g.d,nophoto:(a,b)=>(!!a.photo)-(!!b.photo)}[AF.sort];
   if(so) out.sort(so); return out }
 function itemsTotal(){
   if(!GROUPS.length) return `<div class="card" style="padding:18px"><span class="hint">공간 탭을 눌러 가구를 입력하면 여기에 합산돼요.</span></div>`;
-  const froms=[...new Set(S.units.map(u=>origLabel(u).split(' › ')[0]))], tos=[...new Set(S.units.map(u=>(destLabel(u)||'미정').split(' › ')[0]))].sort((a,b)=>(a==='미정')-(b==='미정'));
+  const froms=[...new Set(S.units.map(u=>origLabel(u).split(' › ')[0]))], tos=[...new Set(S.units.map(u=>(lastLabel(u)||'미정').split(' › ')[0]))].sort((a,b)=>(a==='미정')-(b==='미정'));
   const opt=(arr,v,all)=>`<option value="">${all}</option>`+arr.map(x=>`<option ${x===v?'selected':''}>${esc(x)}</option>`).join('');
   return `<div class="afbar"><input id="afQ" type="search" placeholder="자산명 검색" value="${esc(AF.q)}" aria-label="자산명 검색">
-    <label>이전 위치 <select id="afFrom">${opt(froms,AF.from,'전체')}</select></label>
-    <label>변경 위치 <select id="afTo">${opt(tos,AF.to,'전체')}</select></label>
+    <label>처음 위치 <select id="afFrom">${opt(froms,AF.from,'전체')}</select></label>
+    <label>마지막 위치 <select id="afTo">${opt(tos,AF.to,'전체')}</select></label>
     <label>정렬 <select id="afSort">${[['base','기본 (공간 순)'],['name','자산명 가나다'],['qty','수량 많은 순'],['und','미정 많은 순'],['size','큰 가구 순'],['nophoto','사진 없는 것 먼저']].map(([k,t])=>`<option value="${k}" ${AF.sort===k?'selected':''}>${t}</option>`).join('')}</select></label>
     <button class="btn small" id="afReset">초기화</button><button class="btn small primary" id="afXlsx">엑셀 다운로드</button></div><div id="assetTbl">${assetTable()}</div>`;
 }
 function assetTable(){
   const rows=assetRows(); UI.hlmap=[]; const hlBtn=(us,cls)=>{ UI.hlmap.push(us.map(u=>u.id)); return `<button class="num ${cls}" style="padding:1px 9px" data-hlm="${UI.hlmap.length-1}" title="배치판에서 강조">${us.length}</button>` };
-  let h=`<div class="tblwrap"><table class="asset"><thead><tr><th></th><th>자산명</th><th class="n">규격 (가로×세로×높이 cm)</th><th class="n">전체 수량</th><th>이전 위치</th><th class="c">수량</th><th>변경 위치</th><th class="c">수량</th><th class="c">미정</th><th class="c">사진</th></tr></thead><tbody>`;
+  let h=`<div class="tblwrap"><table class="asset"><thead><tr><th></th><th>자산명</th><th class="n">규격 (가로×세로×높이 cm)</th><th class="n">전체 수량</th><th>처음 위치</th><th class="c">수량</th><th>마지막 위치</th><th class="c">수량</th><th class="c">미정</th><th class="c">사진</th></tr></thead><tbody>`;
   if(!rows.length) h+=`<tr><td colspan="10" class="hint" style="padding:16px">조건에 맞는 가구가 없어요.</td></tr>`;
   let tot=0, und=0;
   for(const r of rows){ const g=r.g; tot+=r.us.length; und+=r.und; const n=Math.max(r.fr.length,r.to.length,1);
@@ -1502,7 +1590,7 @@ function makeXlsx(sheet,rows,widths,merges){ const x=v=>String(v).replace(/&/g,'
     ['xl/worksheets/sheet1.xml',ws]]) }
 async function saveFile(fname,data){ try{ const dl=window.claude&&await window.claude.use('downloads'); if(dl){ try{ await dl.save({filename:fname,data}); toast('내보냈어요.') }catch(err){ if(!err||err.code!=='declined') toast('내보내기가 막혀 있어요.') } return } }catch(_){}
   const blob=data instanceof Blob?data:new Blob([data]); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000) }
-function exportAssetsXlsx(){ const rows=[['자산명','규격 (가로×세로×높이 cm)','가로','세로','높이','전체 수량','이전 위치','수량','변경 위치','수량','미정','새로 구매','사진']];
+function exportAssetsXlsx(){ const rows=[['자산명','규격 (가로×세로×높이 cm)','가로','세로','높이','전체 수량','처음 위치','수량','마지막 위치','수량','미정','새로 구매','사진']];
   for(const r of assetRows()){ const n=Math.max(r.fr.length,r.to.length,1);
     for(let i=0;i<n;i++){ const f=r.fr[i], t=r.to[i]; rows.push([r.g.name,r.spec,r.g.w,r.g.d,r.h||'',r.us.length,f?f[0]:'',f?f[1].length:'',t?t[0]:'',t?t[1].length:'',i===0?r.und:'',r.g.newN||'',r.photo?'있음':'']) } }
   const dt=new Date(); const fname=`자산목록-${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}.xlsx`;
@@ -1581,8 +1669,8 @@ function renderSpaces(){
     h+=`<section class="card space"><div class="shead"><input id="pn-${p.id}" data-pname="${p.id}" value="${esc(p.name)}" aria-label="공간 이름"><button class="btn small" data-delspace="${p.id}">삭제</button></div><div class="smeta">기존 가구 ${n}개 · 들어올 가구 ${inc}개 · 도면 ${maps.length}개</div><div class="maps">`;
     for(const m of maps){ if(m.blank){ h+=`<div class="mrow"><div class="blankthumb">빈 도면</div><div style="display:grid;gap:4px;min-width:0"><input id="mn-${m.id}" data-mname="${m.id}" value="${esc(m.name)}" aria-label="도면 이름"><span class="mstat ok">빈 도면 · ${fmt(m.w)}×${fmt(m.h)}cm</span><div class="actions"><button class="btn small" data-blank="${p.id}" data-blankmap="${m.id}">크기 바꾸기</button><button class="btn small" data-cal="${m.id}">방 나누기</button><button class="btn small" data-delmap="${m.id}">삭제</button></div></div></div>`; continue }
       h+=`<div class="mrow"><img src="${m.img}" alt=""><div style="display:grid;gap:4px;min-width:0"><input id="mn-${m.id}" data-mname="${m.id}" value="${esc(m.name)}" aria-label="도면 이름"><span class="mstat ${cal(m)?'ok':'wr'}">${cal(m)?`축척 완료 · ${fmt(m.w/m.sx)}×${fmt(m.h/m.sy)}cm`:'축척을 맞춰야 배치할 수 있어요'}</span><div class="actions"><button class="btn small ${cal(m)?'':'primary'}" data-cal="${m.id}">${cal(m)?'축척 다시 맞추기':'축척 맞추기'}</button><button class="btn small" data-delmap="${m.id}">삭제</button></div></div></div>` }
-    const ph=S.photos.filter(x=>x.placeId===p.id);
-    h+=`</div><div style="display:grid;gap:5px"><span class="smeta">공간 사진 ${ph.length}/5 · 화살표는 도면 기준 방향</span>${photoSlots(p.id)}</div><div class="actions"><button class="btn small" data-addmap="${p.id}">도면 추가 (PDF·이미지)</button><button class="btn small" data-blank="${p.id}">빈 도면 만들기</button></div></section>` }
+    const ph=S.photos.filter(x=>x.placeId===p.id), phA=ph.filter(x=>phOf(x)==='after').length;
+    h+=`</div><div style="display:grid;gap:5px"><span class="smeta">공간 사진 · <span class="phtag before">변경 전</span> ${ph.length-phA}/5 · 화살표는 도면 기준 방향</span>${photoSlots(p.id)}${phA?`<span class="smeta"><span class="phtag after">변경 후</span> ${phA}/5 · 공간 작업의 변경 후 화면에서 올린 사진</span>${photoSlots(p.id,'after')}`:''}</div><div class="actions"><button class="btn small" data-addmap="${p.id}">도면 추가 (PDF·이미지)</button><button class="btn small" data-blank="${p.id}">빈 도면 만들기</button></div></section>` }
   v.innerHTML=h+'</div></div>';
 }
 
@@ -1624,6 +1712,7 @@ document.addEventListener('click',e=>{
   if(d.view){ switchView(d.view); return }
   if(d.close!==undefined){ t.closest('dialog').close(); return }
   if(d.rfilter!==undefined){ UI.railFilter=d.rfilter; renderRail(); savePrefs(); return }
+  if(d.rselall){ if(d.rselall==='off'){ UI.rsel=null } else { const s=UI.rsel||new Set(); $$('#rail [data-rsel]').forEach(c=>s.add(c.dataset.rsel)); UI.rsel=s.size?s:null } renderRail(); return }
   if(d.unassign){ const u=U(d.unassign); const sl=curSlot(); if(u&&u[sl]){ u[sl]=null; if(UI.sel&&UI.sel.id===u.id) UI.sel=null; toast(`${lbl(u)}을(를) 미배치 가구로 돌려놓았어요.`); commit() } return }
   if(d.mq){ const[side,l]=d.mq.split(':'); const cols=getCols(); cols[side]=l==='none'?[]:S.maps.filter(cal).map(m=>`${m.id}:*:${l}`); UI.openMsel=side; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.swapcols!==undefined){ const c=getCols(); UI.cols={L:c.R,R:c.L}; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
@@ -1636,7 +1725,7 @@ document.addEventListener('click',e=>{
   if(d.openg){ UI.open.has(d.openg)?UI.open.delete(d.openg):UI.open.add(d.openg); renderRail(); return }
   if(d.hlm!==undefined){ const ids=(UI.hlmap||[])[+d.hlm]; if(ids) setHL(ids,'m:'+d.hlm); return }
   if(d.hl){ const g=GROUPS.find(g=>g.key===d.g); if(!g) return; setHL((d.hl==='p'?g.placed:g.remain).map(u=>u.id),d.hl+':'+g.key); return }
-  if(d.u&&!e.target.closest('select')){ setHL([d.u],'u:'+d.u); return }
+  if(d.u&&!e.target.closest('select,input')){ setHL([d.u],'u:'+d.u); return }
   if(d.chip){ const k=d.chip; if(UI.slots.includes(k)) return; putSlot(UI.slots[0]?(UI.slots[1]?1:1):0,k); return }
   if(d.clearslot!==undefined){ if(d.clearslot==='all') UI.slots=[null,null]; else UI.slots[+d.clearslot]=null; savePanels(); UI.fitted=true; renderPlan(); fitAll(); requestAnimationFrame(fitAll); return }
   if(d.swap!==undefined){ UI.slots=[UI.slots[1],UI.slots[0]]; savePanels(); UI.fitted=true; renderPlan(); fitAll(); requestAnimationFrame(fitAll); return }
@@ -1647,7 +1736,7 @@ document.addEventListener('click',e=>{
   if(d.blank){ openBlank(d.blank,d.blankmap||null); return }
   if(d.cal){ openCal(d.cal); return }
   if(d.photo){ openPhoto(d.photo); return }
-  if(d.addphoto){ UI.photoTarget=d.addphoto; UI.photoDir=d.dir||'전체'; $('#filePhoto').value=''; $('#filePhoto').click(); return }
+  if(d.addphoto){ UI.photoTarget=d.addphoto; UI.photoDir=d.dir||'전체'; UI.photoPh=d.ph||'before'; $('#filePhoto').value=''; $('#filePhoto').click(); return }
   if(d.addmap){ UI.mapTarget=d.addmap; $('#fileMap').value=''; $('#fileMap').click(); return }
   if(d.delmap){ if(!armed(t)) return; const id=d.delmap; for(const u of S.units){ if(u.from&&u.from.mapId===id) u.from=null; if(u.to&&u.to.mapId===id) u.to=null } S.maps=S.maps.filter(m=>m.id!==id); UI.slots=(UI.slots||[null,null]).map(k=>k&&k.startsWith(id+':')?null:k); savePanels(); commit(); return }
   if(d.delspace){ if(!armed(t)) return; const id=d.delspace; const mids=new Set(S.maps.filter(m=>m.placeId===id).map(m=>m.id)); const iids=new Set(itemsOf(id).map(i=>i.id)); S.units=S.units.filter(u=>!iids.has(u.itemId)); for(const u of S.units){ if(u.to&&mids.has(u.to.mapId)) u.to=null; if(u.toPlaceId===id) u.toPlaceId=null } S.items=S.items.filter(i=>!iids.has(i.id)); S.maps=S.maps.filter(m=>!mids.has(m.id)); S.places=S.places.filter(p=>p.id!==id); S.photos=S.photos.filter(x=>x.placeId!==id); commit(); return }
@@ -1658,7 +1747,9 @@ document.addEventListener('click',e=>{
 document.addEventListener('change',e=>{
   const t=e.target;
   if(t.dataset.chk){ const u=U(t.dataset.cu); if(!u) return; u.chk=Object.assign({},u.chk,{[t.dataset.chk]:t.checked}); t.closest('li')&&t.closest('li').classList.toggle('done',t.checked); save(); renderCheck(); return }
-  if(t.dataset.dest){ const u=U(t.dataset.dest); const v=t.value; if(!v){ u.to=null; u.toPlaceId=null } else if(!(u.to&&M(u.to.mapId)?.placeId===v)){ u.to=null; u.toPlaceId=v } commit(); return }
+  if(t.dataset.dest){ const u=U(t.dataset.dest); setDest(u,t.value); commit(); return }
+  if(t.dataset.bulkdest!==undefined){ const v=t.value; if(!v) return; moveUnitsTo(selUnitIds(),v==='__none'?'':v); return }
+  if(t.dataset.rsel){ const s=UI.rsel||(UI.rsel=new Set()); t.checked?s.add(t.dataset.rsel):s.delete(t.dataset.rsel); if(!s.size) UI.rsel=null; renderRail(); return }
   if(t.dataset.item){ onItemField(t); return }
   if(t.dataset.pname){ const p=P(t.dataset.pname); p.name=t.value.trim()||p.name; commit(); return }
   if(t.dataset.mname){ const m=M(t.dataset.mname); m.name=t.value.trim()||m.name; commit(); return }
@@ -1729,7 +1820,7 @@ $('#btnVerSave').onclick=()=>{ if(UI.viewVer){ toast('지난 버전을 보는 �
   const adv=$('#verAdvance').checked; if(adv){ advanceAll(); UI.wlayer='a' } UI.sel=null; UI.multi=null; UI.hl=null; commit(); renderVerList(); $('#dlgVer').close();
   toast(adv?`'${v.name}' 버전을 저장하고, 변경 후를 새 변경 전으로 넘겼어요.`:`'${v.name}' 버전을 저장했어요.`) };
 $('#btnCommit').onclick=e=>{ const scope=$('#commitScope').value; const target=S.units.filter(u=>isPlaced(u)&&(!scope||destPlace(u)===scope)); if(!target.length){ toast('반영할 가구가 없어요. 도착지가 정해진 가구만 반영돼요.'); return } if(!armed(e.currentTarget)) return;
-  for(const u of target){ const dp=destPlace(u); const it=I(u.itemId);
+  for(const u of target){ const dp=destPlace(u); const it=I(u.itemId); markFirst(u,it);
     if(dp!==it.placeId){ let tgt=S.items.find(x=>x.placeId===dp&&gkey(x)===gkey(it)); if(!tgt){ tgt={...it,id:uid(),placeId:dp,qty:0}; S.items.push(tgt) } u.itemId=tgt.id }
     u.from=u.to?{...u.to}:null; u.to=null; u.toPlaceId=null; u.chk={} }
   S.items=S.items.filter(it=>S.units.some(u=>u.itemId===it.id)); for(const it of S.items){ const us=unitsOf(it); it.qty=us.length; us.forEach((u,i)=>u.idx=i+1) }
@@ -1952,7 +2043,7 @@ function makeExample(){
   const saved=await Store.get('state');
   if(saved&&Array.isArray(saved.places)){ S=Object.assign(empty(),saved); $('#saveState').textContent='이 브라우저에 저장됨' }
   else { makeExample(); save() }
-  renderAll(); bootView();
+  migrateFirst(); renderAll(); bootView();
 })();
 })();
 </script>

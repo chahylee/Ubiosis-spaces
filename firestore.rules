@@ -1,0 +1,34 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null && request.auth.token.email_verified == true; }
+    function myEmail() { return request.auth.token.email.lower(); }
+    function isAdmin() { return signedIn() && myEmail() == 'chahylee@gmail.com'; }
+    function memberPath() { return /databases/$(database)/documents/members/$(myEmail()); }
+    function isMember() { return signedIn() && exists(memberPath()); }
+    function isEditor() { return isMember() && get(memberPath()).data.role == 'edit'; }
+    function notLocked() {
+      return !exists(/databases/$(database)/documents/settings/lock)
+        || get(/databases/$(database)/documents/settings/lock).data.get('locked', false) != true;
+    }
+    function inPeriod() { return request.time < timestamp.date(2027, 2, 1); }
+
+    match /members/{em} {
+      allow read: if isAdmin() || (signedIn() && myEmail() == em);
+      allow write: if isAdmin();
+    }
+    match /requests/{em} {
+      allow read: if isAdmin() || (signedIn() && myEmail() == em);
+      allow create, update: if signedIn() && myEmail() == em;
+      allow delete: if isAdmin();
+    }
+    match /settings/{doc} {
+      allow read: if isAdmin() || isMember();
+      allow write: if isAdmin();
+    }
+    match /{coll}/{doc} {
+      allow read: if !(coll in ['members', 'requests', 'settings']) && (isAdmin() || (isMember() && inPeriod()));
+      allow write: if !(coll in ['members', 'requests', 'settings']) && (isAdmin() || (isEditor() && notLocked() && inPeriod()));
+    }
+  }
+}

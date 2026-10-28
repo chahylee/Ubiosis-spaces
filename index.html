@@ -1,0 +1,1665 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+window.__FB_CONFIG__={
+  apiKey: "AIzaSyArif5SSKAPFNDQWnQFaDOyya-OGCUHZzQ",
+  authDomain: "ubiosis-moving.firebaseapp.com",
+  projectId: "ubiosis-moving",
+  storageBucket: "ubiosis-moving.firebasestorage.app",
+  messagingSenderId: "420326360452",
+  appId: "1:420326360452:web:6e163259b2e87e9550c9d1"
+};
+
+</script>
+</head>
+<body>
+<title>이사 배치판</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* Layout: one-screen drafting table — top bar, left inventory rail, center drawing workspace with 50cm grid */
+:root{
+  --bg:#eceeec; --panel:#fafbfa; --raise:#ffffff; --ink:#1a201e; --muted:#5d6763; --line:#d3d9d6; --soft:#e4e9e6;
+  --accent:#1e5c84; --accent-ink:#ffffff; --accent-soft:#d9e7f0;
+  --ok:#287346; --ok-soft:#dcefe3; --warn:#a9500f; --warn-soft:#f6e6d8; --bad:#bf2f2f;
+  --hl:#d6136c; --paper-ink:#18201d;
+  --grid1:rgba(96,104,101,.24); --grid2:rgba(96,104,101,.24);
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#121615; --panel:#191e1d; --raise:#1f2524; --ink:#e2e8e5; --muted:#97a29d; --line:#2d3533; --soft:#242b29;
+  --accent:#6fa9d3; --accent-ink:#081723; --accent-soft:#1c3243;
+  --ok:#62c08a; --ok-soft:#1b3326; --warn:#e69a57; --warn-soft:#3a2818; --bad:#ef6a6a;
+  --hl:#ff4f9a; --grid1:rgba(96,104,101,.24); --grid2:rgba(96,104,101,.24); color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#121615; --panel:#191e1d; --raise:#1f2524; --ink:#e2e8e5; --muted:#97a29d; --line:#2d3533; --soft:#242b29;
+  --accent:#6fa9d3; --accent-ink:#081723; --accent-soft:#1c3243;
+  --ok:#62c08a; --ok-soft:#1b3326; --warn:#e69a57; --warn-soft:#3a2818; --bad:#ef6a6a;
+  --hl:#ff4f9a; --grid1:rgba(96,104,101,.24); --grid2:rgba(96,104,101,.24); color-scheme:dark }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{height:100%;box-sizing:border-box;overscroll-behavior:none}
+body{min-height:100%;margin:0;overscroll-behavior:none;overflow-x:hidden;overflow-y:auto;background:var(--bg);color:var(--ink);font:14px/1.5 var(--sans)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.app{height:100%;min-height:calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));display:flex;flex-direction:column}
+.app>main{flex:1 1 auto;min-height:0}
+@supports (height:100dvh){ .app{min-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))} }
+@media (min-width:861px){ .app{height:max(680px,calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)))} @supports (height:100dvh){ .app{height:max(680px,calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)))} } }
+
+/* top bar */
+.top{display:flex;align-items:center;gap:20px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px;letter-spacing:-.01em}
+.mark{width:22px;height:22px;border:2px solid var(--accent);border-radius:3px;background:
+  linear-gradient(var(--accent),var(--accent)) 50% 0/2px 100% no-repeat,
+  linear-gradient(var(--accent),var(--accent)) 0 50%/100% 2px no-repeat}
+.tabs{display:flex;gap:2px;background:var(--soft);padding:3px;border-radius:9px}
+.tabs button{border:0;background:none;padding:6px 14px;border-radius:7px;color:var(--muted);font-weight:500}
+.tabs button.on{background:var(--raise);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.topr{margin-left:auto;display:flex;align-items:center;gap:12px}
+.savestate{font-size:12px;color:var(--muted)}
+.btn{border:1px solid var(--line);background:var(--raise);padding:6px 12px;border-radius:7px;font-weight:500}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.small{padding:3px 9px;font-size:12.5px}
+.btn.armed{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.lockbar{padding-block:7px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--accent-soft);color:var(--ink);font-size:13px;font-weight:500;border-bottom:1px solid var(--line)}
+body.readonly .qadd,body.readonly .udel,body.readonly [data-delunit],body.readonly [data-additem],body.readonly [data-delitem]{display:none!important}
+.examplebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--warn-soft);color:var(--ink);font-size:13px;border-bottom:1px solid var(--line)}
+main{min-height:0;position:relative}
+.view{height:100%;min-height:0}
+.scrollview{overflow:auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:18px}
+h2{font-size:18px;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h3{font-size:15px;margin:0}
+.lead{color:var(--muted);margin:4px 0 0;max-width:68ch}
+
+/* plan layout */
+.plan{display:grid;grid-template-columns:264px 1fr}
+.plan.railoff{grid-template-columns:1fr}
+.plan.railoff .rail{display:none}
+.czoom{position:absolute;top:8px;z-index:4;display:flex;align-items:center;gap:3px;background:color-mix(in srgb,var(--raise) 94%,transparent);border:1px solid var(--line);border-radius:8px;padding:3px 6px;font-size:11.5px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.czoom.left{left:12px} .czoom.right{right:12px}
+.svgwrap.hasphotos .czoom.right{right:158px}
+.czoom button{border:0;background:none;width:20px;height:20px;border-radius:4px;color:var(--ink);font-size:13px;line-height:1}
+.czoom button:hover{background:var(--soft)}
+.czoom input{width:78px;accent-color:var(--accent)}
+.czoom .czp{min-width:36px;text-align:right;color:var(--muted);font-size:11px}
+.czoom .sl{color:var(--muted);margin-right:2px;white-space:nowrap}
+.svgwrap.hascz .railtab{top:46px}
+.svgwrap.hascz .photos-tab{top:46px}
+.layerseg{position:absolute;left:12px;top:8px;z-index:4;display:flex;gap:2px;background:var(--soft);padding:3px;border-radius:9px;border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.layerseg button{border:0;background:none;border-radius:7px;padding:5px 12px;font-size:12.5px;font-weight:500;color:var(--muted)}
+.layerseg button.on[data-wl="a"]{background:var(--ink);color:var(--bg)}
+.layerseg button.on[data-wl="b"]{background:var(--accent);color:var(--accent-ink)}
+.traybg{fill:color-mix(in srgb,var(--panel) 85%,transparent);stroke:var(--line);stroke-width:1.5;stroke-dasharray:8 6;vector-effect:non-scaling-stroke}
+.trayhdr{fill:var(--muted);font:600 22px var(--sans)}
+.trayhdr.new{fill:#b0125b}
+.newtag rect{fill:#b0125b}
+.newtag text{fill:#fff;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--sans)}
+.newtagh{display:inline-block;font-size:10px;font-weight:600;color:#fff;background:#b0125b;border-radius:4px;padding:0 5px;line-height:1.5}
+.qadd.newmode{border-color:#b0125b}
+.trayhdr.warn{fill:var(--warn);font-size:19px}
+.ptag.tr{fill:var(--warn)} .ptagt.tr{fill:#fff}
+.unit.traywait{cursor:grab}
+.railtop{display:flex;align-items:center;gap:6px}
+.railtop b{font-size:12px}
+.railfold{margin-left:auto;border:1px solid var(--line);background:var(--raise);border-radius:6px;padding:1px 8px;font-size:11.5px;color:var(--muted)}
+.railfold:hover{color:var(--ink);border-color:var(--muted)}
+.railtab{position:absolute;left:0;top:52px;z-index:4;border:1px solid var(--line);border-left:0;background:var(--raise);border-radius:0 8px 8px 0;padding:8px 5px;font-size:11.5px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.railtab span{writing-mode:vertical-rl;letter-spacing:.1em}
+.photos-tab{position:absolute;right:8px;top:8px;z-index:4;border:1px solid var(--line);background:var(--raise);border-radius:7px;padding:3px 9px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.ph-head{display:flex;align-items:center;gap:6px}
+.ph-head button{margin-left:auto;border:0;background:none;color:var(--muted);font-size:11px;padding:0 2px}
+.ph-head button:hover{color:var(--ink)}
+.rail{font-size:12px;border-right:1px solid var(--line);background:var(--panel);display:grid;grid-template-rows:auto 1fr;min-height:0}
+.railhead{padding:10px 10px 8px;display:grid;gap:7px;border-bottom:1px solid var(--line)}
+.sum{display:grid;gap:6px}
+.sumnums{display:flex;gap:10px;font-size:11.5px;color:var(--muted)}
+.sumnums b{color:var(--ink);font-family:var(--mono);font-size:13px;margin-left:4px}
+.sumnums .w b{color:var(--warn)}
+.bar{height:6px;border-radius:3px;background:var(--soft);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok)}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:var(--raise);border-radius:999px;padding:2px 9px;font-size:12px;color:var(--muted)}
+.seg button.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.qadd{display:grid;gap:5px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--raise)}
+.qadd>b{font-size:11.5px;font-weight:600}
+.qrow{display:grid;grid-template-columns:1fr 46px;gap:4px}
+.qrow.qk{grid-template-columns:1fr 84px 40px}
+.qadd select{border:1px solid var(--line);border-radius:5px;padding:3px 2px;background:var(--panel);font-size:11.5px;min-width:0}
+.qrow.q3{grid-template-columns:1fr 1fr 1fr auto}
+.qadd input{border:1px solid var(--line);border-radius:5px;padding:4px 6px;background:var(--panel);min-width:0;font-size:12px}
+.qadd input:focus{border-color:var(--accent);outline:none}
+.qadd .hint{font-size:10.5px}
+.raillist{overflow:auto;padding:4px 6px 20px;min-height:0}
+.thead,.trow{display:grid;grid-template-columns:10px 1fr 26px 32px 32px;align-items:center;gap:4px;padding:4px}
+.thead{font-size:10.5px;color:var(--muted);letter-spacing:.04em;position:sticky;top:-6px;background:var(--panel);z-index:1}
+.thead span:nth-child(n+3),.trow .num{text-align:center}
+.trow{border-radius:7px;cursor:grab}
+.trow:hover{background:var(--soft)}
+.sw{width:10px;height:10px;border-radius:3px;background:var(--c);display:inline-block;flex:none}
+.tname{border:0;background:none;text-align:left;padding:0;min-width:0;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+.tname b{font-weight:500}
+.tname .mono{font-size:10.5px;color:var(--muted)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:11.5px;border:1px solid transparent;background:none;border-radius:6px;padding:2px 0}
+button.num.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+button.num.wr{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
+button.num:hover{background:var(--raise)}
+button.num.on{background:var(--hl);border-color:var(--hl);color:#fff}
+button.num.zero{opacity:.35}
+.hlbox{grid-column:1/-1;margin:2px 0 6px 12px;font-size:11.5px!important;border-left:3px solid var(--hl);background:color-mix(in srgb,var(--hl) 7%,var(--raise));border-radius:0 7px 7px 0;padding:7px 10px;display:grid;gap:5px;font-size:12.5px;cursor:default}
+.hlbox>b{font-size:11.5px;color:var(--muted);font-weight:500}
+.hlline{display:grid;grid-template-columns:1fr auto;gap:0 8px}
+.hlline .mono{font-weight:500}
+.hlline .hlnames{grid-column:1/-1;color:var(--muted);font-size:11.5px}
+.tsub{grid-column:2/-1;font-size:11px;color:var(--muted);padding:0 0 4px}
+.ritem{padding:6px 2px 4px;border-bottom:1px dashed var(--line)}
+.rih{display:flex;align-items:center;gap:6px;padding:0 3px 3px}
+.rih .mono{font-size:10.5px;color:var(--muted)}
+.rih .c{margin-left:auto;font-size:12px;color:var(--muted)}
+.runits{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.runits li{display:grid;grid-template-columns:10px 1fr auto 80px 18px;align-items:center;gap:5px;padding:3px 4px;border-radius:6px;cursor:grab;border-left:3px solid transparent}
+.runits li:hover{background:var(--soft)}
+.runits li.rem{border-left-color:var(--warn)}
+.runits li.on{background:color-mix(in srgb,var(--hl) 14%,transparent)}
+.runits .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.udel{border:1px solid var(--line);background:var(--raise);color:var(--muted);font-size:13px;line-height:1;padding:0;border-radius:4px;width:18px;height:18px}
+.udel:hover{color:var(--bad);background:var(--soft)}
+.udel.armed{width:auto;padding:0 4px;font-size:10.5px;color:#fff;background:var(--bad)}
+.btn.danger{color:var(--bad)}
+.flag{font-size:9.5px;padding:0 5px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.flag.on{border-color:var(--accent);color:var(--accent)}
+.runits select{font-size:11px;padding:1px 3px;border:1px solid var(--line);border-radius:6px;background:var(--raise);min-width:0;width:100%}
+.railempty{padding:20px 12px;color:var(--muted);font-size:13px;display:grid;gap:10px}
+.raildrop{position:absolute;inset:0;border:2px dashed var(--warn);border-radius:8px;pointer-events:none}
+
+.stage{display:grid;grid-template-rows:auto 1fr;min-height:0;min-width:0}
+.stagebar{display:flex;gap:10px;align-items:center;padding:8px 12px;min-height:52px;position:relative;z-index:5;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+.pchips{display:flex;flex-direction:column;gap:7px;flex:1;min-width:0}
+.slots{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.slotsel{display:flex;align-items:center;gap:6px}
+.msel{position:relative}
+.msel summary{list-style:none;display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:7px;padding:5px 10px;background:var(--raise);cursor:pointer;font-size:13px;width:310px;max-width:calc(100vw - 60px)}
+.msel summary .sl{flex:none;white-space:nowrap}
+.msel summary::-webkit-details-marker{display:none}
+.msel[open] summary{border-color:var(--accent)}
+.msum{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.caret{flex:none}
+.caret{color:var(--muted);margin-left:auto}
+.mpanel{position:absolute;top:calc(100% + 4px);left:0;z-index:20;background:var(--raise);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15);padding:10px;width:max-content;min-width:280px;max-width:min(420px,calc(100vw - 32px));max-height:60vh;overflow:auto;display:grid;gap:10px}
+.mquick{display:flex;gap:4px;flex-wrap:wrap}
+.mgrp{display:grid;gap:3px}
+.mgrp>b{font-size:12px;color:var(--muted);font-weight:500}
+.mline{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:3px 4px;border-radius:5px;font-size:13px}
+.mline:hover{background:var(--soft)}
+.mline.sub span{padding-left:10px;color:var(--muted)}
+.vis{display:flex;align-items:center;gap:4px 12px;flex-wrap:wrap;font-size:12.5px}
+.vchk{display:inline-flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap}
+.vchk input{width:15px;height:15px;accent-color:var(--accent);margin:0}
+.vsep{width:1px;height:16px;background:var(--line)}
+.slotsel select{border:1px solid var(--line);border-radius:7px;padding:5px 8px;background:var(--raise);font-size:13px;max-width:280px}
+.slot{display:flex;align-items:center;gap:7px;min-width:230px;min-height:34px;border:1.5px dashed var(--line);border-radius:8px;padding:3px 6px 3px 9px;font-size:12.5px;background:var(--bg)}
+.slot.full{border-style:solid;border-color:color-mix(in srgb,var(--ink) 40%,var(--line));background:var(--raise)}
+.slot.over{border-color:var(--hl);border-style:solid;background:color-mix(in srgb,var(--hl) 10%,var(--raise))}
+.slot .sl{white-space:nowrap;font-size:11px;color:var(--muted);letter-spacing:.03em}
+.slot .ph{color:var(--muted)}
+.x2{border:0;background:none;color:var(--muted);margin-left:auto;padding:0 4px;font-size:12px}
+.x2:hover{color:var(--ink)}
+.chip2,.tchip{display:inline-flex;gap:6px;align-items:center}
+.tray{display:flex;gap:5px;flex-wrap:wrap}
+.tchip{border:1px solid var(--line);background:var(--raise);border-radius:7px;padding:3px 8px;font-size:12px;cursor:grab}
+.tchip:hover{border-color:var(--muted)}
+.tchip.used{opacity:.38}
+.tchip.need{border-style:dashed;color:var(--warn);cursor:pointer}
+.cm{color:var(--muted)}
+.lt{font-size:11px;border-radius:5px;padding:0 6px;background:var(--ink);color:var(--bg)}
+.lt.b{background:var(--accent);color:var(--accent-ink)}
+.pchip{display:flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:8px;padding:2px 2px 2px 9px;background:var(--raise);font-size:12.5px}
+.pchip>span{margin-right:5px;white-space:nowrap}
+.pchip button{border:0;border-radius:6px;padding:2px 8px;background:none;color:var(--muted);font-size:12px}
+.pchip button.on.a{background:var(--ink);color:var(--bg)}
+.pchip button.on.b{background:var(--accent);color:var(--accent-ink)}
+.pchip.need{border-style:dashed;color:var(--warn)}
+.tools{display:flex;gap:6px;align-items:center}
+.tools select{border:1px solid var(--line);border-radius:7px;padding:4px 6px;background:var(--raise);font-size:12.5px}
+.ibtn{border:1px solid var(--line);background:var(--raise);border-radius:7px;min-width:30px;height:30px;padding:0 9px;font-size:13px}
+.tools input[type=range]{width:110px;accent-color:var(--accent)}
+.zoomp{font-size:12px;color:var(--muted);min-width:42px;text-align:right}
+.ibtn.on{background:var(--hl);border-color:var(--hl);color:#fff}
+.svgwrap{position:relative;min-height:0;overflow:hidden;background:
+  radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--muted) 22%,transparent) 1px,transparent 1.5px) 0 0/18px 18px,var(--bg)}
+#plan{width:100%;height:100%;display:block;touch-action:none;overscroll-behavior:contain;user-select:none;-webkit-user-select:none}
+#plan.panning{cursor:grabbing}
+#plan.measuring{cursor:crosshair}
+#plan.measuring .unit{pointer-events:none}
+.sbar{position:absolute;top:6px;bottom:6px;width:10px;margin-left:-3px;z-index:3}
+.sbar i{position:absolute;left:4px;width:2px;border-radius:2px;background:color-mix(in srgb,var(--muted) 55%,transparent);transition:width .12s,left .12s,background .12s;cursor:grab}
+.sbar:hover i,.sbar.drag i{left:2px;width:6px;background:color-mix(in srgb,var(--muted) 80%,transparent)}
+.legend{position:absolute;left:12px;bottom:12px;font-size:11.5px;color:var(--muted);background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);border-radius:7px;padding:4px 9px;display:flex;gap:10px;align-items:center}
+.legend i{display:inline-block;width:14px;height:14px;border:1px solid var(--grid2);vertical-align:-3px;margin-right:4px}
+.selbar{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:var(--raise);border:1px solid var(--line);border-radius:10px;padding:6px 8px 6px 12px;box-shadow:0 4px 18px rgba(0,0,0,.12);max-width:calc(100% - 24px);flex-wrap:wrap;font-size:13px}
+.selbar .route{color:var(--muted)}
+.rb{font-size:12px;border-radius:999px;padding:1px 9px;font-weight:500}
+.rb.new{background:#fbe3ee;color:#b0125b}
+.flag.newf{border-color:#b0125b;color:#b0125b}
+.rb.in{background:var(--ok-soft);color:var(--ok)}
+.rb.same{background:var(--accent-soft);color:var(--accent)}
+.rb.wr{background:var(--warn-soft);color:var(--warn)}
+.selbar em{color:var(--warn);font-style:normal}
+kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:3px;color:var(--muted)}
+.photos{position:absolute;right:0;top:0;bottom:0;width:146px;font-size:12px;display:flex;flex-direction:column;gap:10px;overflow:auto;padding:10px 8px;background:var(--panel);border-left:1px solid var(--line)}
+.svgwrap.hasphotos #plan{width:calc(100% - 146px)}
+.svgwrap.hasphotos .selbar{left:calc(50% - 73px)}
+.inc{display:grid;gap:6px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.incg{display:grid;gap:2px}
+.incf{font-size:11.5px;color:var(--ok);font-weight:500}
+.incu{display:flex;gap:5px;align-items:center;border:0;background:none;padding:2px 3px;border-radius:5px;font-size:11.5px;text-align:left}
+.incu:hover{background:var(--soft)}
+.incu.on{background:color-mix(in srgb,var(--hl) 14%,transparent)}
+.incu em.rmt{color:var(--muted)}
+.incu em{margin-left:auto;font-style:normal;font-size:10.5px;color:var(--warn)}
+.ph-title{font-size:12.5px;font-weight:500;color:var(--muted)}
+.pcard{position:relative;flex:none;border:1px solid var(--line);border-radius:8px;overflow:hidden;padding:0;aspect-ratio:4/3;background:var(--raise);display:block;width:100%}
+.pcard img{width:100%;height:100%;object-fit:cover;display:block}
+.prow{display:grid;grid-template-columns:22px 1fr;gap:6px;align-items:center}
+.parrow{font-size:18px;text-align:center;color:var(--ink);line-height:1}
+.parrow.all{font-size:10.5px;color:var(--muted);writing-mode:vertical-rl}
+.pcard.add{border-style:dashed;display:grid;place-items:center}
+.pcard.add .pplus{font-size:20px;color:var(--muted)}
+.pcard.add:hover .pplus{color:var(--ink)}
+.pfocus{border:0;background:none;padding:0;font-weight:600;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.pfocus:hover{text-decoration-color:var(--ink)}
+.ptitle{cursor:pointer}
+.ptitle:hover .pname{text-decoration:underline}
+.pgrp{display:grid;gap:6px}
+.pgrp b{font-size:11.5px;font-weight:500;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pthumbs{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.pthumbs button{border:1px solid var(--line);padding:0;border-radius:5px;overflow:hidden;aspect-ratio:1;background:var(--soft);max-width:100%}
+.pthumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.pslots{display:grid;grid-template-columns:repeat(3,1fr);grid-template-areas:". n ." "w c e" ". s .";gap:4px;max-width:200px}
+.pslot.d0{grid-area:n}.pslot.d1{grid-area:w}.pslot.d2{grid-area:c}.pslot.d3{grid-area:e}.pslot.d4{grid-area:s}
+.pslot.d2{border-color:var(--muted)}
+.pslot{position:relative;border:1px solid var(--line);padding:0;border-radius:6px;overflow:hidden;aspect-ratio:1;background:var(--raise);max-width:100%}
+.pslot img{width:100%;height:100%;object-fit:cover;display:block}
+.pslot span{position:absolute;left:3px;bottom:3px;font-size:10.5px;background:rgba(0,0,0,.6);color:#fff;border-radius:4px;padding:0 5px}
+.pslot.add{border-style:dashed;display:grid;place-items:center}
+.pslot.add span{position:static;background:none;color:var(--muted);font-size:15px}
+.pslot.add.d2 span{font-size:11px}
+.pslot.add:hover span{color:var(--ink)}
+.padd{border:1px dashed var(--line);background:none;border-radius:6px;font-size:11.5px;color:var(--muted);padding:4px}
+.padd:hover{border-color:var(--muted);color:var(--ink)}
+.lightbox{display:grid;grid-template-rows:auto 1fr auto;max-height:calc(100vh - 26px)}
+.lbimg{min-height:0;display:grid;place-items:center;background:#0d1110;padding:10px}
+.lbimg img{max-width:100%;max-height:72vh;object-fit:contain}
+.empty{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center}
+.empty div{max-width:44ch;display:grid;gap:12px;justify-items:center;color:var(--muted)}
+.empty b{color:var(--ink);font-size:15px}
+
+/* svg */
+.pimg{opacity:.96}
+.pframe{fill:#fff;stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke}
+.panel.b .pframe{stroke:var(--accent);stroke-width:2}
+.g1{stroke:var(--grid1);stroke-width:1;fill:none;vector-effect:non-scaling-stroke}
+.g2{stroke:var(--grid2);stroke-width:1;fill:none;vector-effect:non-scaling-stroke}
+.ptag{fill:var(--ink)} .ptag.b{fill:var(--accent)}
+.ptagt{fill:var(--bg);font:600 22px var(--sans);text-anchor:middle;dominant-baseline:central}
+.panel.b .ptagt{fill:var(--accent-ink)}
+.pname{fill:var(--ink);font:500 26px var(--sans);dominant-baseline:central}
+.unit{cursor:grab}
+.unit .ub{fill:var(--c);fill-opacity:.52;stroke:var(--c);stroke-width:2;vector-effect:non-scaling-stroke}
+.unit text{fill:var(--paper-ink);text-anchor:middle;dominant-baseline:central;font-family:var(--sans);pointer-events:none}
+.unit .un{font-weight:600}
+.unit .ud{font-family:var(--mono);opacity:.75}
+.unit .ufrom{font-weight:600;fill:#0f5d3a;paint-order:stroke;stroke:#fff;stroke-width:3px}
+.unit .ugo{font-weight:600;fill:var(--c);paint-order:stroke;stroke:#fff;stroke-width:3px}
+.unit.top .ub{fill-opacity:.38;stroke-dasharray:4 3;stroke-width:1.5}
+.unit.top .un{font-weight:500}
+.toptag{font-size:9.5px;border:1px dashed var(--muted);border-radius:4px;padding:0 4px;color:var(--muted)}
+.kindsel{border:1px solid transparent;background:transparent;border-radius:6px;padding:3px 4px;font-size:12.5px}
+.kindsel:hover{border-color:var(--line)}
+.unit.ghost .ub{fill-opacity:.1;stroke-dasharray:5 4}
+.unit.ghost .un,.unit.ghost .ud{opacity:.45}
+.unit.clash .ub{stroke:var(--bad);stroke-width:3}
+.unit.sel .ub{stroke:var(--paper-ink);stroke-width:3}
+.unit.dragging{opacity:.85;cursor:grabbing}
+.unit.dim{opacity:.18}
+.unit.hl .ub{stroke:var(--hl);stroke-width:4;fill-opacity:.7;animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{50%{stroke-width:9;stroke-opacity:.55}}
+@media (prefers-reduced-motion: reduce){.unit.hl .ub{animation:none}}
+.rmbox{fill:none;stroke:#2f6f9a;stroke-width:1.5;stroke-dasharray:7 5;vector-effect:non-scaling-stroke;pointer-events:none}
+.rmlbl{fill:#2f6f9a;font:600 22px var(--sans);paint-order:stroke;stroke:#fff;stroke-width:4px;cursor:pointer}
+.rmlbl:hover{text-decoration:underline}
+.crumb{font-size:13px;color:var(--muted)}
+.crumb b{color:var(--ink)}
+.gapl{stroke:#0b7d5c;stroke-width:1.5;vector-effect:non-scaling-stroke;marker-start:none}
+.gapl.wall{stroke-dasharray:3 3}
+.gapt{fill:#0b7d5c;font-family:var(--mono);font-weight:500;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:3px}
+.guide{stroke:var(--hl);stroke-width:1.5;stroke-dasharray:6 5;vector-effect:non-scaling-stroke}
+.link{stroke:var(--hl);stroke-width:2.5;fill:none;stroke-dasharray:8 6;vector-effect:non-scaling-stroke}
+.mline{stroke:var(--hl);stroke-width:2;vector-effect:non-scaling-stroke}
+.mdot{fill:var(--hl)}
+.mtext{fill:var(--hl);font-family:var(--mono);font-weight:500;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:4px}
+
+/* tables & cards */
+.tabsline{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-size:12px;color:var(--muted);font-weight:500;background:var(--soft);white-space:nowrap}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+td input{border:1px solid transparent;background:transparent;border-radius:6px;padding:4px 6px;width:100%;min-width:0}
+td input:hover{border-color:var(--line)}
+td input:focus{border-color:var(--accent);background:var(--raise);outline:none}
+td input.numin{width:76px;text-align:right;font-family:var(--mono)}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-size:11.5px;border-radius:999px;padding:1px 8px;background:var(--soft);color:var(--muted)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.wr{background:var(--warn-soft);color:var(--warn)}
+.rowsub td{padding-top:0;border-bottom:1px solid var(--line)}
+.rowmain td{border-bottom:0}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+.routes{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.route{padding:14px 16px;display:grid;gap:10px}
+.route.undec{border-color:var(--warn);background:color-mix(in srgb,var(--warn-soft) 60%,var(--panel))}
+.rhead{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.rhead .arr{color:var(--muted)}
+.rhead .cnt{margin-left:auto;font-family:var(--mono);font-size:18px;font-weight:500}
+.rlist{list-style:none;margin:0;padding:0;display:grid;gap:5px;font-size:13px}
+.rlist li{display:flex;gap:8px;align-items:center}
+.rlist .mono{color:var(--muted);font-size:11.5px}
+.rlist .q{margin-left:auto;font-family:var(--mono)}
+
+.spaces{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;align-items:start}
+.space{padding:14px;display:grid;gap:12px}
+.shead{display:flex;gap:8px;align-items:center}
+.shead input{font-weight:600;font-size:15px;border:1px solid transparent;background:transparent;border-radius:6px;padding:3px 6px;flex:1;min-width:0}
+.shead input:hover{border-color:var(--line)}
+.smeta{font-size:12.5px;color:var(--muted)}
+.maps{display:grid;gap:8px}
+.mrow{display:grid;grid-template-columns:88px 1fr;gap:10px;align-items:start;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--raise)}
+.blankthumb{width:88px;height:66px;border:1px dashed var(--line);border-radius:5px;display:grid;place-items:center;font-size:11px;color:var(--muted);background:#fff linear-gradient(90deg,rgba(96,104,101,.15) 1px,transparent 1px) 0 0/11px 11px,linear-gradient(rgba(96,104,101,.15) 1px,transparent 1px) 0 0/11px 11px}
+.mrow img{width:88px;height:66px;object-fit:contain;background:#fff;border-radius:5px;border:1px solid var(--line)}
+.mrow input{border:1px solid transparent;background:transparent;border-radius:6px;padding:2px 5px;width:100%;font-weight:500}
+.mrow input:hover{border-color:var(--line)}
+.mstat{font-size:12px}
+.mstat.ok{color:var(--ok)} .mstat.wr{color:var(--warn)}
+.addspace{display:flex;gap:8px;flex-wrap:wrap}
+.addspace input{border:1px solid var(--line);border-radius:7px;padding:6px 10px;background:var(--raise);min-width:0;flex:1;max-width:320px}
+
+/* checklist */
+.ckplace{display:grid;gap:10px}
+.ckhead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.ckprog{margin-left:auto;font-size:14px}
+.ckgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;align-items:start}
+.ckloc{padding:12px 14px;display:grid;gap:10px}
+.cklt{font-weight:600}
+.cksec{display:grid;gap:4px}
+.ckst{font-size:12px;font-weight:500;padding:1px 8px;border-radius:999px;justify-self:start}
+.ckst.mv{background:var(--ok-soft);color:var(--ok)} .ckst.kp{background:var(--soft);color:var(--muted)} .ckst.un{background:var(--warn-soft);color:var(--warn)}
+.cklist{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.cklist li{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;padding:5px 4px;border-bottom:1px dashed var(--line)}
+.cklist li:last-child{border-bottom:0}
+.cklist label{display:flex;align-items:center;gap:8px;cursor:pointer;min-width:0}
+.cklist input{width:18px;height:18px;accent-color:var(--ok);flex:none}
+.cklist .mono{font-size:11.5px;color:var(--muted)}
+.cklist .cto{grid-column:1;font-size:12px;color:var(--muted);padding-left:26px}
+.cklist .cfind{grid-column:2;grid-row:1}
+.cklist li.done .cn{text-decoration:line-through;color:var(--muted)}
+/* dialogs */
+dialog{border:1px solid var(--line);border-radius:12px;padding:0;background:var(--panel);color:var(--ink);width:min(1100px,calc(100vw - 24px));max-height:calc(100vh - 24px);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+dialog.small{width:min(520px,calc(100vw - 24px))}
+dialog::backdrop{background:rgba(10,16,14,.45)}
+.dlg{display:grid;grid-template-rows:auto 1fr auto;max-height:calc(100vh - 26px)}
+.dh{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.dh .x{margin-left:auto}
+.dbody{min-height:0;overflow:auto}
+.df{display:flex;gap:8px;justify-content:flex-end;padding:12px 18px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.df .note{margin-right:auto;font-size:12.5px;color:var(--muted)}
+.split{display:grid;grid-template-columns:1fr 300px;min-height:0}
+.split>aside{border-left:1px solid var(--line);padding:16px;display:grid;gap:14px;align-content:start;overflow:auto}
+.cropstage{overflow:auto;background:var(--soft);padding:12px;height:min(64vh,640px);position:relative}
+.cropinner{position:relative;display:inline-block;max-width:100%}
+.cropinner canvas{display:block;max-width:100%;height:auto;background:#fff;cursor:crosshair;touch-action:none}
+.cropsel{position:absolute;border:2px solid var(--hl);background:color-mix(in srgb,var(--hl) 12%,transparent);pointer-events:none}
+.rotgrp{display:flex;gap:4px;align-items:center;margin-left:10px;padding-left:10px;border-left:1px solid var(--line)}
+.pagenav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px}
+.field{display:grid;gap:5px;font-size:13px}
+.field input,.field select{border:1px solid var(--line);border-radius:7px;padding:7px 9px;background:var(--raise)}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+.added{display:grid;gap:4px;font-size:12.5px}
+.added div{display:flex;gap:6px;align-items:center;color:var(--ok)}
+.calview{position:relative;height:min(66vh,660px);background:var(--soft)}
+#calSvg{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none}
+.calhint{position:absolute;left:12px;top:12px;right:12px;background:color-mix(in srgb,var(--raise) 92%,transparent);border:1px solid var(--line);border-radius:8px;padding:7px 11px;font-size:13px;pointer-events:none}
+.zoomctl{position:absolute;right:12px;bottom:12px;display:flex;gap:4px}
+.radios{display:grid;gap:4px;font-size:13px;border:0;padding:0;margin:0}
+.radios legend{font-size:13px;margin-bottom:4px}
+.calstatus{font-size:12.5px;background:var(--soft);border-radius:8px;padding:8px 10px;display:grid;gap:3px}
+.bignum{font-family:var(--mono);font-size:26px;font-weight:500}
+.testerbox{display:grid;gap:7px;border-top:1px solid var(--line);padding-top:12px}
+.testerbox>b{font-size:13px}
+.trow2{display:grid;grid-template-columns:1fr 1fr auto;gap:5px}
+.trow2 input{border:1px solid var(--line);border-radius:6px;padding:5px 7px;background:var(--raise);min-width:0;font-size:12.5px}
+.tlist{display:grid;gap:4px}
+.trow3{display:grid;grid-template-columns:12px 1fr auto auto;gap:6px;align-items:center;font-size:12.5px}
+.tsw{width:12px;height:4px;border-radius:2px}
+.tst{cursor:move}
+.tln{stroke:var(--tc);stroke-width:2.5;vector-effect:non-scaling-stroke}
+.thit{stroke:transparent;stroke-width:18;vector-effect:non-scaling-stroke;pointer-events:stroke}
+.tbox{fill:color-mix(in srgb,var(--tc) 10%,transparent);stroke:var(--tc);stroke-width:2.5;vector-effect:non-scaling-stroke}
+.tlab{fill:var(--tc);font-family:var(--mono);font-weight:600;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:3px;pointer-events:none}
+.loupe{position:absolute;width:170px;height:170px;border-radius:50%;border:2px solid var(--ink);box-shadow:0 6px 20px rgba(0,0,0,.25);pointer-events:none;z-index:6;background:#fff}
+.cdot.sel{stroke-width:3;stroke-dasharray:3 2}
+.cguide{stroke:var(--hl);stroke-width:1;stroke-dasharray:6 5;vector-effect:non-scaling-stroke;opacity:.8;pointer-events:none}
+.cline.prev{stroke-dasharray:4 3;opacity:.8}
+.cprevt{fill:var(--hl);font-family:var(--mono);text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:3px}
+.crm{fill:color-mix(in srgb,var(--accent) 6%,transparent);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:6 4;vector-effect:non-scaling-stroke}
+.crm.on{fill:color-mix(in srgb,var(--accent) 14%,transparent);stroke-width:2.5}
+.crmt{fill:var(--accent);font-family:var(--sans);font-weight:600;paint-order:stroke;stroke:#fff;stroke-width:3px}
+.roomlist{display:grid;gap:6px}
+.roomrow{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center}
+.roomrow input{border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:var(--raise);min-width:0}
+.cline{stroke:var(--hl);stroke-width:2;vector-effect:non-scaling-stroke}
+.cdot{fill:none;stroke:var(--hl);stroke-width:2;vector-effect:non-scaling-stroke}
+.corigin{stroke:var(--accent);stroke-width:2;vector-effect:non-scaling-stroke}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:9px;font-size:13px;z-index:50;max-width:calc(100vw - 32px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+
+@media (max-width: 860px){
+  body{overflow:auto}
+  .app{height:auto;min-height:100%}
+  .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:31;background:var(--panel)}
+  .plan{grid-template-columns:1fr;grid-template-rows:62vh auto}
+  .plan .stage{grid-row:1}
+  .rail{grid-row:2;border-right:0;border-top:1px solid var(--line)}
+  .raillist{max-height:none}
+  .split{grid-template-columns:1fr}
+  .split>aside{border-left:0;border-top:1px solid var(--line)}
+  .tabs{order:3;width:100%;overflow-x:auto}
+}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><span class="mark" aria-hidden="true"></span>이사 배치판</div>
+    <nav class="tabs" aria-label="화면">
+      <button data-view="plan" class="on">배치판</button>
+      <button data-view="space">공간 작업</button>
+      <button data-view="items">가구 목록</button>
+      <button data-view="routes">이동 경로</button>
+      <button data-view="check">체크리스트</button>
+      <button data-view="spaces">공간·도면</button>
+    </nav>
+    <div class="topr"><span id="saveState" class="savestate">불러오는 중</span><button id="btnData" class="btn small">데이터</button></div>
+  </header>
+  <div id="lockBar" class="lockbar" hidden></div>
+  <div id="exampleBar" class="examplebar" hidden>
+    <span>지금 보이는 공간과 가구는 <b>예시</b>예요. 둘러본 뒤 지우고 실제 공간을 등록하세요.</span>
+    <button id="btnClearEx" class="btn small">예시 지우고 시작</button>
+  </div>
+  <main>
+    <section id="view-plan" class="view plan">
+      <aside id="rail" class="rail" aria-label="가구 리스트"></aside>
+      <div class="stage">
+        <div class="stagebar">
+          <div id="pchips" class="pchips"></div>
+          <div class="tools">
+            <button id="btnRail" class="ibtn" title="가구 목록 접기·펼치기">◀ 목록</button>
+            <label class="mono" style="font-size:12px;color:var(--muted)" for="snapSel">맞춤</label>
+            <select id="snapSel"><option value="0">끄기</option><option value="5">5cm</option><option value="10" selected>10cm</option><option value="50">50cm</option></select>
+            <button id="btnMeasure" class="ibtn" title="길이 재기 (M)">길이 재기</button>
+            <button id="btnZout" class="ibtn" aria-label="축소">−</button>
+            <input type="range" id="zoomR" min="-2.3" max="3.4" step="0.01" value="0" aria-label="확대 배율">
+            <span id="zoomP" class="mono zoomp">100%</span>
+            <button id="btnZin" class="ibtn" aria-label="확대">+</button>
+            <button id="btnFit" class="ibtn">전체</button>
+          </div>
+        </div>
+        <div class="svgwrap" id="svgwrap">
+          <div class="layerseg" id="layerSeg" hidden><button data-wl="a">변경 전 (기존)</button><button data-wl="b">변경 후</button></div>
+          <div class="czoom left" id="czL" hidden><span class="sl">왼쪽</span><button data-cz="L:out" aria-label="왼쪽 축소">−</button><input type="range" data-czr="L" min="-2.3" max="3" step="0.01" value="0" aria-label="왼쪽 배율"><button data-cz="L:in" aria-label="왼쪽 확대">+</button><span class="czp mono">100%</span><button data-cz="L:reset" title="100%로">↺</button></div>
+          <div class="czoom right" id="czR" hidden><span class="sl">오른쪽</span><button data-cz="R:out" aria-label="오른쪽 축소">−</button><input type="range" data-czr="R" min="-2.3" max="3" step="0.01" value="0" aria-label="오른쪽 배율"><button data-cz="R:in" aria-label="오른쪽 확대">+</button><span class="czp mono">100%</span><button data-cz="R:reset" title="100%로">↺</button></div>
+          <button id="railTab" class="railtab" hidden title="가구 목록 펼치기">▶<span>가구 목록</span></button>
+          <svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg>
+          <div id="selbar" class="selbar" hidden></div>
+          <div class="legend"><span><i></i>1칸 = 50cm</span><span>휠: 칸별 위아래 · Ctrl+휠: 확대·축소 (Ctrl+Alt+휠: 더 세밀하게) · 공간 이름: 그 공간만</span></div>
+          <div id="planEmpty" class="empty" hidden></div>
+          <button id="photosTab" class="photos-tab" hidden>◀ 사진·들어온 가구</button>
+          <div class="sbar" id="sbL" hidden><i></i></div><div class="sbar" id="sbR" hidden><i></i></div>
+          <div id="photos" class="photos" aria-label="공간 사진"></div>
+        </div>
+      </div>
+    </section>
+    <section id="view-items" class="view scrollview" hidden></section>
+    <section id="view-routes" class="view scrollview" hidden></section>
+    <section id="view-check" class="view scrollview" hidden></section>
+    <section id="view-spaces" class="view scrollview" hidden></section>
+  </main>
+</div>
+
+<input type="file" id="fileMap" accept="application/pdf,image/png,image/jpeg,image/webp" hidden>
+<input type="file" id="filePhoto" accept="image/*" hidden>
+<dialog id="dlgPhoto" aria-labelledby="photoTitle">
+  <div class="lightbox">
+    <div class="dh"><h2 id="photoTitle">사진</h2><span id="photoCount" class="mono hint"></span><button class="btn small x" data-close>닫기</button></div>
+    <div class="lbimg"><img id="photoImg" alt=""></div>
+    <div class="df"><button class="btn small" id="photoDel">이 사진 삭제</button><button class="btn small" id="photoSwap" style="margin-right:auto">다른 사진으로 바꾸기</button><button class="btn" id="photoPrev">이전</button><button class="btn" id="photoNext">다음</button></div>
+  </div>
+</dialog>
+<input type="file" id="fileImport" accept="application/json,.json" hidden>
+
+<dialog id="dlgCrop" aria-labelledby="cropTitle">
+  <div class="dlg">
+    <div class="dh"><h2 id="cropTitle">도면 잘라내기</h2><button class="btn small x" data-close>닫기</button></div>
+    <div class="dbody split">
+      <div>
+        <div class="pagenav"><button class="btn small" id="cropPrev">이전 쪽</button><span id="cropPage" class="mono">1 / 1</span><button class="btn small" id="cropNext">다음 쪽</button><span class="rotgrp"><button class="btn small" id="cropRotL" title="왼쪽으로 90° 돌리기">↺ 90°</button><button class="btn small" id="cropRotR" title="오른쪽으로 90° 돌리기">↻ 90°</button><span id="cropRot" class="mono hint">0°</span></span><span class="hint" style="margin-left:auto">필요한 부분을 드래그로 선택하세요</span></div>
+        <div class="cropstage"><div class="cropinner" id="cropInner"><canvas id="cropCanvas"></canvas><div id="cropSel" class="cropsel" hidden></div></div></div>
+      </div>
+      <aside>
+        <label class="field">층 이름<input id="cropName" placeholder="예: 5층"></label>
+        <p class="hint" id="cropSelInfo">선택하지 않으면 쪽 전체를 사용해요.</p>
+        <button class="btn primary" id="cropAdd">선택 영역을 층 도면으로 추가</button>
+        <p class="hint">층 전체를 잘라 오세요. 회의실·대표실 같은 방은 다음 단계의 ④ 방 나누기에서 잘라내요.</p>
+        <div class="added" id="cropAdded"></div>
+      </aside>
+    </div>
+    <div class="df"><span class="note">다음 단계: 잘라낸 도면마다 축척을 맞춰요.</span><button class="btn primary" id="cropDone">완료</button></div>
+  </div>
+</dialog>
+
+<dialog id="dlgCal" aria-labelledby="calTitle">
+  <div class="dlg">
+    <div class="dh"><h2 id="calTitle">축척 맞추기</h2><button class="btn small x" data-close>닫기</button></div>
+    <div class="dbody split">
+      <div class="calview">
+        <svg id="calSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+        <canvas id="loupe" class="loupe" width="170" height="170" hidden></canvas>
+        <div class="calhint" id="calHint"></div>
+        <div class="zoomctl"><button class="ibtn" id="calZout" aria-label="축소">−</button><button class="ibtn" id="calZin" aria-label="확대">+</button><button class="ibtn" id="calFit">전체</button></div>
+      </div>
+      <aside>
+        <div class="seg" id="calMode"><button data-m="scale" class="on">① 축척</button><button data-m="origin">② 모눈 기준점</button><button data-m="check">③ 길이 확인</button><button data-m="rooms">④ 방 나누기</button></div>
+        <div data-pane="scale" class="field" style="gap:12px">
+          <p class="hint">도면에 치수가 적힌 벽의 양 끝을 차례로 클릭하세요. 휠로 확대하면 정확히 찍을 수 있어요.</p>
+          <label class="field">실제 길이 (mm)<input id="calLen" type="number" inputmode="decimal" min="1" placeholder="예: 3600"></label>
+          <fieldset class="radios"><legend>적용 방향</legend>
+            <label><input type="radio" name="calDir" value="both" checked> 가로·세로 모두 (처음엔 이것)</label>
+            <label><input type="radio" name="calDir" value="x"> 가로만 다시 맞추기</label>
+            <label><input type="radio" name="calDir" value="y"> 세로만 다시 맞추기</label>
+          </fieldset>
+          <button class="btn primary" id="calApply">적용</button>
+          <div id="calCopy"></div>
+        </div>
+        <div data-pane="origin" hidden><p class="hint">모눈이 시작할 벽 모서리를 클릭하세요. 모눈 선이 벽에 딱 맞게 옮겨져요.</p></div>
+        <div data-pane="rooms" hidden class="field" style="gap:10px"><p class="hint">도면에서 방 하나를 드래그로 감싸세요. 잘라낸 방은 층 안의 위치를 기억해서, 방별로도 보고 층 전체로도 볼 수 있어요. 확대·축소는 휠이나 아래 버튼으로 하세요.</p><div id="roomList" class="roomlist"></div></div>
+        <div data-pane="check" hidden class="field" style="gap:10px"><p class="hint">다른 벽의 양 끝을 클릭하면 앱이 계산한 길이가 나와요. 도면에 적힌 치수와 같으면 축척이 맞은 거예요.</p><div id="checkOut" class="bignum">–</div><label class="field">도면에 적힌 값 (mm)<input id="chkLen" type="number" inputmode="decimal" min="1" placeholder="예: 9895"></label><div id="chkDiff" class="hint"></div><label class="hint" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="chkSep"> 이 방향(가로 또는 세로)만 고치기</label><button class="btn primary" id="chkFix" disabled>이 치수로 축척 고치기</button></div>
+        <div class="calstatus" id="calStatus"></div>
+        <div class="testerbox"><b>테스터 (기준 자)</b><p class="hint">원하는 길이의 선이나 네모를 도면 위에 겹쳐 놓고 끌어서 치수선과 맞춰 보세요. 축척이 맞으면 끝이 딱 맞아요.</p>
+          <div class="trow2"><input id="tW" type="number" inputmode="decimal" min="1" placeholder="가로 cm" aria-label="테스터 가로 cm"><input id="tH" type="number" inputmode="decimal" min="0" placeholder="세로 cm (선은 비움)" aria-label="테스터 세로 cm"><button class="btn small primary" id="tAdd">넣기</button></div>
+          <div id="tList" class="tlist"></div></div>
+      </aside>
+    </div>
+    <div class="df"><span class="note" id="calNote"></span><button class="btn primary" data-close>완료</button></div>
+  </div>
+</dialog>
+
+<dialog id="dlgBlank" class="small" aria-labelledby="blankTitle">
+  <form class="dlg" id="formBlank">
+    <div class="dh"><h2 id="blankTitle">빈 도면 만들기</h2><button type="button" class="btn small x" data-close>닫기</button></div>
+    <div class="dbody" style="padding:16px 18px;display:grid;gap:12px">
+      <p class="hint" id="blankLead">도면 파일 없이 50cm 모눈만 깔린 빈 화면을 만들어요. 대략적인 공간 크기만 넣으면 돼요. 나중에 크기를 바꿀 수 있어요.</p>
+      <label class="field">이름<input id="bkName" placeholder="예: 창고" autocomplete="off"></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label class="field">가로 (cm)<input id="bkW" type="number" min="50" step="10" value="1000"></label><label class="field">세로 (cm)<input id="bkH" type="number" min="50" step="10" value="800"></label></div>
+    </div>
+    <div class="df"><button type="submit" class="btn primary" id="bkOk">만들기</button></div>
+  </form>
+</dialog>
+<dialog id="dlgRename" class="small" aria-labelledby="rnTitle">
+  <form class="dlg" id="formRename">
+    <div class="dh"><h2 id="rnTitle">이름 바꾸기</h2><button type="button" class="btn small x" data-close>닫기</button></div>
+    <div class="dbody" style="padding:16px 18px;display:grid;gap:10px"><label class="field"><span id="rnLabel">새 이름</span><input id="rnName" autocomplete="off"></label><p class="hint">이름만 바뀌고 가구 배치와 목록은 그대로 유지돼요.</p></div>
+    <div class="df"><button type="submit" class="btn primary">바꾸기</button></div>
+  </form>
+</dialog>
+<dialog id="dlgData" class="small" aria-labelledby="dataTitle">
+  <div class="dlg">
+    <div class="dh"><h2 id="dataTitle">데이터</h2><button class="btn small x" data-close>닫기</button></div>
+    <div class="dbody" style="padding:16px 18px;display:grid;gap:14px">
+      <p class="hint">지금 단계에서는 모든 내용이 이 브라우저에만 저장돼요. 다른 기기로 옮기거나 백업하려면 파일로 내보내세요.</p>
+      <div class="actions"><button class="btn" id="btnExport">파일로 내보내기</button><button class="btn" id="btnImport">파일 불러오기</button></div>
+      <p class="hint" id="exportNote">Claude 미리보기 안에서는 다운로드가 막힐 수 있어요. 웹에 올린 뒤에는 정상으로 작동해요.</p>
+      
+      <div style="display:grid;gap:6px;border-top:1px solid var(--line);padding-top:12px"><b style="font-size:13px">이사 완료 반영 (변경 후 → 새 변경 전)</b><p class="hint">이사를 마쳤거나 한 단계가 끝났을 때, 변경 후 위치를 새 <b>변경 전(현재 위치)</b>으로 바꿉니다. 옮긴 가구는 도착한 공간의 가구가 되고, 도착지·체크 표시는 비워져 다음 계획을 새로 세울 수 있어요. 되돌릴 수 없으니 먼저 파일로 내보내 두세요.</p><label class="field">반영할 범위<select id="commitScope"></select></label><div class="actions"><button class="btn" id="btnCommit">반영하기</button></div></div>
+      <div id="adminBox" hidden style="display:grid;gap:6px;border-top:1px solid var(--line);padding-top:12px"><b style="font-size:13px">관리자</b><p class="hint" id="adminStatus"></p><p class="hint">관리자로 로그인하면 <b>수정 잠금</b>(다른 사람은 보기만)과 <b>비공개</b>(관리자 말고는 아무도 못 봄)를 켜고 끌 수 있어요.</p><div class="actions"><button class="btn" id="btnLogin">Google로 관리자 로그인</button><button class="btn primary" id="btnLock">수정 잠그기</button><button class="btn" id="btnHide">비공개로 전환</button><button class="btn" id="btnLogout">로그아웃</button></div></div>
+      <div class="actions"><button class="btn" id="btnReset">모두 지우기</button></div>
+    </div>
+  </div>
+</dialog>
+
+<div id="toast" class="toast" hidden role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script>
+'use strict';
+(()=>{
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const uid=()=>Math.random().toString(36).slice(2,10);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const fmt=n=>Math.round(n).toLocaleString('ko-KR');
+const num=(v,def=0)=>{const n=parseFloat(String(v).replace(/,/g,''));return isFinite(n)?n:def};
+function hslHex(h,s,l){s/=100;l/=100;const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));return '#'+[f(0),f(8),f(4)].map(x=>Math.round(x*255).toString(16).padStart(2,'0')).join('')}
+
+/* ---------- state ---------- */
+const empty=()=>({v:1,places:[],maps:[],items:[],units:[],photos:[],meta:{}});
+let S=empty();
+const UI={scroll:{L:0,R:0},colz:{L:1,R:1},view:'plan',railTab:'',itemsTab:'',sel:null,hl:null,snap:10,measure:null,slots:null,open:new Set(),drag:null,L:[],fitted:false};
+
+const P=id=>S.places.find(p=>p.id===id), M=id=>S.maps.find(m=>m.id===id), I=id=>S.items.find(i=>i.id===id), U=id=>S.units.find(u=>u.id===id);
+const cal=m=>!!(m&&m.sx>0&&m.sy>0);
+const cmOf=m=>({w:m.w/m.sx,h:m.h/m.sy,gx:(m.gx||0)/m.sx,gy:(m.gy||0)/m.sy});
+const itemsOf=pid=>S.items.filter(i=>i.placeId===pid);
+const unitsOf=it=>S.units.filter(u=>u.itemId===it.id).sort((a,b)=>a.idx-b.idx);
+const dims=(it,rot)=>(rot%180)?[it.d,it.w]:[it.w,it.d];
+function destPlace(u){ if(u.to){const m=M(u.to.mapId); if(m) return m.placeId} return u.toPlaceId||null }
+const isPlaced=u=>!!destPlace(u);
+const gkey=it=>(it.name||'').trim()+'|'+it.w+'|'+it.d+(it.kind==='item'?'|i':'')+(it.isNew?'|n':'');
+const isNewU=u=>!!I(u.itemId)?.isNew;
+const isTop=u=>I(u.itemId)?.kind==='item';
+
+/* ---------- storage (local now; swapped for Firebase later) ---------- */
+const Store={db:null,
+  open(){return new Promise(res=>{try{const r=indexedDB.open('moving-board',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>{this.db=r.result;res(true)};r.onerror=()=>res(false)}catch(e){res(false)}})},
+  get(k){return new Promise(res=>{if(!this.db)return res(null);try{const q=this.db.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result??null);q.onerror=()=>res(null)}catch(e){res(null)}})},
+  set(k,v){return new Promise(res=>{if(!this.db)return res(false);try{const tx=this.db.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false)}catch(e){res(false)}})}
+};
+/* ---------- cloud sync (Firebase Firestore) — active only on the web build ---------- */
+const FIREBASE_CONFIG=window.__FB_CONFIG__||null;
+const COLLS=['places','maps','items','units','photos'];
+const Cloud={locked:false,hidden:false,readErr:false,user:null,on:false,db:null,ready:false,docs:{},meta:{},last:{},lastMeta:'',dirty:false,pushing:false,again:false,pendingApply:false};
+function setSave(t){ const el=$('#saveState'); if(el) el.textContent=t }
+function stable(v){ if(Array.isArray(v)) return '['+v.map(stable).join(',')+']'; if(v&&typeof v==='object'){ return '{'+Object.keys(v).filter(k=>v[k]!==undefined).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}' } return JSON.stringify(v===undefined?null:v) }
+function docOf(coll,o,i){ const d=JSON.parse(JSON.stringify(o)); if(coll==='maps'||coll==='photos'){ delete d.img; d.imgV=o.imgV||null } if(coll==='places') d.order=i; delete d.id; return d }
+const CHUNK=900000;
+async function uploadBlob(owner,v,data){ const n=Math.ceil(data.length/CHUNK)||1; for(let i=0;i<n;i++){ await Cloud.db.collection('blobs').doc(`${owner}_${v}_${i}`).set({owner,v,i,n,data:data.slice(i*CHUNK,(i+1)*CHUNK)}) } await Store.set('blob:'+v,data) }
+async function getBlob(owner,v){ if(!v) return null; const c=await Store.get('blob:'+v); if(c) return c; try{ const snap=await Cloud.db.collection('blobs').where('owner','==',owner).where('v','==',v).get(); const parts=snap.docs.map(d=>d.data()).sort((a,b)=>a.i-b.i); if(!parts.length) return null; const data=parts.map(p=>p.data).join(''); await Store.set('blob:'+v,data); return data }catch(e){ console.error(e); return null } }
+async function deleteBlobs(owner,keepV){ try{ const snap=await Cloud.db.collection('blobs').where('owner','==',owner).get(); const b=Cloud.db.batch(); let n=0; snap.docs.forEach(d=>{ if(d.data().v!==keepV){ b.delete(d.ref); n++ } }); if(n) await b.commit() }catch(e){ console.error(e) } }
+async function cloudPush(){
+  if(!Cloud.ready) return; if(Cloud.pushing){ Cloud.again=true; return } Cloud.pushing=true; setSave('저장 중…');
+  try{
+    const ops=[], blobDel=[];
+    for(const coll of COLLS){ const arr=S[coll]||[]; const last=Cloud.last[coll]||(Cloud.last[coll]=new Map()); const seen=new Set();
+      for(let i=0;i<arr.length;i++){ const o=arr[i]; if((coll==='maps'||coll==='photos')&&o.img&&!o.imgV) o.imgV=uid(); const d=docOf(coll,o,i); const js=stable(d); seen.add(o.id);
+        const prev=last.get(o.id); if(prev===js) continue;
+        if((coll==='maps'||coll==='photos')&&o.img){ const pv=prev?JSON.parse(prev).imgV:null; if(pv!==o.imgV){ await uploadBlob(o.id,o.imgV,o.img); if(pv) blobDel.push([o.id,o.imgV]) } }
+        ops.push(['set',coll,o.id,d]); last.set(o.id,js) }
+      for(const id of [...last.keys()]) if(!seen.has(id)){ ops.push(['del',coll,id]); last.delete(id); if(coll==='maps'||coll==='photos') blobDel.push([id,null]) } }
+    const m=stable(S.meta||{}); if(Cloud.lastMeta!==m){ ops.push(['set','meta','main',JSON.parse(JSON.stringify(S.meta||{}))]); Cloud.lastMeta=m }
+    for(let i=0;i<ops.length;i+=400){ const b=Cloud.db.batch(); for(const op of ops.slice(i,i+400)){ const ref=Cloud.db.collection(op[1]).doc(op[2]); op[0]==='set'?b.set(ref,op[3]):b.delete(ref) } await b.commit() }
+    for(const [owner,keep] of blobDel) deleteBlobs(owner,keep);
+    setSave('저장됨 · 모두에게 공유 중');
+  }catch(e){ console.error(e); if(String(e&&e.code).includes('permission')){ setSave('잠김 · 보기 전용'); toast('수정 권한이 없어요. 관리자가 잠가 두었거나 사용 기간이 끝났어요.'); Cloud.pushing=false; Cloud.again=false; Cloud.dirty=false; for(const c of COLLS) Cloud.last[c]=new Map(); applyCloud(); return } setSave('저장 실패 · 인터넷 연결이나 Firebase 규칙을 확인하세요') }
+  Cloud.pushing=false; if(Cloud.again){ Cloud.again=false; return cloudPush() } Cloud.dirty=false; if(Cloud.pendingApply) applyCloud();
+}
+async function applyCloud(){
+  if(Cloud.ready&&(Cloud.dirty||Cloud.pushing||UI.dragging)){ Cloud.pendingApply=true; return } Cloud.pendingApply=false;
+  const S2=empty(); S2.meta=Cloud.meta||{};
+  for(const coll of COLLS){ const arr=[...(Cloud.docs[coll]||new Map()).entries()].map(([id,d])=>({...d,id})); if(coll==='places') arr.sort((a,b)=>(a.order??0)-(b.order??0)); arr.forEach(o=>{ if(coll==='places') delete o.order }); S2[coll]=arr }
+  for(const coll of ['maps','photos']) for(const o of S2[coll]){ const prev=(S[coll]||[]).find(x=>x.id===o.id&&x.imgV===o.imgV&&x.img); o.img=prev?prev.img:await getBlob(o.id,o.imgV); if(!o.img&&coll==='maps') o.img=blankDataURL() }
+  if(Cloud.ready&&(Cloud.dirty||Cloud.pushing||UI.dragging)){ Cloud.pendingApply=true; return }
+  for(const coll of COLLS) Cloud.last[coll]=new Map(S2[coll].map((o,i)=>[o.id,stable(docOf(coll,o,i))]));
+  Cloud.lastMeta=stable(S2.meta);
+  const merge=(oldArr,newArr)=>{ const om=new Map((oldArr||[]).map(o=>[o.id,o])); return newArr.map(n=>{ const o=om.get(n.id); if(!o) return n; for(const k of Object.keys(o)) if(!(k in n)) delete o[k]; return Object.assign(o,n) }) };
+  for(const coll of COLLS) S[coll]=merge(S[coll],S2[coll]); S.meta=Object.assign(S.meta||{},S2.meta);
+  if(Cal.m&&!S.maps.includes(Cal.m)&&$('#dlgCal').open){ $('#dlgCal').close(); toast('다른 사람이 이 도면을 지워서 축척 창을 닫았어요.') }
+  const first=!Cloud.ready; Cloud.ready=true; renderAll(); if(first){ UI.fitted=false; renderAll(); setSave('저장됨 · 모두에게 공유 중'); if(!S.places.length) toast('아직 내용이 없어요. 공간을 등록하거나, 데이터 → 파일 불러오기로 기존 작업을 올리세요.') }
+}
+function cloudStart(){
+  try{ firebase.initializeApp(FIREBASE_CONFIG); Cloud.db=firebase.firestore(); Cloud.on=true }catch(e){ console.error(e); return false }
+  setSave('불러오는 중…'); const pending=new Set([...COLLS,'meta']); const tick=k=>{ pending.delete(k); if(!pending.size) applyCloud() };
+  for(const coll of COLLS) Cloud.db.collection(coll).onSnapshot(snap=>{ Cloud.docs[coll]=new Map(snap.docs.map(d=>[d.id,d.data()])); if(pending.size) tick(coll); else if(!snap.metadata.hasPendingWrites) applyCloud() },e=>{ console.error(e); if(String(e&&e.code).includes('permission')){ Cloud.readErr=true; S=empty(); renderAll(); setSave('비공개 · 볼 수 없음'); renderLock() } else setSave('연결 오류 · Firebase 규칙이나 인터넷을 확인하세요') });
+  Cloud.db.collection('meta').doc('main').onSnapshot(d=>{ Cloud.meta=d.exists?d.data():{}; if(pending.size) tick('meta') },e=>console.error(e));
+  Cloud.db.collection('settings').doc('lock').onSnapshot(d=>{ const x=d.exists?d.data():{}; Cloud.locked=!!x.locked; Cloud.hidden=!!x.hidden; if(!Cloud.hidden&&Cloud.readErr) location.reload(); renderLock() },e=>console.error(e));
+  try{ if(firebase.auth) firebase.auth().onAuthStateChanged(u=>{ Cloud.user=u||null; if(u&&Cloud.readErr) location.reload(); renderLock() }) }catch(e){ console.error(e) }
+  return true;
+}
+function canEdit(){ return !Cloud.on||!Cloud.locked||!!Cloud.user }
+function renderLock(){ const ro=Cloud.on&&(Cloud.locked||Cloud.readErr)&&!Cloud.user; document.body.classList.toggle('readonly',ro); const lb=$('#lockBar'); lb.hidden=!(Cloud.on&&(Cloud.locked||Cloud.hidden||Cloud.readErr));
+  lb.textContent=Cloud.readErr&&!Cloud.user?'관리자가 비공개로 설정해 두었어요. 지금은 볼 수 없어요.':Cloud.hidden?'비공개 중 · 관리자만 볼 수 있어요.'+(Cloud.locked?' 수정도 잠겨 있어요.':''):ro?'관리자가 수정을 잠가 두었어요. 지금은 보기만 할 수 있어요.':'수정 잠금 중 · 관리자로 로그인되어 있어 고칠 수 있어요.';
+  const box=$('#adminBox'); if(!box) return; box.hidden=!Cloud.on; $('#adminStatus').textContent=`${Cloud.user?Cloud.user.email+'로 로그인됨':'관리자 로그인이 필요해요'} · 지금 ${Cloud.hidden?'비공개':'공개'}, ${Cloud.locked?'수정 잠김':'누구나 수정 가능'}`;
+  $('#btnLogin').hidden=!!Cloud.user; $('#btnLogout').hidden=!Cloud.user; $('#btnLock').hidden=!Cloud.user; $('#btnLock').textContent=Cloud.locked?'수정 잠금 풀기':'수정 잠그기 (모두 보기만)'; $('#btnHide').hidden=!Cloud.user; $('#btnHide').textContent=Cloud.hidden?'다시 공개하기':'비공개로 전환 (관리자만 보기)' }
+let saveT;
+function save(){
+  if(Cloud.on&&!canEdit()){ toast('관리자가 수정을 잠가 두었어요. 보기만 할 수 있어요.'); clearTimeout(saveT); Cloud.dirty=false; for(const c of COLLS) Cloud.last[c]=new Map(); applyCloud(); return }
+  if(Cloud.on){ Cloud.dirty=true; setSave('저장 중…'); clearTimeout(saveT); saveT=setTimeout(cloudPush,400); return }
+  $('#saveState').textContent='저장 중…'; clearTimeout(saveT); saveT=setTimeout(async()=>{ const ok=await Store.set('state',S); $('#saveState').textContent=ok?'이 브라우저에 저장됨':'저장할 수 없음 (브라우저 저장 공간이 막혀 있어요)'; },350) }
+function savePanels(){ try{localStorage.setItem('mb-slots2',JSON.stringify(UI.slots||[null,null]))}catch(e){} }
+function loadPanels(){ try{const v=JSON.parse(localStorage.getItem('mb-slots2')||'null'); if(Array.isArray(v)&&v.length===2) return v}catch(e){} return [null,null] }
+
+/* ---------- derived: groups and labels ---------- */
+let LBL=new Map(), GROUPS=[];
+function rebuild(){
+  LBL=new Map(); const gm=new Map(); const po=new Map(S.places.map((p,i)=>[p.id,i]));
+  const items=[...S.items].sort((a,b)=>(po.get(a.placeId)??999)-(po.get(b.placeId)??999));
+  for(const it of items){ const k=gkey(it); if(!gm.has(k)) gm.set(k,{key:k,name:(it.name||'').trim()||'(이름 없음)',w:it.w,d:it.d,color:it.color,items:[],units:[]}); const g=gm.get(k); g.items.push(it); g.units.push(...unitsOf(it)) }
+  GROUPS=[...gm.values()];
+  for(const g of GROUPS){ g.units.forEach((u,i)=>LBL.set(u.id,g.units.length>1?`${g.name} ${i+1}`:g.name)); g.placed=g.units.filter(isPlaced); g.remain=g.units.filter(u=>!isPlaced(u)) }
+}
+const lbl=u=>LBL.get(u.id)||I(u.itemId)?.name||'';
+function colorFor(name,w,d){ const k=(name||'').trim()+'|'+w+'|'+d; const same=S.items.find(i=>gkey(i)===k); if(same) return same.color; const n=new Set(S.items.map(gkey)).size; return hslHex((n*137.508+205)%360,60,50) }
+function syncUnits(it){
+  const us=unitsOf(it);
+  if(us.length<it.qty){ let idx=(us.at(-1)?.idx||0); for(let i=us.length;i<it.qty;i++){ S.units.push({id:uid(),itemId:it.id,idx:++idx,from:null,to:null,toPlaceId:null}) } }
+  else if(us.length>it.qty){
+    const free=us.filter(u=>!u.from&&!u.to&&!u.toPlaceId).reverse(); const need=us.length-it.qty;
+    if(free.length<need) return false;
+    const rm=new Set(free.slice(0,need).map(u=>u.id)); S.units=S.units.filter(u=>!rm.has(u.id));
+  }
+  unitsOf(it).forEach((u,i)=>u.idx=i+1); return true;
+}
+
+/* ---------- toast ---------- */
+let toastT; function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,3200) }
+
+/* ---------- viewport ---------- */
+function Viewport(svg,opts={}){
+  const v={x:0,y:0,w:1000,h:700,minW:15,maxW:300000,onzoom:null,pinching:false};
+  const size=()=>{const r=svg.getBoundingClientRect();return{cw:r.width||800,ch:r.height||600}};
+  v.apply=()=>{svg.setAttribute('viewBox',`${v.x} ${v.y} ${v.w} ${v.h}`); v.onzoom&&v.onzoom()};
+  v.fit=(x,y,w,h,pad=.06)=>{const{cw,ch}=size();w=Math.max(w,1);h=Math.max(h,1);const px=w*pad,py=h*pad;x-=px;y-=py;w+=2*px;h+=2*py;const a=cw/ch;if(w/h>a){const nh=w/a;y-=(nh-h)/2;h=nh}else{const nw=h*a;x-=(nw-w)/2;w=nw}Object.assign(v,{x,y,w,h});v.apply()};
+  v.zoomAt=(px,py,k)=>{const nw=clamp(v.w*k,v.minW,v.maxW);const r=nw/v.w;v.x=px-(px-v.x)*r;v.y=py-(py-v.y)*r;v.w*=r;v.h*=r;v.apply()};
+  v.zoomBy=k=>v.zoomAt(v.x+v.w/2,v.y+v.h/2,k);
+  v.pt=(e,inv)=>{inv=inv||svg.getScreenCTM().inverse();return new DOMPoint(e.clientX,e.clientY).matrixTransform(inv)};
+  if(opts.wheel!==false) svg.addEventListener('wheel',e=>{e.preventDefault();const p=v.pt(e);const dy=e.deltaY*(e.deltaMode===1?33:e.deltaMode===2?400:1);v.zoomAt(p.x,p.y,Math.exp(clamp(dy,-120,120)*(e.ctrlKey?.006:.0009)))},{passive:false});
+  v.panStart=(e,done)=>{
+    const inv=svg.getScreenCTM().inverse(),p0=v.pt(e,inv),s={x:v.x,y:v.y},sx=e.clientX,sy=e.clientY;let moved=false;
+    try{svg.setPointerCapture(e.pointerId)}catch(_){}
+    const mv=ev=>{if(v.pinching){moved=true;return}if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<4)return;moved=true;svg.classList.add('panning');const p=v.pt(ev,inv);v.x=s.x-(p.x-p0.x);v.y=s.y-(p.y-p0.y);v.apply()};
+    const up=()=>{svg.removeEventListener('pointermove',mv);svg.removeEventListener('pointerup',up);svg.removeEventListener('pointercancel',up);svg.classList.remove('panning');done&&done(moved,p0)};
+    svg.addEventListener('pointermove',mv);svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
+  };
+  let pd=null;
+  svg.addEventListener('touchmove',e=>{ if(e.touches.length!==2) return; e.preventDefault(); const[a,b]=e.touches; const d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY); if(pd){ const p=v.pt({clientX:(a.clientX+b.clientX)/2,clientY:(a.clientY+b.clientY)/2}); v.zoomAt(p.x,p.y,pd/d) } pd=d; v.pinching=true },{passive:false});
+  svg.addEventListener('touchend',e=>{ if(e.touches.length<2){ pd=null; setTimeout(()=>v.pinching=false,60) } });
+  new ResizeObserver(()=>{const{cw,ch}=size();if(!cw||!ch)return;v.h=v.w*ch/cw;v.apply()}).observe(svg);
+  return v;
+}
+
+/* ---------- plan ---------- */
+const planSvg=$('#plan'); const V=Viewport(planSvg,{wheel:false}); V.minW=5; let baseW=null;
+function syncZoom(){ if(!baseW) return; const z=baseW/V.w; const r=$('#zoomR'); if(r&&document.activeElement!==r) r.value=Math.log(z).toFixed(2); const pz=$('#zoomP'); if(pz) pz.textContent=`${z>=10?Math.round(z*100):Math.round(z*100)}%` }
+V.onzoom=()=>{ renderOverlay(); syncZoom(); updateSbars&&updateSbars() };
+function centerX(){ const L=UI.L||[]; if(!L.length) return null; if(UI.view==='space'&&UI.trayBox) return (Math.min(...L.map(e=>e.ox))+UI.trayBox.x2)/2; const a=L.filter(e=>e.col==='L'), b=L.filter(e=>e.col==='R');
+  if(a.length&&b.length) return (Math.max(...a.map(e=>e.ox+e.w))+Math.min(...b.map(e=>e.ox)))/2;
+  return (Math.min(...L.map(e=>e.ox))+Math.max(...L.map(e=>e.ox+e.w)))/2 }
+{ const baseApply=V.apply; V.apply=()=>{ const cx=centerX(); if(cx!=null) V.x=cx-V.w/2; baseApply() } }
+const GAP=70;
+const off=e=>(UI.scroll&&UI.scroll[e.col])||0;
+const colZ=c=>(UI.colz&&UI.colz[c])||1;
+const anc=c=>(UI.anchor&&UI.anchor[c])||{ax:0,y0:0};
+function toW(c,x,y){ const z=colZ(c), a=anc(c); return {x:a.ax+(x-a.ax)*z, y:a.y0+(y-a.y0)*z-(UI.scroll[c]||0)} }
+function fromW(c,x,y){ const z=colZ(c), a=anc(c); return {x:a.ax+(x-a.ax)/z, y:a.y0+(y+(UI.scroll[c]||0)-a.y0)/z} }
+function colTransform(c){ const z=colZ(c), a=anc(c); return `translate(${a.ax*(1-z)} ${a.y0*(1-z)-(UI.scroll[c]||0)}) scale(${z})` }
+function computeAnchors(L){ const A={}; const a=L.filter(e=>e.col==='L'), b=L.filter(e=>e.col==='R'); const y0=L.length?Math.min(...L.map(e=>e.oy))-90:0;
+  if(a.length&&b.length){ A.L={ax:Math.max(...a.map(e=>e.ox+e.w)),y0}; A.R={ax:Math.min(...b.map(e=>e.ox)),y0} }
+  else for(const [c,ps] of [['L',a],['R',b]]) if(ps.length) A[c]={ax:(Math.min(...ps.map(e=>e.ox))+Math.max(...ps.map(e=>e.ox+e.w)))/2,y0};
+  UI.anchor=A }
+const roomsOf=m=>(m&&m.rooms)||[];
+function roomAt(m,x,y){ return roomsOf(m).find(r=>x>=r.x/m.sx&&x<=(r.x+r.w)/m.sx&&y>=r.y/m.sy&&y<=(r.y+r.h)/m.sy)||null }
+function unitRoom(u,slot){ const pos=u[slot]; if(!pos) return null; const m=M(pos.mapId); if(!cal(m)) return null; const[w,d]=dims(I(u.itemId),pos.rot||0); return roomAt(m,pos.x+w/2,pos.y+d/2) }
+function destLabel(u){ const dp=destPlace(u); if(!dp) return ''; let s=P(dp)?.name||''; if(u.to){ const m=M(u.to.mapId); const r=unitRoom(u,'to'); if(m) s+=' › '+(r?r.name:m.name) } return s }
+function parseKey(k){ const p=String(k).split(':'); return p.length===2?{id:p[0],room:'*',layer:p[1]}:{id:p[0],room:p[1],layer:p[2]} }
+function ensurePanels(){ if(!UI.slots) UI.slots=loadPanels(); UI.slots=UI.slots.map(k=>{ if(!k) return null; const q=parseKey(k); const m=M(q.id); if(!cal(m)) return null; if(q.room!=='*'&&!roomsOf(m).some(r=>r.id===q.room)) return null; return `${q.id}:${q.room}:${q.layer}` }) }
+function makePanel(m,roomId,layer,ox,oy){ const c=cmOf(m); let cx=0,cy=0,w=c.w,h=c.h,room=null;
+  if(roomId&&roomId!=='*'){ room=roomsOf(m).find(r=>r.id===roomId); if(!room) return null; cx=room.x/m.sx; cy=room.y/m.sy; w=room.w/m.sx; h=room.h/m.sy }
+  return {key:`${m.id}:${room?room.id:'*'}:${layer}`,m,room,layer,ox,oy,w,h,cx,cy,mx:ox-cx,my:oy-cy,gx:c.gx,gy:c.gy} }
+function rowsLayout(rows,layers=['a','b']){ const L=[]; if(!layers.length) return L; const firsts=rows.map(r=>makePanel(r.m,r.roomId,'a',0,0)).filter(Boolean); if(!firsts.length) return L; const wA=Math.max(...firsts.map(p=>p.w)); let y=0;
+  for(const r of rows){ const pa=makePanel(r.m,r.roomId,'a',0,y); if(!pa) continue; for(const l of layers){ const pn=makePanel(r.m,r.roomId,l,layers.length===2&&l==='b'?wA+GAP:(layers.length===2?wA-pa.w:0),y); pn.col=layers.length===2&&l==='b'?'R':'L'; L.push(pn) } y+=pa.h+300 } return L }
+const VIS={hidden:new Set(),a:true,b:true};
+try{ const v=JSON.parse(localStorage.getItem('mb-vis')||'null'); if(v){ VIS.hidden=new Set(v.hidden||[]); VIS.a=v.a!==false; VIS.b=v.b!==false } }catch(e){}
+function allKeys(){ const out=[]; for(const p of S.places) for(const m of S.maps.filter(m=>m.placeId===p.id&&cal(m))){ for(const l of ['a','b']) out.push(`${m.id}:*:${l}`); for(const r of roomsOf(m)) for(const l of ['a','b']) out.push(`${m.id}:${r.id}:${l}`) } return out }
+function defaultCols(){ const fl=S.maps.filter(cal); return {L:fl.map(m=>`${m.id}:*:a`),R:fl.map(m=>`${m.id}:*:b`)} }
+function getCols(){ if(!UI.cols){ try{ const v=JSON.parse(localStorage.getItem('mb-cols')||'null'); if(v&&Array.isArray(v.L)&&Array.isArray(v.R)) UI.cols=v }catch(e){} if(!UI.cols) UI.cols=defaultCols() }
+  const ok=new Set(allKeys()); UI.cols.L=UI.cols.L.filter(k=>ok.has(k)); UI.cols.R=UI.cols.R.filter(k=>ok.has(k)); if(!UI.cols.L.length&&!UI.cols.R.length) UI.cols=defaultCols(); return UI.cols }
+function saveCols(){ try{localStorage.setItem('mb-cols',JSON.stringify(UI.cols))}catch(e){} }
+function saveVis(){ try{localStorage.setItem('mb-vis',JSON.stringify({hidden:[...VIS.hidden],a:VIS.a,b:VIS.b}))}catch(e){} }
+function layout(){ const L=layoutRaw(); computeAnchors(L); return L }
+function layoutRaw(){
+  if(UI.focus&&!P(UI.focus)) UI.focus=null;
+  if(UI.room){ const m=M(UI.room.mapId); if(!cal(m)||!roomsOf(m).some(r=>r.id===UI.room.roomId)) UI.room=null }
+  const WL=UI.view==='space'?[UI.wlayer||'a']:['a','b'];
+  if(UI.room) return rowsLayout([{m:M(UI.room.mapId),roomId:UI.room.roomId}],WL);
+  if(UI.focus) return rowsLayout(S.maps.filter(m=>m.placeId===UI.focus&&cal(m)).map(m=>({m,roomId:'*'})),WL);
+  const cols=getCols(); const L=[]; const sizes={};
+  for(const side of ['L','R']) sizes[side]=cols[side].map(k=>{ const q=parseKey(k); const m=M(q.id); return cal(m)?makePanel(m,q.room,q.layer,0,0):null }).filter(Boolean);
+  const wL=sizes.L.length?Math.max(...sizes.L.map(p=>p.w)):0; const xR=sizes.L.length?wL+GAP:0;
+  for(const side of ['L','R']){ let y=0; for(const t of sizes[side]){ const ox=side==='L'?wL-t.w:xR; const pn=makePanel(t.m,t.room?t.room.id:'*',t.layer,ox,y); pn.col=side; L.push(pn); y+=pn.h+300 } }
+  return L;
+}
+const inPanel=(e,cx,cy)=>cx>=e.cx-.5&&cx<=e.cx+e.w+.5&&cy>=e.cy-.5&&cy<=e.cy+e.h+.5;
+const panelAt=(x,y)=>UI.L.find(e=>{ const l=fromW(e.col,x,y); return l.x>=e.ox&&l.x<=e.ox+e.w&&l.y>=e.oy&&l.y<=e.oy+e.h });
+function unitRect(u,slot){ const pos=u[slot]; if(!pos) return null; const[w,d]=dims(I(u.itemId),pos.rot||0); const layer=slot==='from'?'a':'b';
+  const e=UI.L.find(e=>e.m.id===pos.mapId&&e.layer===layer&&inPanel(e,pos.x+w/2,pos.y+d/2)); if(!e) return null; const z=colZ(e.col), q=toW(e.col,e.mx+pos.x,e.my+pos.y); return{x:q.x,y:q.y,w:w*z,d:d*z,e,lx:pos.x,ly:pos.y,lw:w,ld:d} }
+
+function gridPath(e){
+  let d1='',d2=''; const st=50;
+  const xs=e.gx+Math.ceil((e.cx-e.gx)/st-1e-6)*st, ys=e.gy+Math.ceil((e.cy-e.gy)/st-1e-6)*st;
+  for(let x=xs;x<=e.cx+e.w+.01;x+=st){ const i=Math.round((x-e.gx)/st); const s=`M${(e.mx+x).toFixed(1)} ${e.oy}V${e.oy+e.h}`; if(i%2===0) d2+=s; else d1+=s }
+  for(let y=ys;y<=e.cy+e.h+.01;y+=st){ const i=Math.round((y-e.gy)/st); const s=`M${e.ox} ${(e.my+y).toFixed(1)}H${e.ox+e.w}`; if(i%2===0) d2+=s; else d1+=s }
+  return `<path class="g1" d="${d1}"/><path class="g2" d="${d2}"/>`;
+}
+function panelSVG(e,i){
+  const p=P(e.m.placeId); const tag=e.layer==='a'?'기존':'변경'; const c=cmOf(e.m);
+  const title=`${esc(p?p.name:'')} › ${esc(e.m.name)}${e.room?' › '+esc(e.room.name):''}`;
+  let rooms='';
+  if(!e.room) for(const r of roomsOf(e.m)){ const x=e.mx+r.x/e.m.sx, y=e.my+r.y/e.m.sy, w=r.w/e.m.sx, h=r.h/e.m.sy; rooms+=`<rect class="rmbox" x="${x}" y="${y}" width="${w}" height="${h}"/><text class="rmlbl" data-room="${e.m.id}:${r.id}" x="${x+12}" y="${y+26}">${esc(r.name)} ›</text>` }
+  return `<g class="panel ${e.layer}" data-key="${e.key}">
+  <clipPath id="clip${i}"><rect x="${e.ox}" y="${e.oy}" width="${e.w}" height="${e.h}"/></clipPath>
+  <g class="ptitle" ${e.room?`data-room="${e.m.id}:${e.room.id}"`:`data-focus="${e.m.placeId}"`} transform="translate(${e.ox} ${e.oy-34})"><rect class="ptag ${e.layer}" x="0" y="-22" width="76" height="40" rx="7"/><text class="ptagt" x="38" y="-2">${tag}</text><text class="pname" x="90" y="-2">${title}</text></g>
+  <rect class="pframe" x="${e.ox}" y="${e.oy}" width="${e.w}" height="${e.h}"/>
+  <g clip-path="url(#clip${i})"><image class="pimg" href="${e.m.img}" x="${e.mx}" y="${e.my}" width="${c.w}" height="${c.h}" preserveAspectRatio="none"/>${gridPath(e)}</g>${rooms}</g>`;
+}
+function unitSVG(u,slot,e,flags){
+  const it=I(u.itemId), pos=u[slot]; const[w,d]=dims(it,pos.rot||0); const x=e.mx+pos.x, y=e.my+pos.y; const name=lbl(u);
+  const dimTxt=`${it.w}*${it.d}`;
+  let fs=Math.min(d*.3,w*.9/Math.max(1.4,name.length*.98)); fs=clamp(fs,3,30);
+  let fd=Math.min(fs*.72,w*.9/(dimTxt.length*.62)); fd=clamp(fd,2.5,20);
+  const tot=fs*1.05+fd*1.1; if(tot>d*.9){ const k=d*.9/tot; fs*=k; fd*=k }
+  const showDim=true;
+  const cls=['unit',slot]; if(it.kind==='item') cls.push('top'); if(it.isNew) cls.push('isnew'); if(flags.ghost)cls.push('ghost'); if(flags.clash)cls.push('clash'); if(flags.sel)cls.push('sel'); if(flags.hl)cls.push('hl'); if(flags.dim)cls.push('dim');
+  let s=`<g class="${cls.join(' ')}" data-id="${u.id}" data-slot="${slot}" transform="translate(${x} ${y})" style="--c:${it.color}"><rect class="ub" width="${w}" height="${d}" rx="2"/>`;
+  s+=`<text class="un" x="${w/2}" y="${d/2-fd*.55}" font-size="${fs.toFixed(1)}">${esc(name)}</text>`;
+  s+=`<text class="ud" x="${w/2}" y="${d/2+fs*.55}" font-size="${fd.toFixed(1)}">${dimTxt}</text>`;
+  if(it.isNew){ const th=clamp(Math.min(d,w)*.28,7,18); s+=`<g class="newtag"><rect x="-1" y="${-th-1}" width="${th*1.9}" height="${th}" rx="${th*.25}"/><text x="${th*.95-1}" y="${-th/2-1}" font-size="${(th*.68).toFixed(1)}">새</text></g>` }
+  if(slot==='to'&&it.placeId!==e.m.placeId&&!it.isNew){ const on='← '+(P(it.placeId)?.name||''); const f2=clamp(Math.min(fs*.72,w*.95/Math.max(2,on.length*.95)),4,16); s+=`<text class="ufrom" x="${w/2}" y="${d+f2*.9}" font-size="${f2.toFixed(1)}">${esc(on)}</text>` }
+  if(flags.ghost){ const on='→ '+destLabel(u); const f2=clamp(Math.min(fs*.72,w*1.1/Math.max(2,on.length*.95)),4,16); s+=`<text class="ugo" x="${w/2}" y="${d+f2*.9}" font-size="${f2.toFixed(1)}">${esc(on)}</text>` }
+  return s+'</g>';
+}
+function trayUnitSVG(u,x,y){ const it=I(u.itemId); const w=it.w, d=it.d; const name=lbl(u); const dimTxt=`${it.w}*${it.d}`;
+  let fs=Math.min(d*.3,w*.9/Math.max(1.4,name.length*.98)); fs=clamp(fs,3,30); let fd=Math.min(fs*.72,w*.9/(dimTxt.length*.62)); fd=clamp(fd,2.5,20); const tot=fs*1.05+fd*1.1; if(tot>d*.9){ const k=d*.9/tot; fs*=k; fd*=k }
+  return `<g class="unit traywait${it.kind==='item'?' top':''}${it.isNew?' isnew':''}${UI.sel&&UI.sel.slot==='tray'&&UI.sel.id===u.id?' sel':''}" data-id="${u.id}" data-slot="tray" transform="translate(${x} ${y})" style="--c:${it.color}"><rect class="ub" width="${w}" height="${d}" rx="2"/><text class="un" x="${w/2}" y="${d/2-fd*.55}" font-size="${fs.toFixed(1)}">${esc(name)}</text><text class="ud" x="${w/2}" y="${d/2+fs*.55}" font-size="${fd.toFixed(1)}">${dimTxt}</text></g>` }
+function buildTray(L){ UI.trayPos={}; UI.trayBox=null; if(UI.view!=='space'||!L.length||!UI.focus) return '';
+  const layer=UI.wlayer||'a'; let list;
+  if(layer==='a') list=S.units.filter(u=>I(u.itemId).placeId===UI.focus&&!u.from&&!isNewU(u));
+  else list=S.units.filter(u=>!isPlaced(u)&&!(I(u.itemId).placeId===UI.focus&&!u.from&&!isNewU(u)&&S.maps.some(m=>m.placeId===UI.focus&&cal(m)))).sort((a,b)=>(I(b.itemId).placeId===UI.focus)-(I(a.itemId).placeId===UI.focus));
+  const held=layer==='b'?S.units.filter(u=>!isPlaced(u)&&I(u.itemId).placeId===UI.focus&&!u.from&&!isNewU(u)).length:0;
+  const groups=new Map(); for(const u of list){ const k=isNewU(u)?'__new':I(u.itemId).placeId; if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(u) }
+  const maxW=Math.max(...L.map(e=>e.w)); const tx0=Math.max(...L.map(e=>e.ox+e.w))+180, ty0=Math.min(...L.map(e=>e.oy)); const TW=clamp(maxW*.6,380,900);
+  let y=ty0+20, s=''; const showHdr=layer==='b';
+  if(held){ s+=`<text class="trayhdr warn" x="${tx0}" y="${y+22}">이 공간 가구 ${held}개는 먼저 ‘변경 전’에서 지금 위치를 정하세요</text>`; y+=56 }
+  for(const [pid,us] of groups){ if(showHdr){ s+=`<text class="trayhdr${pid==='__new'?' new':''}" x="${tx0}" y="${y+22}">${pid==='__new'?'새로 살 가구':'← '+esc(P(pid)?.name||'')} ${us.length}</text>`; y+=48 } let x=tx0, rowH=0;
+    for(const u of us){ const it=I(u.itemId); if(x>tx0&&x+it.w>tx0+TW){ x=tx0; y+=rowH+40; rowH=0 } UI.trayPos[u.id]={x,y,w:it.w,d:it.d}; s+=trayUnitSVG(u,x,y); x+=it.w+30; rowH=Math.max(rowH,it.d) }
+    y+=rowH+60 }
+  if(!list.length){ s+=`<text class="trayhdr" x="${tx0}" y="${ty0+60}">${layer==='a'?'모든 가구의 기존 위치를 정했어요':'남은 가구가 없어요'}</text>`; y=ty0+100 }
+  const bx=tx0-30, by=ty0, bw=TW+60, bh=Math.max(y-ty0,160);
+  UI.trayBox={x1:bx,y1:by-90,x2:bx+bw,y2:by+bh};
+  return `<g class="tray"><g transform="translate(${bx} ${by-34})"><rect class="ptag tr" x="0" y="-22" width="${layer==='a'?250:200}" height="40" rx="7"/><text class="ptagt tr" x="${layer==='a'?125:100}" y="-2">${layer==='a'?'위치 정할 가구':'남은 가구'} ${list.length}</text></g><rect class="traybg" x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="10"/>${s}</g>` }
+function renderPlan(){
+  ensurePanels(); const L=UI.L=layout();
+  const em=$('#planEmpty');
+  if(!L.length){
+    const calN=S.maps.filter(cal).length;
+    if(UI.view==='space') UI.focus=UI.focus||firstWorkPlace();
+    if(UI.view==='space'&&UI.focus&&P(UI.focus)){ const pid=UI.focus; const unc=S.maps.filter(m=>m.placeId===pid&&!cal(m)); em.innerHTML=`<div><b>${esc(P(pid).name)}에 도면이 없어요</b><span>도면 파일 없이 빈 모눈 화면으로 바로 시작할 수 있어요.</span><div class="actions" style="justify-content:center"><button class="btn primary" data-blank="${pid}">빈 도면으로 시작</button><button class="btn" data-addmap="${pid}">PDF 도면 불러오기</button>${unc.map(m=>`<button class="btn" data-cal="${m.id}">${esc(m.name)} 축척 맞추기</button>`).join('')}</div></div>`; em.hidden=false }
+    else em.innerHTML=`<div><b>${!S.maps.length?'아직 도면이 없어요':calN?'볼 화면을 골라 주세요':'축척을 맞춘 도면이 없어요'}</b><span>${!S.maps.length?'공간·도면에서 PDF 도면을 불러오거나, 도면 없이 빈 도면을 만들어 바로 시작하세요.':calN?'위쪽 왼쪽·오른쪽 드롭다운에서 볼 화면을 고르거나 기본으로를 누르세요.':'층마다 치수를 아는 벽 하나로 축척을 맞추면 50cm 모눈이 깔려요.'}</span>${calN?'':'<button class="btn primary" data-view="spaces">공간·도면으로 가기</button>'}</div>`;
+    em.hidden=false;
+  } else em.hidden=true;
+  const cs={L:'',R:''}; L.forEach((e,i)=>cs[e.col]+=panelSVG(e,i)); cs.L+=buildTray(L);
+  const hl=UI.hl; const us={L:'',R:''};
+  for(const e of L){
+    const slot=e.layer==='a'?'from':'to'; const rects=[];
+    for(const u of [...S.units].sort((a,b)=>isTop(a)-isTop(b))){ const pos=u[slot]; if(!pos||pos.mapId!==e.m.id) continue; const[w,d]=dims(I(u.itemId),pos.rot||0); if(!inPanel(e,pos.x+w/2,pos.y+d/2)) continue; rects.push({u,r:{x:pos.x,y:pos.y,w,d},ghost:slot==='from'&&isPlaced(u)}) }
+    const clash=new Set();
+    for(let i=0;i<rects.length;i++){ if(rects[i].ghost||isTop(rects[i].u)) continue; for(let j=i+1;j<rects.length;j++){ if(rects[j].ghost||isTop(rects[j].u)) continue; const a=rects[i].r,b=rects[j].r; if(a.x<b.x+b.w-1&&b.x<a.x+a.w-1&&a.y<b.y+b.d-1&&b.y<a.y+a.d-1){clash.add(rects[i].u.id);clash.add(rects[j].u.id)} } }
+    for(const {u,ghost} of rects) us[e.col]+=unitSVG(u,slot,e,{ghost,clash:clash.has(u.id),sel:UI.sel&&UI.sel.id===u.id&&UI.sel.slot===slot,hl:hl&&hl.ids.has(u.id),dim:hl&&!hl.ids.has(u.id)});
+  }
+  planSvg.innerHTML=['L','R'].map(c=>`<g class="col" id="col${c}" transform="${colTransform(c)}">${cs[c]}<g class="units">${us[c]}</g></g>`).join('')+`<g id="guides"></g><g id="dragl"></g><g id="ovl"></g>`;
+  planSvg.classList.toggle('measuring',!!UI.measure);
+  if(L.length&&!UI.fitted){ UI.fitted=true; requestAnimationFrame(fitAll) }
+  renderOverlay(); renderStagebar(); renderSelbar(); renderPhotos(); updateSbars(); syncColZoom();
+  const ls=$('#layerSeg'); ls.hidden=!(UI.view==='space'&&L.length); $$('#layerSeg button').forEach(b=>b.classList.toggle('on',b.dataset.wl===(UI.wlayer||'a')));
+}
+function fitAll(){ const L=UI.L; if(!L.length){ updateSbars(); return } UI.scroll={L:0,R:0}; UI.colz={L:1,R:1}; ['L','R'].forEach(c=>{ const g=$('#col'+c); if(g) g.setAttribute('transform',colTransform(c)) });
+  const x1=Math.min(...L.map(e=>e.ox)), y1=Math.min(...L.map(e=>e.oy))-80, x2=Math.max(...L.map(e=>e.ox+e.w),UI.view==='space'&&UI.trayBox?UI.trayBox.x2:-Infinity);
+  const colH=Math.max(...['L','R'].map(c=>{ const x=colExt(c); return x?x.y2-x.y1:0 }));
+  V.fit(x1,y1,x2-x1,Math.min(colH,(x2-x1)*.9),.03); V.y=y1-70; V.apply(); baseW=V.w; syncZoom(); renderOverlay(); updateSbars() }
+function colExt(c){ const ps=(UI.L||[]).filter(e=>e.col===c); if(!ps.length) return null; const z=colZ(c), a=anc(c); const X=v=>a.ax+(v-a.ax)*z, Y=v=>a.y0+(v-a.y0)*z; const tb=c==='L'&&UI.view==='space'&&UI.trayBox?UI.trayBox:null; return {x1:X(Math.min(...ps.map(e=>e.ox))),x2:X(Math.max(...ps.map(e=>e.ox+e.w),tb?tb.x2:-Infinity)),y1:Y(Math.min(...ps.map(e=>e.oy))-90),y2:Y(Math.max(...ps.map(e=>e.oy+e.h),tb?tb.y2:-Infinity)+40)} }
+function colAtX(x){ let best=null,bd=Infinity; for(const c of ['L','R']){ const e=colExt(c); if(!e) continue; const d=x<e.x1?e.x1-x:x>e.x2?x-e.x2:0; if(d<bd){bd=d;best=c} } return best }
+function scrollRange(c){ const x=colExt(c); if(!x) return [0,0]; const lo=x.y1-V.y; return [lo,Math.max(lo,x.y2-(V.y+V.h))] }
+function setScroll(c,v){ UI.scroll[c]=v; const g=$('#col'+c); if(g) g.setAttribute('transform',colTransform(c)); renderOverlay(); updateSbars(); syncColZoom() }
+function scrollBy(c,ds){ const s0=UI.scroll[c]||0; const[lo,hi]=scrollRange(c); let ns=s0+ds; if(ds>0) ns=Math.min(ns,Math.max(hi,s0)); else ns=Math.max(ns,Math.min(lo,s0)); setScroll(c,ns) }
+function updateSbars(){ const wrap=$('#svgwrap'); if(!wrap) return; const wr=wrap.getBoundingClientRect(), sr=planSvg.getBoundingClientRect();
+  for(const c of ['L','R']){ const bar=$('#sb'+c); const x=UI.view==='plan'||UI.view==='space'?colExt(c):null; if(!x||!sr.width){ bar.hidden=true; continue }
+    const H=x.y2-x.y1; if(H<=V.h*1.01){ bar.hidden=true; continue } const s=UI.scroll[c]||0;
+    const left=clamp((x.x2-V.x)/V.w*sr.width+sr.left-wr.left+6,4,sr.right-wr.left-8); bar.style.left=left+'px'; bar.hidden=false;
+    const th=clamp(V.h/H,.06,1), tt=clamp((V.y-(x.y1-s))/H,0,1-th); const t=bar.firstElementChild; t.style.top=(tt*100)+'%'; t.style.height=(th*100)+'%'; bar.dataset.h=H }
+}
+$$('.sbar i').forEach(t=>t.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); const bar=t.parentElement, c=bar.id.slice(2); const H=+bar.dataset.h, trackH=bar.getBoundingClientRect().height; const y0=e.clientY, s0=UI.scroll[c]||0; try{t.setPointerCapture(e.pointerId)}catch(_){} bar.classList.add('drag');
+  const mv=ev=>setScroll(c,s0+(ev.clientY-y0)/trackH*H); const up=()=>{ t.removeEventListener('pointermove',mv); t.removeEventListener('pointerup',up); bar.classList.remove('drag') }; t.addEventListener('pointermove',mv); t.addEventListener('pointerup',up) }));
+planSvg.addEventListener('wheel',e=>{ e.preventDefault(); const dy=e.deltaY*(e.deltaMode===1?33:e.deltaMode===2?400:1); const p=V.pt(e);
+  if(e.ctrlKey||e.metaKey){ const notch=Math.abs(dy)>=40; const f=notch?Math.sign(dy)*(e.altKey?.02:.05):clamp(dy,-40,40)*(e.altKey?.002:.006); const c=colAtX(p.x); if(c&&UI.L.some(x=>x.col==='L')&&UI.L.some(x=>x.col==='R')) zoomCol(c,Math.exp(f),p.y); else { const cx=centerX(); V.zoomAt(cx!=null?cx:p.x,p.y,Math.exp(f)) } return }
+  const k=V.h/(planSvg.getBoundingClientRect().height||1);
+  if(Math.abs(dy)<1) return;
+  const c=colAtX(p.x); if(c) scrollBy(c,dy*k) },{passive:false});
+function zoomCol(c,k,wy){ const z0=colZ(c), z1=clamp(z0/k,.1,20); if(wy==null) wy=V.y+V.h/2; const a=anc(c); const s0=UI.scroll[c]||0; const ly=a.y0+(wy+s0-a.y0)/z0; UI.colz[c]=z1; setScroll(c,a.y0+(ly-a.y0)*z1-wy) }
+function syncColZoom(){ const both=(UI.L||[]).some(x=>x.col==='L')&&(UI.L||[]).some(x=>x.col==='R');
+  for(const c of ['L','R']){ const box=$('#cz'+c); if(!box) continue; box.hidden=!both; if(!both) continue; const z=colZ(c); const r=box.querySelector('input'); if(document.activeElement!==r) r.value=Math.log(z).toFixed(2); box.querySelector('.czp').textContent=Math.round(z*100)+'%' }
+  $('#svgwrap').classList.toggle('hascz',both) }
+$$('.czoom input').forEach(r=>r.addEventListener('input',()=>{ const c=r.dataset.czr; const z=Math.exp(+r.value); zoomCol(c,colZ(c)/z) }));
+$$('.czoom button').forEach(b=>b.addEventListener('click',()=>{ const[c,a]=b.dataset.cz.split(':'); if(a==='in') zoomCol(c,1/1.08); else if(a==='out') zoomCol(c,1.08); else { zoomCol(c,colZ(c)/1) } }));
+function planPan(e,done){ const inv=planSvg.getScreenCTM().inverse(), p0=V.pt(e,inv), c=colAtX(p0.x), s0=c?(UI.scroll[c]||0):0, x0=V.x, sx=e.clientX, sy=e.clientY; let moved=false;
+  try{planSvg.setPointerCapture(e.pointerId)}catch(_){}
+  let axis=null;
+  const mv=ev=>{ if(V.pinching){moved=true;return} const dxs=ev.clientX-sx, dys=ev.clientY-sy; if(!moved&&Math.hypot(dxs,dys)<6) return; moved=true; if(!axis) axis=Math.abs(dxs)>Math.abs(dys)?'x':'y'; planSvg.classList.add('panning'); const p=V.pt(ev,inv); if(axis==='y'&&c) setScroll(c,s0-(p.y-p0.y)) };
+  const up=()=>{ planSvg.removeEventListener('pointermove',mv); planSvg.removeEventListener('pointerup',up); planSvg.removeEventListener('pointercancel',up); planSvg.classList.remove('panning'); done&&done(moved,p0) };
+  planSvg.addEventListener('pointermove',mv); planSvg.addEventListener('pointerup',up); planSvg.addEventListener('pointercancel',up) }
+function renderOverlay(){
+  const g=$('#ovl'); if(!g) return; let s=''; const k=V.w/1000;
+  let linkU=null;
+  if(UI.sel) linkU=U(UI.sel.id); else if(UI.hl&&UI.hl.ids.size===1) linkU=U([...UI.hl.ids][0]);
+  if(linkU){ const a=unitRect(linkU,'from'), b=unitRect(linkU,'to'); if(a&&b){ const ax=a.x+a.w/2,ay=a.y+a.d/2,bx=b.x+b.w/2,by=b.y+b.d/2; s+=`<path class="link" d="M${ax} ${ay}L${bx} ${by}"/><circle class="mdot" cx="${bx}" cy="${by}" r="${5*k}"/>` } }
+  if(UI.sel){ const su=U(UI.sel.id); const r=su&&unitRect(su,UI.sel.slot); if(r) s+=gapsSVG(r.e,r.lx,r.ly,r.lw,r.ld,su.id) }
+  if(UI.measure){ const p=UI.measure.pts; for(const q of p) s+=`<circle class="mdot" cx="${q.x}" cy="${q.y}" r="${4*k}"/>`;
+    if(p.length===2){ const mc=colAtX(p[0].x); const dcm=Math.hypot(p[1].x-p[0].x,p[1].y-p[0].y)/(mc?colZ(mc):1); s+=`<line class="mline" x1="${p[0].x}" y1="${p[0].y}" x2="${p[1].x}" y2="${p[1].y}"/><text class="mtext" x="${(p[0].x+p[1].x)/2}" y="${(p[0].y+p[1].y)/2-10*k}" font-size="${16*k}">${fmt(dcm)} cm</text>` } }
+  g.innerHTML=s;
+}
+function renderStagebar(){
+  let h='';
+  if(UI.view==='space'){
+    let o=''; for(const p of S.places){ const ms=S.maps.filter(m=>m.placeId===p.id&&cal(m)); if(!ms.length){ o+=`<option value="p:${p.id}" ${UI.focus===p.id?'selected':''}>${esc(p.name)} (도면 없음)</option>`; continue } o+=`<option value="p:${p.id}" ${UI.focus===p.id&&!UI.room?'selected':''}>${esc(p.name)} 전체</option>`;
+      for(const m of ms) for(const r of roomsOf(m)) o+=`<option value="r:${m.id}:${r.id}" ${UI.room&&UI.room.roomId===r.id?'selected':''}>　└ ${esc(m.name)} › ${esc(r.name)}</option>` }
+    const unc=S.maps.filter(m=>!cal(m)).map(m=>`<button class="tchip need" data-cal="${m.id}"><b>${esc(P(m.placeId)?.name)}</b><span class="cm">${esc(m.name)}</span>축척 맞추기</button>`).join('');
+    h=o?`<div class="slots"><label class="slotsel"><span class="sl">작업할 공간</span><select id="wsel" data-wsel>${o}</select></label>${UI.room?`<button class="btn small" data-rename="room:${UI.room.mapId}:${UI.room.roomId}">방 이름 바꾸기</button>`:(UI.focus?`<button class="btn small" data-rename="place:${UI.focus}">공간 이름 바꾸기</button>`:'')}<span class="crumb">도면 위 버튼으로 변경 전·후 전환</span>${unc}</div>`:`<div class="slots"><span class="hint">축척을 맞춘 도면이 있는 공간이 없어요.</span>${unc}</div>`;
+  }
+  else if(UI.room){ const m=M(UI.room.mapId), r=roomsOf(m).find(r=>r.id===UI.room.roomId); h=`<div class="slots"><button class="btn small" data-focus="">← 모든 공간</button><button class="btn small" data-focus="${m.placeId}">← ${esc(P(m.placeId)?.name)} 전체</button><span class="crumb">${esc(P(m.placeId)?.name)} › ${esc(m.name)} › <b>${esc(r?r.name:'')}</b></span></div>` }
+  else if(UI.focus){ h=`<div class="slots"><button class="btn small" data-focus="">← 모든 공간</button><span class="crumb"><b>${esc(P(UI.focus)?.name)}</b> 층 전체 · 방 이름을 누르면 그 방만 보여요</span></div>` }
+  else if(!S.maps.length){ h='<span class="hint">도면을 추가하면 여기에서 볼 화면을 고를 수 있어요.</span>' }
+  else {
+    const cols=getCols();
+    const label=k=>{ const q=parseKey(k); const m=M(q.id); const r=q.room!=='*'?roomsOf(m).find(r=>r.id===q.room):null; return `${P(m.placeId)?.name||''} ${m.name}${r?' '+r.name:''} · ${q.layer==='a'?'기존':'변경'}` };
+    const menu=side=>{ const sel=new Set(cols[side]); const n=sel.size;
+      let x=`<details class="msel" data-msel="${side}" ${UI.openMsel===side?'open':''}><summary><span class="sl">${side==='L'?'왼쪽':'오른쪽'}</span><span class="msum">${n?(n===1?esc(label(cols[side][0])):`${esc(label(cols[side][0]))} 외 ${n-1}개`):'선택 안 함'}</span><span class="caret">▾</span></summary><div class="mpanel">`;
+      x+=`<div class="mquick"><button class="btn small" data-mq="${side}:a">층 전체 기존만</button><button class="btn small" data-mq="${side}:b">층 전체 변경만</button><button class="btn small" data-mq="${side}:none">모두 해제</button></div>`;
+      for(const p of S.places){ const ms=S.maps.filter(m=>m.placeId===p.id&&cal(m)); if(!ms.length) continue; x+=`<div class="mgrp"><b>${esc(p.name)}</b>`;
+        const row=(k0,txt,sub)=>`<div class="mline ${sub?'sub':''}"><span>${txt}</span>${['a','b'].map(l=>{ const k=k0+':'+l; return `<label class="vchk"><input type="checkbox" data-col="${side}" data-key="${k}" ${sel.has(k)?'checked':''}> ${l==='a'?'기존':'변경'}</label>` }).join('')}</div>`;
+        for(const m of ms){ x+=row(`${m.id}:*`,`${esc(m.name)} 전체`,false); for(const r of roomsOf(m)) x+=row(`${m.id}:${r.id}`,`└ ${esc(r.name)}`,true) }
+        x+='</div>' }
+      return x+'</div></details>' };
+    h+=`<div class="slots">${menu('L')}<button class="ibtn" data-swapcols title="좌우 바꾸기" aria-label="좌우 바꾸기">⇄</button>${menu('R')}<button class="btn small" data-colsreset>기본으로</button>`;
+    for(const m of S.maps){ if(cal(m)) continue; const p=P(m.placeId); h+=`<button class="tchip need" data-cal="${m.id}"><b>${esc(p?p.name:'')}</b><span class="cm">${esc(m.name)}</span>축척 맞추기</button>` }
+    h+='</div>';
+  }
+  $('#pchips').innerHTML=h;
+  $('#btnMeasure').classList.toggle('on',!!UI.measure);
+}
+$('#pchips').addEventListener('toggle',e=>{ const d=e.target; if(!d.classList||!d.classList.contains('msel')) return; if(d.open){ UI.openMsel=d.dataset.msel; $$('.msel[open]').forEach(x=>x!==d&&(x.open=false)) } else if(UI.openMsel===d.dataset.msel) UI.openMsel=null },true);
+function putSlot(i,k){ const other=1-i; if(k&&UI.slots[other]===k) UI.slots[other]=UI.slots[i]; UI.slots[i]=k;
+  if(k&&!UI.slots[other]){ const q=parseKey(k); UI.slots[other]=`${q.id}:${q.room}:${q.layer==='a'?'b':'a'}`; if(q.layer==='b'&&i===0){ UI.slots=[UI.slots[1],UI.slots[0]] } if(q.layer==='a'&&i===1){ UI.slots=[UI.slots[1],UI.slots[0]] } }
+  savePanels(); UI.fitted=true; renderPlan(); fitAll(); requestAnimationFrame(fitAll) }
+function routeBadge(u){ const it=I(u.itemId), dp=destPlace(u), op=it.placeId; const on=P(op)?.name||'', dn=dp?P(dp)?.name||'':'';
+  if(it.isNew) return `<span class="rb new">새로 살 가구</span><span class="route">${dp?'→ '+esc(destLabel(u)):'놓을 곳 미정'}</span>`;
+  if(!dp) return `<span class="rb wr">남음</span><span class="route">${esc(on)} 가구 · 도착지 미정</span>`;
+  if(dp===op) return `<span class="rb same">같은 공간 안 이동</span><span class="route">${esc(destLabel(u)||on)}</span>`;
+  return `<span class="rb in">${esc(on)}에서 옴</span><span class="route">${esc(on)} → ${esc(destLabel(u))}</span>` }
+function renderSelbar(){
+  const b=$('#selbar'); const sel=UI.sel; if(!sel){b.hidden=true;return}
+  const u=U(sel.id); if(sel.slot==='tray'&&u){ const it=I(u.itemId); b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b><span class="mono">${it.w}×${it.d}${it.h?'×'+it.h:''}</span>${it.isNew?'<span class="rb new">새로 살 가구</span>':''}<span class="route">대기 중 · 끌어서 도면에 놓으세요</span><button class="btn small danger" data-delunit="${u.id}">가구 삭제</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`; b.hidden=false; return }
+  if(!u||!u[sel.slot]){UI.sel=null;b.hidden=true;return}
+  const it=I(u.itemId); const dp=destPlace(u);
+  b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b><span class="mono">${it.w}×${it.d}${it.h?'×'+it.h:''}</span>${routeBadge(u)}<button class="btn small" data-act="rot">회전<kbd>R</kbd></button><button class="btn small" data-act="rm">${sel.slot==='from'?'기존 위치 지우기':'도착 위치 빼기'}</button><button class="btn small danger" data-delunit="${u.id}">가구 삭제</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`;
+  b.hidden=false;
+}
+
+/* photos */
+const DIRS=['북','서','전체','동','남'];
+const DIRA={북:'↑',서:'←',동:'→',남:'↓',전체:'전체'}, DIRN={북:'도면 위쪽',서:'도면 왼쪽',동:'도면 오른쪽',남:'도면 아래쪽',전체:'전체'};
+function photoSlots(pid){ return `<div class="pslots">${DIRS.map(dir=>{ const x=S.photos.find(p=>p.placeId===pid&&p.dir===dir); return x?`<button class="pslot d${DIRS.indexOf(dir)}" data-photo="${x.id}" aria-label="${DIRN[dir]} 사진 크게 보기" title="${DIRN[dir]}"><img src="${x.img}" alt=""><span>${DIRA[dir]}</span></button>`:`<button class="pslot add d${DIRS.indexOf(dir)}" data-addphoto="${pid}" data-dir="${dir}" aria-label="${DIRN[dir]} 사진 올리기" title="${DIRN[dir]} 사진 올리기"><span>${DIRA[dir]}</span></button>` }).join('')}</div>` }
+function setRoom(k){ const[mid,rid]=k.split(':'); const m=M(mid); if(!m) return; UI.room={mapId:mid,roomId:rid}; UI.focus=UI.lastFocus=m.placeId; UI.railTab=itemsOf(m.placeId).length?m.placeId:''; UI.sel=null; if(UI.view!=='space') switchView('space'); else { UI.fitted=true; renderRail(); renderPlan(); fitAll(); requestAnimationFrame(fitAll) } }
+function setFocus(pid){ UI.room=null; UI.sel=null; if(!pid){ switchView('plan'); return } UI.focus=UI.lastFocus=pid; UI.railTab=itemsOf(pid).length?pid:''; if(UI.view!=='space') switchView('space'); else { UI.fitted=true; renderRail(); renderPlan(); fitAll(); requestAnimationFrame(fitAll) } }
+function renderPhotos(){
+  const box=$('#photos'); const pid0=UI.focus&&UI.L.length?UI.focus:null; const pid=pid0&&!UI.photosOff?pid0:null;
+  $('#photosTab').hidden=!(pid0&&UI.photosOff);
+  $('#svgwrap').classList.toggle('hasphotos',!!pid); box.hidden=!pid; if(!pid){ box.innerHTML=''; return }
+  const order=['전체','북','동','남','서'];
+  const rm=UI.room; const inc=S.units.filter(u=>destPlace(u)===pid&&(I(u.itemId).placeId!==pid||isNewU(u))&&(!rm||(u.to&&u.to.mapId===rm.mapId&&unitRoom(u,'to')?.id===rm.roomId))); const byO=new Map(); for(const u of inc){ const o=isNewU(u)?'__new':I(u.itemId).placeId; if(!byO.has(o)) byO.set(o,[]); byO.get(o).push(u) }
+  const out=S.units.filter(u=>I(u.itemId).placeId===pid&&destPlace(u)&&destPlace(u)!==pid).length;
+  const incHtml=`<div class="inc"><b class="ph-title">${rm?esc(roomsOf(M(rm.mapId)).find(r=>r.id===rm.roomId)?.name||'')+'로 ':''}외부에서 온 가구 ${inc.length}</b>${inc.length?[...byO].map(([o,us])=>`<div class="incg"><span class="incf">${o==='__new'?'<span class="newtagh">새로 살 가구</span>':'← '+esc(P(o)?.name)} ${us.length}</span>${us.map(u=>`<button class="incu ${UI.hl&&UI.hl.ids.size===1&&UI.hl.ids.has(u.id)?'on':''}" data-u="${u.id}"><span class="sw" style="--c:${I(u.itemId).color}"></span><span>${esc(lbl(u))}</span>${u.to?(!rm&&unitRoom(u,'to')?`<em class="rmt">${esc(unitRoom(u,'to').name)}</em>`:''):'<em>위치 미정</em>'}</button>`).join('')}</div>`).join(''):'<span class="hint">아직 없어요.</span>'}${out?`<span class="hint">이 공간에서 나가는 가구 ${out}개</span>`:''}</div>`;
+  box.innerHTML=`<div class="ph-head"><b class="ph-title">${esc(P(pid)?.name)}</b><button id="photosOff" title="접기">접기 ▶</button></div>`+incHtml+`<b class="ph-title">사진</b>`+order.map(dir=>{ const x=S.photos.find(p=>p.placeId===pid&&p.dir===dir);
+    return `<div class="prow"><span class="parrow ${dir==='전체'?'all':''}" title="${DIRN[dir]}">${DIRA[dir]}</span>${x?`<button class="pcard" data-photo="${x.id}" aria-label="${DIRN[dir]} 사진 크게 보기"><img src="${x.img}" alt=""></button>`:`<button class="pcard add" data-addphoto="${pid}" data-dir="${dir}" aria-label="${DIRN[dir]} 사진 올리기"><span class="pplus">+</span></button>`}</div>` }).join('');
+}
+async function addPhotos(pid,files,dir){
+  let n=0;
+  for(const f of files.slice(0,1)){ try{ const url=URL.createObjectURL(f); const img=new Image(); await new Promise((r,j)=>{img.onload=r;img.onerror=j;img.src=url}); const k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight)); const c=document.createElement('canvas'); c.width=Math.round(img.naturalWidth*k); c.height=Math.round(img.naturalHeight*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url); S.photos=S.photos.filter(p=>!(p.placeId===pid&&p.dir===dir)); S.photos.push({id:uid(),placeId:pid,dir,img:c.toDataURL('image/jpeg',.82),name:f.name}); n++ }catch(e){} }
+  if(n){ toast(`${DIRA[dir]} 사진을 올렸어요.`); commit(); if($('#dlgPhoto').open){ const x=S.photos.find(p=>p.placeId===pid&&p.dir===dir); openPhoto(x.id) } } else toast('사진을 열 수 없어요.');
+}
+const PH={list:[],i:0};
+function openPhoto(id){ const x=S.photos.find(p=>p.id===id); if(!x) return; PH.list=DIRS.map(d=>S.photos.find(p=>p.placeId===x.placeId&&p.dir===d)).filter(Boolean); PH.i=PH.list.indexOf(x); showPhoto(); $('#dlgPhoto').showModal() }
+function showPhoto(){ const x=PH.list[PH.i]; if(!x){ $('#dlgPhoto').close(); return } $('#photoImg').src=x.img; $('#photoTitle').textContent=`${P(x.placeId)?.name||''} · ${DIRA[x.dir]}${x.dir==='전체'?'':' '+DIRN[x.dir]}`; $('#photoCount').textContent=`${PH.i+1} / ${PH.list.length}`; $('#photoPrev').disabled=PH.i<=0; $('#photoNext').disabled=PH.i>=PH.list.length-1 }
+$('#photoPrev').onclick=()=>{ if(PH.i>0){PH.i--;showPhoto()} };
+$('#photoNext').onclick=()=>{ if(PH.i<PH.list.length-1){PH.i++;showPhoto()} };
+$('#photoDel').onclick=e=>{ if(!armed(e.currentTarget)) return; const x=PH.list[PH.i]; S.photos=S.photos.filter(p=>p!==x); PH.list.splice(PH.i,1); PH.i=Math.min(PH.i,PH.list.length-1); commit(); if(!PH.list.length) $('#dlgPhoto').close(); else showPhoto() };
+$('#filePhoto').onchange=e=>{ const fs=[...e.target.files]; if(fs.length) addPhotos(UI.photoTarget,fs,UI.photoDir) };
+$('#photoSwap').onclick=()=>{ const x=PH.list[PH.i]; if(!x) return; UI.photoTarget=x.placeId; UI.photoDir=x.dir; $('#filePhoto').value=''; $('#filePhoto').click() };
+document.addEventListener('keydown',e=>{ if(!$('#dlgPhoto').open) return; if(e.key==='ArrowLeft') $('#photoPrev').click(); if(e.key==='ArrowRight') $('#photoNext').click() });
+
+/* plan interactions */
+planSvg.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='mouse'&&e.button!==0) return;
+  const ft=e.target.closest('[data-focus],[data-room]'); if(ft&&!UI.measure){ ft.dataset.room?setRoom(ft.dataset.room):setFocus(ft.dataset.focus); return }
+  const g=e.target.closest('.unit');
+  if(g&&!UI.measure){ unitDrag(e,g); return }
+  planPan(e,(moved,p)=>{ if(moved) return;
+    if(UI.measure){ const m=UI.measure; if(m.pts.length>=2) m.pts=[]; m.pts.push({x:p.x,y:p.y}); renderOverlay(); return }
+    if(UI.sel||UI.hl){ UI.sel=null; UI.hl=null; renderPlan(); renderRail() }
+  });
+});
+function unitDrag(e,g){
+  e.preventDefault();
+  const u=U(g.dataset.id), slot=g.dataset.slot; if(!u) return;
+  const inv=planSvg.getScreenCTM().inverse(), p0=V.pt(e,inv), r=slot==='tray'?trayRect(u):unitRect(u,slot), sx=e.clientX, sy=e.clientY; let moved=false; if(!r) return;
+  try{planSvg.setPointerCapture(e.pointerId)}catch(_){}
+  const mv=ev=>{ if(V.pinching) return; if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<4) return; if(!moved){ moved=true; UI.dragging=true; $('#dragl').appendChild(g); g.classList.add('dragging') } const p=V.pt(ev,inv); let wx=r.x+p.x-p0.x, wy=r.y+p.y-p0.y; let z=colZ(r.e.col); const e2=panelAt(wx+r.w/2,wy+r.d/2); if(e2){ z=colZ(e2.col); const lc=fromW(e2.col,wx+r.w/2,wy+r.d/2); const a=alignSnap(e2,u.id,lc.x-e2.mx-r.lw/2,lc.y-e2.my-r.ld/2,r.lw,r.ld); const q=toW(e2.col,e2.mx+a.x,e2.my+a.y); wx=q.x; wy=q.y; drawGuides(e2,a,gapsSVG(e2,a.x,a.y,r.lw,r.ld,u.id)) } else drawGuides(null); g.setAttribute('transform',`translate(${wx} ${wy}) scale(${z})`) };
+  const up=ev=>{ planSvg.removeEventListener('pointermove',mv); planSvg.removeEventListener('pointerup',up); planSvg.removeEventListener('pointercancel',up); UI.dragging=false; if(Cloud.pendingApply) setTimeout(applyCloud,0);
+    if(!moved){ if(slot==='tray'){ UI.sel={id:u.id,slot:'tray'}; UI.hl=null; renderPlan(); return } UI.sel={id:u.id,slot}; UI.hl=null; renderPlan(); renderRail(); return }
+    const el=document.elementFromPoint(ev.clientX,ev.clientY);
+    if(el&&el.closest('#rail')){ if(slot==='tray'){ renderPlan(); return } removeSlot(u,slot); return }
+    const p=V.pt(ev,inv); dropUnit(u,slot==='tray'?null:slot,r.x+p.x-p0.x+r.w/2,r.y+p.y-p0.y+r.d/2,slot==='tray'?0:(u[slot].rot||0));
+  };
+  planSvg.addEventListener('pointermove',mv); planSvg.addEventListener('pointerup',up); planSvg.addEventListener('pointercancel',up);
+}
+function trayRect(u){ const t=UI.trayPos&&UI.trayPos[u.id]; if(!t) return null; const z=colZ('L'); const q=toW('L',t.x,t.y); return {x:q.x,y:q.y,w:t.w*z,d:t.d*z,e:{col:'L'},lx:t.x,ly:t.y,lw:t.w,ld:t.d} }
+function alignSnap(e,id,x,y,w,d){
+  const slot=e.layer==='a'?'from':'to'; const thr=clamp(V.w/1000*9/colZ(e.col),3,25); let bx=null,by=null;
+  for(const o of S.units){ if(o.id===id) continue; const pos=o[slot]; if(!pos||pos.mapId!==e.m.id) continue; if(slot==='from'&&isPlaced(o)) continue;
+    const[ow,od]=dims(I(o.itemId),pos.rot||0);
+    for(const[a,b] of [[x,pos.x],[x+w,pos.x+ow],[x+w/2,pos.x+ow/2],[x,pos.x+ow],[x+w,pos.x]]){ const dl=b-a; if(Math.abs(dl)<=thr&&(!bx||Math.abs(dl)<Math.abs(bx.dl))) bx={dl,line:b} }
+    for(const[a,b] of [[y,pos.y],[y+d,pos.y+od],[y+d/2,pos.y+od/2],[y,pos.y+od],[y+d,pos.y]]){ const dl=b-a; if(Math.abs(dl)<=thr&&(!by||Math.abs(dl)<Math.abs(by.dl))) by={dl,line:b} }
+  }
+  return {x:bx?x+bx.dl:x,y:by?y+by.dl:y,gx:bx?bx.line:null,gy:by?by.line:null};
+}
+function gapsSVG(e,x,y,w,d,id){
+  const slot=e.layer==='a'?'from':'to'; const os=[]; const k=V.w/1000; const X=v=>toW(e.col,e.mx+v,0).x, Y=v=>toW(e.col,0,e.my+v).y;
+  if(U(id)&&isTop(U(id))) return '';
+  for(const o of S.units){ if(o.id===id||isTop(o)) continue; const pos=o[slot]; if(!pos||pos.mapId!==e.m.id) continue; if(slot==='from'&&isPlaced(o)) continue; const[ow,od]=dims(I(o.itemId),pos.rot||0); os.push({x:pos.x,y:pos.y,w:ow,d:od}) }
+  const room=roomAt(e.m,x+w/2,y+d/2); const rb=room?{x1:room.x/e.m.sx,y1:room.y/e.m.sy,x2:(room.x+room.w)/e.m.sx,y2:(room.y+room.h)/e.m.sy}:null;
+  const res=[]; const MAX=800;
+  const ov=(a1,a2,b1,b2)=>Math.min(a2,b2)-Math.max(a1,b1);
+  // right / left
+  for(const dir of ['r','l','d','u']){ let best=null;
+    for(const o of os){ let g=null,m1=null,m2=null;
+      if(dir==='r'&&o.x>=x+w-.5&&ov(y,y+d,o.y,o.y+o.d)>0){ g=o.x-(x+w); m1=Math.max(y,o.y); m2=Math.min(y+d,o.y+o.d) }
+      if(dir==='l'&&o.x+o.w<=x+.5&&ov(y,y+d,o.y,o.y+o.d)>0){ g=x-(o.x+o.w); m1=Math.max(y,o.y); m2=Math.min(y+d,o.y+o.d) }
+      if(dir==='d'&&o.y>=y+d-.5&&ov(x,x+w,o.x,o.x+o.w)>0){ g=o.y-(y+d); m1=Math.max(x,o.x); m2=Math.min(x+w,o.x+o.w) }
+      if(dir==='u'&&o.y+o.d<=y+.5&&ov(x,x+w,o.x,o.x+o.w)>0){ g=y-(o.y+o.d); m1=Math.max(x,o.x); m2=Math.min(x+w,o.x+o.w) }
+      if(g!=null&&g>=0&&g<=MAX&&(!best||g<best.g)) best={g,m:(m1+m2)/2,wall:false} }
+    if(!best&&rb){ const g=dir==='r'?rb.x2-(x+w):dir==='l'?x-rb.x1:dir==='d'?rb.y2-(y+d):y-rb.y1; if(g>=0&&g<=MAX) best={g,m:dir==='r'||dir==='l'?y+d/2:x+w/2,wall:true} }
+    if(best) res.push({dir,...best}) }
+  let out='';
+  for(const r of res){ let x1,y1,x2,y2;
+    if(r.dir==='r'){ x1=x+w; x2=x+w+r.g; y1=y2=r.m } else if(r.dir==='l'){ x1=x-r.g; x2=x; y1=y2=r.m } else if(r.dir==='d'){ y1=y+d; y2=y+d+r.g; x1=x2=r.m } else { y1=y-r.g; y2=y; x1=x2=r.m }
+    const tx=(X(x1)+X(x2))/2, ty=(Y(y1)+Y(y2))/2; const horiz=r.dir==='r'||r.dir==='l';
+    out+=`<line class="gapl ${r.wall?'wall':''}" x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}"/>`;
+    if(r.g>0.5) out+=`<text class="gapt" x="${tx+(horiz?0:6*k)}" y="${ty+(horiz?-5*k:0)}" font-size="${12*k}" ${horiz?'':'text-anchor="start" dominant-baseline="central"'}>${Math.round(r.g)}</text>`;
+  }
+  return out;
+}
+function drawGuides(e,a,extra){ const g=$('#guides'); if(!g) return; if(!e||!a){ g.innerHTML=''; return } let s=extra||''; if(a.gx!=null){ const p1=toW(e.col,e.mx+a.gx,e.oy), p2=toW(e.col,e.mx+a.gx,e.oy+e.h); s+=`<line class="guide" x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}"/>` } if(a.gy!=null){ const p1=toW(e.col,e.ox,e.my+a.gy), p2=toW(e.col,e.ox+e.w,e.my+a.gy); s+=`<line class="guide" x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}"/>` } g.innerHTML=s }
+function snapV(v,origin){ const s=UI.snap; return s?origin+Math.round((v-origin)/s)*s:Math.round(v) }
+function dropUnit(u,srcSlot,cx,cy,rot){
+  const e=panelAt(cx,cy); const it=I(u.itemId);
+  if(!e){ toast('도면 위에 놓아 주세요.'); renderPlan(); return }
+  const[w,d]=dims(it,rot); const X0=e.cx, Y0=e.cy, X1=Math.max(e.cx,e.cx+e.w-w), Y1=Math.max(e.cy,e.cy+e.h-d);
+  const lc=fromW(e.col,cx,cy); let x=clamp(snapV(lc.x-e.mx-w/2,e.gx),X0,X1), y=clamp(snapV(lc.y-e.my-d/2,e.gy),Y0,Y1);
+  { const a=alignSnap(e,u.id,x,y,w,d); x=clamp(Math.round(a.x),X0,X1); y=clamp(Math.round(a.y),Y0,Y1) }
+  if(e.layer==='a'&&it.isNew){ toast(`${lbl(u)}은(는) 새로 살 가구라 지금 위치가 없어요. 변경 후 화면에 놓아 주세요.`); renderPlan(); return }
+  if(e.layer==='a'){
+    if(e.m.placeId!==it.placeId){
+      if(srcSlot==='to'){ u.to=null; UI.sel=null; toast(`${lbl(u)}의 도착 위치를 취소했어요.`); commit(); return }
+      toast(`${lbl(u)}은(는) ${P(it.placeId)?.name||''}의 가구라 여기 기존 위치에는 놓을 수 없어요. 변경 화면에 놓아 주세요.`); renderPlan(); return;
+    }
+    if(srcSlot==='to') u.to=null;
+    u.from={mapId:e.m.id,x,y,rot}; UI.sel={id:u.id,slot:'from'};
+  } else {
+    if(srcSlot==null&&!u.from&&!it.isNew&&e.m.placeId===it.placeId&&UI.view==='space'){ u.from={mapId:e.m.id,x,y,rot}; UI.wlayer='a'; UI.sel={id:u.id,slot:'from'}; UI.hl=null; commit(); toast(`${lbl(u)}은(는) 이 공간 가구라 먼저 변경 전(지금 위치)에 놓았어요.`); return }
+    u.to={mapId:e.m.id,x,y,rot}; u.toPlaceId=null; UI.sel={id:u.id,slot:'to'};
+  }
+  UI.hl=null; commit();
+}
+function removeSlot(u,slot){ u[slot]=null; if(UI.sel&&UI.sel.id===u.id) UI.sel=null; toast(slot==='from'?`${lbl(u)}의 기존 위치를 지웠어요.`:`${lbl(u)}을(를) 도착 위치에서 뺐어요.`); commit() }
+function rotateSel(){ const s=UI.sel; if(!s) return; const u=U(s.id); const pos=u&&u[s.slot]; if(!pos) return; const it=I(u.itemId); const[w,d]=dims(it,pos.rot||0); const cx=pos.x+w/2, cy=pos.y+d/2; pos.rot=((pos.rot||0)+90)%360; const[w2,d2]=dims(it,pos.rot); pos.x=Math.round(cx-w2/2); pos.y=Math.round(cy-d2/2); commit() }
+function commit(){ save(); renderAll() }
+
+/* drag from rail */
+planSvg.addEventListener('dragover',e=>{ if(UI.drag||UI.chipDrag){ e.preventDefault(); e.dataTransfer.dropEffect='move' } });
+planSvg.addEventListener('drop',e=>{
+  e.preventDefault();
+  if(UI.chipDrag){ const k=UI.chipDrag; UI.chipDrag=null; if(UI.focus) UI.focus=null; const r=planSvg.getBoundingClientRect(); putSlot(e.clientX<r.left+r.width/2?0:1,k); return }
+  const pl=UI.drag; UI.drag=null; if(!pl) return;
+  const p=V.pt(e); const panel=panelAt(p.x,p.y); if(!panel){ toast('도면 위에 놓아 주세요.'); return }
+  let u=null;
+  if(pl.u) u=U(pl.u);
+  else { const g=GROUPS.find(g=>g.key===pl.g); if(!g) return;
+    if(panel.layer==='a'){ const c=g.units.filter(u=>I(u.itemId).placeId===panel.m.placeId&&!u.from); u=c.find(u=>!isPlaced(u))||c[0]; if(!u){ toast(`${P(panel.m.placeId)?.name}에 아직 위치를 안 정한 ${g.name}이(가) 없어요.`); return } }
+    else { u=g.remain.find(u=>u.from)||g.remain[0]; if(!u){ toast(`남은 ${g.name}이(가) 없어요.`); return } }
+  }
+  if(!u) return; const slot=panel.layer==='a'?'from':'to'; const rot=(u[slot]&&u[slot].rot)||(u.from&&u.from.rot)||0;
+  dropUnit(u,null,p.x,p.y,rot);
+});
+
+/* highlight */
+function setHL(ids,label){
+  if(UI.hl&&UI.hl.label===label) UI.hl=null; else UI.hl={ids:new Set(ids),label};
+  UI.sel=null; if(UI.view!=='plan'&&UI.view!=='space') switchView('plan'); renderPlan(); renderRail();
+  if(!UI.hl) return;
+  const rs=[]; for(const id of UI.hl.ids){ const u=U(id); if(!u) continue; for(const s of ['from','to']){ const r=unitRect(u,s); if(r) rs.push(r) } }
+  const total=UI.hl.ids.size;
+  const onMap=[...UI.hl.ids].filter(id=>{const u=U(id);return unitRect(u,'from')||unitRect(u,'to')}).length;
+  if(!rs.length){ toast(`도면에 위치가 표시된 가구가 없어요. 목록에서 확인하세요.`); return }
+  if(onMap<total) toast(`도면에 있는 ${onMap}개를 표시했어요. ${total-onMap}개는 아직 도면 위치가 없어요.`);
+  for(const c of ['L','R']){ const r=rs.find(r=>r.e.col===c); if(!r) continue; if(r.y<V.y||r.y+r.d>V.y+V.h){ const base=r.y+off(r.e); setScroll(c,base+r.d/2-V.y-V.h/2) } }
+}
+
+/* ---------- rail ---------- */
+function renderRail(){
+  const rail=$('#rail'); const tot=S.units.length, pl=S.units.filter(isPlaced).length;
+  const tabs=[{id:'',name:'전체'},...S.places.filter(p=>itemsOf(p.id).length).map(p=>({id:p.id,name:p.name}))];
+  if(!tabs.find(t=>t.id===UI.railTab)) UI.railTab='';
+  let h=`<div class="railhead"><div class="railtop"><b>가구 목록</b><button class="railfold" data-railfold title="가구 목록 접기">◀ 접기</button></div><div class="sum"><div class="sumnums"><span>전체<b>${tot}</b></span><span>배치<b>${pl}</b></span><span class="w">남음<b>${tot-pl}</b></span></div><div class="bar"><i style="width:${tot?pl/tot*100:0}%"></i></div></div>
+  <div class="seg">${tabs.map(t=>`<button data-railtab="${t.id}" class="${t.id===UI.railTab?'on':''}">${esc(t.name)}</button>`).join('')}</div>${UI.view==='space'&&UI.focus&&P(UI.focus)?`<form class="qadd ${(UI.wlayer||'a')==='b'?'newmode':''}" id="qadd"><b>${(UI.wlayer||'a')==='b'?`${esc(P(UI.focus).name)}에 <span class="newtagh">새로 살 가구</span> 추가`:`${esc(P(UI.focus).name)}에 지금 있는 가구 추가`}</b><div class="qrow qk"><input id="qaName" placeholder="이름" aria-label="이름" autocomplete="off"><select id="qaK" aria-label="종류"><option value="furn">가구</option><option value="item">올리는 물품</option></select><input id="qaQ" type="number" min="1" value="1" aria-label="수량" title="수량"></div><div class="qrow q3"><input id="qaW" type="number" min="1" placeholder="가로" aria-label="가로 cm"><input id="qaD" type="number" min="1" placeholder="세로" aria-label="세로 cm"><input id="qaH" type="number" min="0" placeholder="높이" aria-label="높이 cm (선택)"><button class="btn primary small">추가</button></div><span class="hint">${(UI.wlayer||'a')==='b'?'변경 후 화면에서 추가하면 <b>새로 살 가구</b>로 등록돼요':'cm 단위 · 추가하면 도면 옆 대기 공간에 나타나요 · 새로 살 가구는 변경 후 화면에서 추가'}</span></form>`:''}</div><div class="raillist">`;
+  if(!S.items.length&&UI.view!=='space'){ h+=`<div class="railempty"><span>가구가 아직 없어요. 공간별로 지금 있는 가구를 입력하세요.</span><button class="btn primary" data-view="items">가구 입력하기</button></div>` }
+  else if(UI.railTab==='') h+=railTotal(); else h+=railSpace(UI.railTab);
+  rail.innerHTML=h+'</div>';
+}
+function railTotal(){
+  let h=`<div class="thead"><span></span><span>가구 · 끌어서 도면에 놓기</span><span>합계</span><span>배치</span><span>남음</span></div>`;
+  for(const g of GROUPS){ const on=UI.hl&&UI.hl.label; const open=UI.open.has(g.key);
+    h+=`<div class="trow" draggable="true" data-dg="${esc(g.key)}"><span class="sw" style="--c:${g.color}"></span><button class="tname" data-openg="${esc(g.key)}" aria-expanded="${open}"><b>${esc(g.name)}</b><span class="mono">${g.w}×${g.d}</span></button><span class="num">${g.units.length}</span><button class="num ok ${g.placed.length?'':'zero'} ${on==='p:'+g.key?'on':''}" data-hl="p" data-g="${esc(g.key)}" title="배치된 것 도면에 표시">${g.placed.length}</button><button class="num wr ${g.remain.length?'':'zero'} ${on==='r:'+g.key?'on':''}" data-hl="r" data-g="${esc(g.key)}" title="남은 것 도면에 표시">${g.remain.length}</button>`;
+    if(on==='p:'+g.key||on==='r:'+g.key){ const placed=on[0]==='p'; const by=new Map();
+      for(const u of (placed?g.placed:g.remain)){ const it=I(u.itemId); const k=placed?destLabel(u):`${P(it.placeId)?.name||''} › ${fromLabel(u)}`; if(!by.has(k)) by.set(k,[]); by.get(k).push(u) }
+      h+=`<div class="hlbox ${placed?'ok':'wr'}"><b>${placed?'배치된 곳':'남은 위치'}</b>${by.size?[...by].map(([k,us])=>`<div class="hlline"><span>${esc(k)}</span><span class="mono">${us.length}개</span><span class="hlnames">${us.map(u=>esc(lbl(u))).join(', ')}</span></div>`).join(''):'<span class="hint">없어요.</span>'}</div>` }
+    if(open){ const by=new Map(); for(const it of g.items){ by.set(it.placeId,(by.get(it.placeId)||0)+it.qty) } h+=`<div class="tsub">${[...by].map(([pid,n])=>`${esc(P(pid)?.name)} ${n}`).join(' · ')}</div>` }
+    h+='</div>';
+  }
+  return h;
+}
+function destOptions(u){ const dp=destPlace(u), op=I(u.itemId).placeId; let o=`<option value="">도착지 미정</option>`; for(const p of S.places){ const pos=u.to&&M(u.to.mapId)?.placeId===p.id; o+=`<option value="${p.id}" ${dp===p.id?'selected':''}>${p.id===op&&!I(u.itemId).isNew?'그대로 남김':'→ '+esc(p.name)}${pos?' (도면)':''}</option>` } return o }
+function railSpace(pid){
+  let h=''; const items=itemsOf(pid);
+  for(const it of items){ const us=unitsOf(it);
+    h+=`<div class="ritem"><div class="rih"><span class="sw" style="--c:${it.color}"></span><b>${esc(it.name)}</b>${it.isNew?'<span class="newtagh">새</span>':''}${it.kind==='item'?'<span class="toptag">올림</span>':''}<span class="mono">${it.w}×${it.d}</span><span class="c">${us.filter(isPlaced).length}/${us.length} 배치</span></div><ul class="runits">`;
+    for(const u of us){ const on=UI.hl&&UI.hl.ids.size===1&&UI.hl.ids.has(u.id);
+      h+=`<li draggable="true" data-du="${u.id}" data-u="${u.id}" class="${isPlaced(u)?'':'rem'} ${on?'on':''}"><span class="sw" style="--c:${it.color}"></span><span class="nm">${esc(lbl(u))}</span>${isNewU(u)?'<span class="flag newf" title="새로 살 가구">새</span>':`<span class="flag ${u.from?'on':''}" title="${u.from?'기존 위치 표시됨':'기존 위치 없음'}">기존</span>`}<select data-dest="${u.id}" aria-label="${esc(lbl(u))} 도착지">${destOptions(u)}</select><button class="udel" data-delunit="${u.id}" title="이 가구 삭제" aria-label="${esc(lbl(u))} 삭제">×</button></li>` }
+    h+='</ul></div>';
+  }
+  return h;
+}
+$('#rail').addEventListener('dragstart',e=>{ const t=e.target.closest('[data-dg],[data-du]'); if(!t) return; UI.drag=t.dataset.du?{u:t.dataset.du}:{g:t.dataset.dg}; try{e.dataTransfer.setData('text/plain','furniture');e.dataTransfer.effectAllowed='move'}catch(_){} });
+$('#rail').addEventListener('dragend',()=>{ setTimeout(()=>UI.drag=null,0) });
+
+/* ---------- items view ---------- */
+function renderItems(){
+  const v=$('#view-items'); const places=S.places;
+  if(UI.itemsTab&&!P(UI.itemsTab)) UI.itemsTab='';
+  let h=`<div class="wrap"><div><h2>가구 목록</h2><p class="lead">공간별로 지금 있는 가구를 입력하세요. 수량을 넣으면 책상 1, 책상 2처럼 번호가 붙고, 전체 구성에서 이름과 치수가 같은 가구끼리 합산돼요.</p></div>
+  <div class="tabsline seg"><button data-itab="" class="${UI.itemsTab===''?'on':''}">전체 구성</button>${places.map(p=>`<button data-itab="${p.id}" class="${UI.itemsTab===p.id?'on':''}">${esc(p.name)} <span class="mono">${itemsOf(p.id).reduce((a,i)=>a+i.qty,0)}</span></button>`).join('')}</div>`;
+  if(!places.length){ h+=`<div class="card" style="padding:18px;display:grid;gap:10px"><b>먼저 공간을 등록하세요</b><span class="hint">예: 현재 사무실, 창고, 새 사무실. 도면이 없는 공간도 등록할 수 있어요.</span><div><button class="btn primary" data-view="spaces">공간 등록하기</button></div></div>` }
+  else if(UI.itemsTab==='') h+=itemsTotal(); else h+=itemsSpace(UI.itemsTab);
+  v.innerHTML=h+'</div>';
+}
+function itemsTotal(){
+  const cols=S.places.filter(p=>itemsOf(p.id).length);
+  if(!GROUPS.length) return `<div class="card" style="padding:18px"><span class="hint">공간 탭을 눌러 가구를 입력하면 여기에 합산돼요.</span></div>`;
+  let h=`<div class="tblwrap"><table><thead><tr><th></th><th>가구</th><th class="n">치수 (cm)</th>${cols.map(p=>`<th class="n">${esc(p.name)}</th>`).join('')}<th class="n">합계</th><th class="n">배치</th><th class="n">남음</th></tr></thead><tbody>`;
+  for(const g of GROUPS){ const by=new Map(); for(const it of g.items) by.set(it.placeId,(by.get(it.placeId)||0)+it.qty);
+    h+=`<tr><td><span class="sw" style="--c:${g.color}"></span></td><td>${esc(g.name)}</td><td class="n">${g.w}×${g.d}</td>${cols.map(p=>`<td class="n">${by.get(p.id)||'<span style="opacity:.3">0</span>'}</td>`).join('')}<td class="n"><b>${g.units.length}</b></td><td class="n"><button class="num ok ${g.placed.length?'':'zero'}" style="padding:2px 10px" data-hl="p" data-g="${esc(g.key)}">${g.placed.length}</button></td><td class="n"><button class="num wr ${g.remain.length?'':'zero'}" style="padding:2px 10px" data-hl="r" data-g="${esc(g.key)}">${g.remain.length}</button></td></tr>` }
+  const tot=S.units.length, pl=S.units.filter(isPlaced).length;
+  h+=`</tbody><tfoot><tr><th></th><th>합계</th><th></th>${cols.map(p=>`<th class="n">${itemsOf(p.id).reduce((a,i)=>a+i.qty,0)}</th>`).join('')}<th class="n">${tot}</th><th class="n">${pl}</th><th class="n">${tot-pl}</th></tr></tfoot></table></div><p class="hint">배치·남음 숫자를 누르면 배치판에서 해당 가구가 강조돼요.</p>`;
+  return h;
+}
+function itemsSpace(pid){
+  const items=itemsOf(pid);
+  let h=`<div class="tblwrap"><table><thead><tr><th></th><th style="min-width:160px">가구 이름</th><th>종류</th><th>새 가구</th><th class="n">가로</th><th class="n">세로</th><th class="n">높이</th><th class="n">수량</th><th>번호별 상태</th><th></th></tr></thead><tbody>`;
+  if(!items.length) h+=`<tr><td colspan="10" class="hint" style="padding:16px">${esc(P(pid)?.name)}에 입력된 가구가 없어요. 아래 ‘가구 추가’를 누르세요.</td></tr>`;
+  for(const it of items){ const us=unitsOf(it);
+    h+=`<tr><td><span class="sw" style="--c:${it.color}"></span></td><td><input id="n-${it.id}" data-f="name" data-item="${it.id}" value="${esc(it.name)}" aria-label="가구 이름"></td><td><select id="k-${it.id}" data-f="kind" data-item="${it.id}" aria-label="종류" class="kindsel"><option value="furn" ${it.kind!=='item'?'selected':''}>가구</option><option value="item" ${it.kind==='item'?'selected':''}>올리는 물품</option></select></td><td style="text-align:center"><input type="checkbox" id="nw-${it.id}" data-f="isNew" data-item="${it.id}" ${it.isNew?'checked':''} aria-label="새로 살 가구"></td><td class="n"><input class="numin" id="w-${it.id}" data-f="w" data-item="${it.id}" type="number" min="1" value="${it.w}" aria-label="가로 cm"></td><td class="n"><input class="numin" id="d-${it.id}" data-f="d" data-item="${it.id}" type="number" min="1" value="${it.d}" aria-label="세로 cm"></td><td class="n"><input class="numin" id="h-${it.id}" data-f="h" data-item="${it.id}" type="number" min="0" value="${it.h||''}" placeholder="선택" aria-label="높이 cm"></td><td class="n"><input class="numin" id="q-${it.id}" data-f="qty" data-item="${it.id}" type="number" min="1" value="${it.qty}" aria-label="수량"></td>
+    <td><div class="chips">${us.map(u=>{const dp=destPlace(u);return `<span class="chip ${dp?'ok':'wr'}" title="${dp?'→ '+esc(P(dp)?.name):'남음'}">${esc(lbl(u))}${dp?' → '+esc(P(dp)?.name):' · 남음'}</span>`}).join('')}</div></td><td><button class="btn small" data-delitem="${it.id}">삭제</button></td></tr>` }
+  h+=`</tbody></table></div><div class="actions"><button class="btn primary" data-additem="${pid}">가구 추가</button><span class="hint">치수는 cm 단위예요. 가로는 정면 폭, 세로는 깊이예요.</span></div>`;
+  return h;
+}
+function onItemField(inp){
+  const it=I(inp.dataset.item); if(!it) return; const f=inp.dataset.f;
+  if(f==='name'){ const nm=inp.value.trim()||'이름 없음'; if(nm!==it.name){ it.name=nm; const same=S.items.find(o=>o!==it&&gkey(o)===gkey(it)); if(same) it.color=same.color } }
+  else if(f==='qty'){ const q=Math.max(1,Math.round(num(inp.value,1))); const old=it.qty; it.qty=q; if(!syncUnits(it)){ it.qty=old; inp.value=old; toast('배치되었거나 위치가 있는 가구는 줄일 수 없어요. 먼저 도면에서 빼 주세요.'); return } }
+  else if(f==='h'){ it.h=Math.max(0,Math.round(num(inp.value,0))) }
+  else if(f==='kind'){ it.kind=inp.value==='item'?'item':'furn' }
+  else if(f==='isNew'){ it.isNew=inp.checked; if(it.isNew) unitsOf(it).forEach(u=>u.from=null); it.color=colorFor(it.name+(it.isNew?'|n':''),it.w,it.d) }
+  else { const v=Math.max(1,Math.round(num(inp.value,it[f]))); it[f]=v; const same=S.items.find(o=>o!==it&&gkey(o)===gkey(it)); if(same) it.color=same.color }
+  commit();
+}
+
+/* ---------- routes view ---------- */
+function renderRoutes(){
+  const v=$('#view-routes'); const groups=new Map();
+  for(const u of S.units){ const it=I(u.itemId); if(!it) continue; const dl=destLabel(u); const fp=it.isNew?'__new':it.placeId; const k=fp+'>'+dl; if(!groups.has(k)) groups.set(k,{from:fp,to:destPlace(u),label:dl,units:[]}); groups.get(k).units.push(u) }
+  const po=new Map([['__new',-1],...S.places.map((p,i)=>[p.id,i])]);
+  const list=[...groups.values()].sort((a,b)=>(a.to?0:1)-(b.to?0:1)||(po.get(a.from)-po.get(b.from))||((po.get(a.to)??0)-(po.get(b.to)??0))||a.label.localeCompare(b.label));
+  let h=`<div class="wrap"><div><h2>이동 경로</h2><p class="lead">어디에서 어디로 몇 개가 가는지 경로별로 모았어요. 이삿짐 업체에 전달하거나 차량을 나눌 때 쓰세요.</p></div>`;
+  if(!list.length) h+=`<div class="card" style="padding:18px"><span class="hint">가구를 입력하고 도착지를 정하면 여기에 경로가 생겨요.</span></div>`;
+  h+='<div class="routes">';
+  for(const r of list){ const agg=new Map(); for(const u of r.units){ const it=I(u.itemId); const k=gkey(it); if(!agg.has(k)) agg.set(k,{it,us:[]}); agg.get(k).us.push(u) }
+    h+=`<section class="card route ${r.to?'':'undec'}"><div class="rhead"><b>${r.from==='__new'?'<span class="newtagh">새로 구매</span>':esc(P(r.from)?.name)}</b><span class="arr">→</span><b>${r.to?(r.to===r.from?'그대로 남김 · ':'')+esc(r.label):'도착지 미정'}</b><span class="cnt">${r.units.length}개</span></div><ul class="rlist">${[...agg.values()].map(a=>`<li><span class="sw" style="--c:${a.it.color}"></span><span>${esc(a.it.name)}</span><span class="mono">${a.it.w}×${a.it.d}${a.it.h?'×'+a.it.h:''}</span><span class="q">×${a.us.length}</span></li>`).join('')}</ul></section>` }
+  v.innerHTML=h+'</div></div>';
+}
+
+/* ---------- checklist view ---------- */
+function fromLabel(u){ if(isNewU(u)) return '새로 구매'; if(u.from){ const m=M(u.from.mapId); const r=unitRoom(u,'from'); if(m) return m.name+(r?' › '+r.name:'') } return '도면 위치 없음' }
+function chkRow(u,kind){ const it=I(u.itemId); const c=u.chk||{}; const key=kind==='in'?'in':kind==='keep'?'keep':'out'; const on=!!c[key];
+  const extra=kind==='move'?`<span class="cto">→ ${esc(destLabel(u))}</span>`:kind==='in'?`<span class="cto">← ${esc(P(it.placeId)?.name)} › ${esc(fromLabel(u))}</span>`:kind==='keep'&&u.to?`<span class="cto">자리 이동 › ${esc(destLabel(u).split(' › ').slice(1).join(' › '))}</span>`:'';
+  return `<li class="${on?'done':''}"><label><input type="checkbox" data-chk="${key}" data-cu="${u.id}" ${on?'checked':''}><span class="sw" style="--c:${it.color}"></span><span class="cn">${esc(lbl(u))}</span><span class="mono">${it.w}×${it.d}${it.h?'×'+it.h:''}</span></label>${extra}<button class="btn small cfind" data-u="${u.id}" title="도면에서 보기">위치</button></li>` }
+function renderCheck(){
+  const v=$('#view-check'); const mode=UI.chkMode||'from';
+  let h=`<div class="wrap"><div><h2>체크리스트</h2><p class="lead">이사 당일 위치별로 확인하며 체크하세요. 출발지 기준은 방마다 옮길 가구와 남기고 갈 가구를, 도착지 기준은 방마다 들어올 가구를 보여줘요.</p></div>
+  <div class="seg"><button data-chkmode="from" class="${mode==='from'?'on':''}">출발지 기준 (싣기)</button><button data-chkmode="to" class="${mode==='to'?'on':''}">도착지 기준 (내리기)</button></div>`;
+  if(!S.units.length){ v.innerHTML=h+`<div class="card" style="padding:18px"><span class="hint">가구를 입력하면 체크리스트가 생겨요.</span></div></div>`; return }
+  if(mode==='from'){
+    for(const p of S.places){ const us=S.units.filter(u=>I(u.itemId).placeId===p.id&&!isNewU(u)); if(!us.length) continue;
+      const mv=us.filter(u=>destPlace(u)&&destPlace(u)!==p.id), kp=us.filter(u=>destPlace(u)===p.id), un=us.filter(u=>!destPlace(u));
+      const done=mv.filter(u=>u.chk&&u.chk.out).length;
+      h+=`<section class="ckplace"><div class="ckhead"><h3>${esc(p.name)}</h3><span class="hint">옮김 ${mv.length} · 남김 ${kp.length}${un.length?` · <b style="color:var(--warn)">미정 ${un.length}</b>`:''}</span><span class="ckprog mono">실음 ${done}/${mv.length}</span></div><div class="bar"><i style="width:${mv.length?done/mv.length*100:0}%"></i></div><div class="ckgrid">`;
+      const locs=new Map(); for(const u of us){ const l=fromLabel(u); if(!locs.has(l)) locs.set(l,[]); locs.get(l).push(u) }
+      for(const [l,lu] of [...locs].sort((a,b)=>(a[0]==='도면 위치 없음')-(b[0]==='도면 위치 없음')||a[0].localeCompare(b[0]))){
+        const a=lu.filter(u=>destPlace(u)&&destPlace(u)!==p.id), b=lu.filter(u=>destPlace(u)===p.id), c=lu.filter(u=>!destPlace(u));
+        h+=`<div class="card ckloc"><div class="cklt">${esc(l)}</div>${a.length?`<div class="cksec"><span class="ckst mv">옮기는 가구 ${a.length}</span><ul class="cklist">${a.map(u=>chkRow(u,'move')).join('')}</ul></div>`:''}${b.length?`<div class="cksec"><span class="ckst kp">남기고 가는 가구 ${b.length}</span><ul class="cklist">${b.map(u=>chkRow(u,'keep')).join('')}</ul></div>`:''}${c.length?`<div class="cksec"><span class="ckst un">갈 곳 미정 ${c.length}</span><ul class="cklist">${c.map(u=>chkRow(u,'none')).join('')}</ul></div>`:''}</div>` }
+      h+='</div></section>' }
+  } else {
+    for(const p of S.places){ const us=S.units.filter(u=>destPlace(u)===p.id&&(I(u.itemId).placeId!==p.id||isNewU(u))); if(!us.length) continue; const done=us.filter(u=>u.chk&&u.chk.in).length;
+      h+=`<section class="ckplace"><div class="ckhead"><h3>${esc(p.name)}</h3><span class="hint">들어올 가구 ${us.length}</span><span class="ckprog mono">내림 ${done}/${us.length}</span></div><div class="bar"><i style="width:${done/us.length*100}%"></i></div><div class="ckgrid">`;
+      const locs=new Map(); for(const u of us){ const l=destLabel(u).split(' › ').slice(1).join(' › ')||'위치 미정'; if(!locs.has(l)) locs.set(l,[]); locs.get(l).push(u) }
+      for(const [l,lu] of locs) h+=`<div class="card ckloc"><div class="cklt">${esc(l)}</div><ul class="cklist">${lu.map(u=>chkRow(u,'in')).join('')}</ul></div>`;
+      h+='</div></section>' }
+  }
+  v.innerHTML=h+'</div>';
+}
+
+/* ---------- spaces view ---------- */
+function renderSpaces(){
+  const v=$('#view-spaces');
+  let h=`<div class="wrap"><div><h2>공간·도면</h2><p class="lead">기존 공간과 옮겨 갈 공간을 모두 등록하세요. 도면이 있는 공간은 PDF를 불러와 필요한 부분만 잘라내고 축척을 맞추면 50cm 모눈이 깔려요. 폐기·보관처럼 도면 없는 도착지도 공간으로 등록하면 돼요.</p></div>
+  <form class="addspace" id="formSpace"><input id="newSpace" placeholder="공간 이름 (예: 현재 사무실)" aria-label="새 공간 이름"><button class="btn primary">공간 추가</button></form><div class="spaces">`;
+  for(const p of S.places){ const maps=S.maps.filter(m=>m.placeId===p.id); const n=itemsOf(p.id).reduce((a,i)=>a+i.qty,0); const inc=S.units.filter(u=>destPlace(u)===p.id).length; 
+    h+=`<section class="card space"><div class="shead"><input id="pn-${p.id}" data-pname="${p.id}" value="${esc(p.name)}" aria-label="공간 이름"><button class="btn small" data-delspace="${p.id}">삭제</button></div><div class="smeta">기존 가구 ${n}개 · 들어올 가구 ${inc}개 · 도면 ${maps.length}개</div><div class="maps">`;
+    for(const m of maps){ if(m.blank){ h+=`<div class="mrow"><div class="blankthumb">빈 도면</div><div style="display:grid;gap:4px;min-width:0"><input id="mn-${m.id}" data-mname="${m.id}" value="${esc(m.name)}" aria-label="도면 이름"><span class="mstat ok">빈 도면 · ${fmt(m.w)}×${fmt(m.h)}cm</span><div class="actions"><button class="btn small" data-blank="${p.id}" data-blankmap="${m.id}">크기 바꾸기</button><button class="btn small" data-cal="${m.id}">방 나누기</button><button class="btn small" data-delmap="${m.id}">삭제</button></div></div></div>`; continue }
+      h+=`<div class="mrow"><img src="${m.img}" alt=""><div style="display:grid;gap:4px;min-width:0"><input id="mn-${m.id}" data-mname="${m.id}" value="${esc(m.name)}" aria-label="도면 이름"><span class="mstat ${cal(m)?'ok':'wr'}">${cal(m)?`축척 완료 · ${fmt(m.w/m.sx)}×${fmt(m.h/m.sy)}cm`:'축척을 맞춰야 배치할 수 있어요'}</span><div class="actions"><button class="btn small ${cal(m)?'':'primary'}" data-cal="${m.id}">${cal(m)?'축척 다시 맞추기':'축척 맞추기'}</button><button class="btn small" data-delmap="${m.id}">삭제</button></div></div></div>` }
+    const ph=S.photos.filter(x=>x.placeId===p.id);
+    h+=`</div><div style="display:grid;gap:5px"><span class="smeta">공간 사진 ${ph.length}/5 · 화살표는 도면 기준 방향</span>${photoSlots(p.id)}</div><div class="actions"><button class="btn small" data-addmap="${p.id}">도면 추가 (PDF·이미지)</button><button class="btn small" data-blank="${p.id}">빈 도면 만들기</button></div></section>` }
+  v.innerHTML=h+'</div></div>';
+}
+
+/* ---------- views ---------- */
+function firstWorkPlace(){ const p=S.places.find(p=>S.maps.some(m=>m.placeId===p.id&&cal(m)))||S.places[0]; return p?p.id:null }
+let blankImg=null; function blankDataURL(){ if(!blankImg){ const c=document.createElement('canvas'); c.width=c.height=4; const g=c.getContext('2d'); g.fillStyle='#ffffff'; g.fillRect(0,0,4,4); blankImg=c.toDataURL('image/png') } return blankImg }
+function openRename(kind,id){ UI.rn={kind,id}; let cur=''; if(kind==='place') cur=P(id)?.name; else if(kind==='room'){ const[mid,rid]=id.split(':'); cur=roomsOf(M(mid)).find(r=>r.id===rid)?.name } else cur=M(id)?.name; $('#rnTitle').textContent=kind==='place'?'공간 이름 바꾸기':kind==='room'?'방 이름 바꾸기':'도면 이름 바꾸기'; $('#rnName').value=cur||''; $('#dlgRename').showModal(); requestAnimationFrame(()=>$('#rnName').select()) }
+$('#formRename').addEventListener('submit',e=>{ e.preventDefault(); const nm=$('#rnName').value.trim(); if(!nm){ toast('이름을 입력하세요.'); return } const r=UI.rn||{};
+  if(r.kind==='place'){ const p=P(r.id); if(p) p.name=nm } else if(r.kind==='room'){ const[mid,rid]=r.id.split(':'); const x=roomsOf(M(mid)).find(x=>x.id===rid); if(x) x.name=nm } else { const m=M(r.id); if(m) m.name=nm }
+  $('#dlgRename').close(); commit(); toast('이름을 바꿨어요.') });
+function openBlank(pid,mapId){ const m=mapId?M(mapId):null; UI.blankFor={pid,mapId:m?m.id:null}; $('#blankTitle').textContent=m?'빈 도면 크기 바꾸기':`빈 도면 만들기 · ${P(pid)?.name||''}`; $('#bkName').value=m?m.name:(S.maps.some(x=>x.placeId===pid)?`빈 도면 ${S.maps.filter(x=>x.placeId===pid).length+1}`:'전체'); $('#bkW').value=m?Math.round(m.w/m.sx):1000; $('#bkH').value=m?Math.round(m.h/m.sy):800; $('#bkOk').textContent=m?'바꾸기':'만들기'; $('#dlgBlank').showModal(); requestAnimationFrame(()=>$('#bkW').select()) }
+$('#formBlank').addEventListener('submit',e=>{ e.preventDefault(); e.stopPropagation(); const w=Math.round(num($('#bkW').value,0)), h=Math.round(num($('#bkH').value,0)); if(w<50||h<50){ toast('가로·세로를 50cm 이상으로 넣으세요.'); return } const nm=$('#bkName').value.trim()||'빈 도면'; const f=UI.blankFor||{};
+  if(f.mapId){ const m=M(f.mapId); if(m){ m.name=nm; m.w=w; m.h=h; m.sx=m.sy=1 } }
+  else { const m={id:uid(),placeId:f.pid,name:nm,img:blankDataURL(),w,h,sx:1,sy:1,gx:0,gy:0,src:'blank',ppu:1,blank:true,rooms:[]}; S.maps.push(m); const c=getCols(); c.L.push(`${m.id}:*:a`); c.R.push(`${m.id}:*:b`); saveCols() }
+  $('#dlgBlank').close(); UI.fitted=false; commit(); toast(f.mapId?'크기를 바꿨어요.':'빈 도면을 만들었어요. 바로 가구를 놓을 수 있어요.') });
+function switchView(view){
+  if(view==='plan'){ UI.focus=null; UI.room=null }
+  if(view==='space'){ if(UI.view!=='space') UI.wlayer='a'; if(!UI.focus||!P(UI.focus)) UI.focus=UI.lastFocus&&P(UI.lastFocus)?UI.lastFocus:firstWorkPlace(); if(UI.focus) UI.railTab=itemsOf(UI.focus).length?UI.focus:'' }
+  UI.view=view; UI.sel=null; UI.fitted=false;
+  $$('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.view===view));
+  for(const n of ['plan','items','routes','check','spaces']) $('#view-'+n).hidden=!(n===view||(n==='plan'&&view==='space'));
+  renderAll(); if(view==='plan'||view==='space'){ fitAll(); requestAnimationFrame(fitAll) }
+}
+function renderAll(){
+  rebuild(); $('#exampleBar').hidden=!S.meta.example||Cloud.on;
+  if(UI.view==='plan'||UI.view==='space'){ renderRail(); renderPlan() }
+  else if(UI.view==='items') renderItems();
+  else if(UI.view==='routes') renderRoutes();
+  else if(UI.view==='check') renderCheck();
+  else renderSpaces();
+}
+
+/* ---------- global events ---------- */
+function armed(btn){ if(btn.dataset.armed) return true; btn.dataset.armed='1'; const t=btn.textContent; btn.textContent=btn.classList.contains('udel')?'삭제?':'한 번 더 누르면 삭제'; btn.classList.add('armed'); setTimeout(()=>{ if(btn.isConnected){ delete btn.dataset.armed; btn.textContent=t; btn.classList.remove('armed') } },3000); return false }
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.msel')&&UI.openMsel){ UI.openMsel=null; $$('.msel[open]').forEach(x=>x.open=false) }
+  const t=e.target.closest('button,[data-u]'); if(!t) return;
+  const d=t.dataset;
+  if(d.view){ switchView(d.view); return }
+  if(d.close!==undefined){ t.closest('dialog').close(); return }
+  if(d.mq){ const[side,l]=d.mq.split(':'); const cols=getCols(); cols[side]=l==='none'?[]:S.maps.filter(cal).map(m=>`${m.id}:*:${l}`); UI.openMsel=side; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
+  if(d.swapcols!==undefined){ const c=getCols(); UI.cols={L:c.R,R:c.L}; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
+  if(d.colsreset!==undefined){ UI.cols=defaultCols(); UI.openMsel=null; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
+  if(d.visall){ VIS.hidden.clear(); VIS.a=VIS.b=true; saveVis(); UI.fitted=true; renderPlan(); fitAll(); return }
+  if(d.railfold!==undefined){ $('#btnRail').click(); return }
+  if(d.chkmode){ UI.chkMode=d.chkmode; renderCheck(); return }
+  if(d.railtab!==undefined){ UI.railTab=d.railtab; renderRail(); return }
+  if(d.itab!==undefined){ UI.itemsTab=d.itab; renderItems(); return }
+  if(d.openg){ UI.open.has(d.openg)?UI.open.delete(d.openg):UI.open.add(d.openg); renderRail(); return }
+  if(d.hl){ const g=GROUPS.find(g=>g.key===d.g); if(!g) return; setHL((d.hl==='p'?g.placed:g.remain).map(u=>u.id),d.hl+':'+g.key); return }
+  if(d.u&&!e.target.closest('select')){ setHL([d.u],'u:'+d.u); return }
+  if(d.chip){ const k=d.chip; if(UI.slots.includes(k)) return; putSlot(UI.slots[0]?(UI.slots[1]?1:1):0,k); return }
+  if(d.clearslot!==undefined){ if(d.clearslot==='all') UI.slots=[null,null]; else UI.slots[+d.clearslot]=null; savePanels(); UI.fitted=true; renderPlan(); fitAll(); requestAnimationFrame(fitAll); return }
+  if(d.swap!==undefined){ UI.slots=[UI.slots[1],UI.slots[0]]; savePanels(); UI.fitted=true; renderPlan(); fitAll(); requestAnimationFrame(fitAll); return }
+  if(d.act){ if(d.act==='rot') rotateSel(); else if(d.act==='rm'){ const u=U(UI.sel.id); removeSlot(u,UI.sel.slot) } else { UI.sel=null; renderPlan() } return }
+  if(d.focus!==undefined){ setFocus(d.focus); return }
+  if(d.wl){ UI.wlayer=d.wl; UI.sel=null; UI.fitted=true; renderPlan(); fitAll(); return }
+  if(d.rename){ const[k,...rest]=d.rename.split(':'); openRename(k,rest.join(':')); return }
+  if(d.blank){ openBlank(d.blank,d.blankmap||null); return }
+  if(d.cal){ openCal(d.cal); return }
+  if(d.photo){ openPhoto(d.photo); return }
+  if(d.addphoto){ UI.photoTarget=d.addphoto; UI.photoDir=d.dir||'전체'; $('#filePhoto').value=''; $('#filePhoto').click(); return }
+  if(d.addmap){ UI.mapTarget=d.addmap; $('#fileMap').value=''; $('#fileMap').click(); return }
+  if(d.delmap){ if(!armed(t)) return; const id=d.delmap; for(const u of S.units){ if(u.from&&u.from.mapId===id) u.from=null; if(u.to&&u.to.mapId===id) u.to=null } S.maps=S.maps.filter(m=>m.id!==id); UI.slots=(UI.slots||[null,null]).map(k=>k&&k.startsWith(id+':')?null:k); savePanels(); commit(); return }
+  if(d.delspace){ if(!armed(t)) return; const id=d.delspace; const mids=new Set(S.maps.filter(m=>m.placeId===id).map(m=>m.id)); const iids=new Set(itemsOf(id).map(i=>i.id)); S.units=S.units.filter(u=>!iids.has(u.itemId)); for(const u of S.units){ if(u.to&&mids.has(u.to.mapId)) u.to=null; if(u.toPlaceId===id) u.toPlaceId=null } S.items=S.items.filter(i=>!iids.has(i.id)); S.maps=S.maps.filter(m=>!mids.has(m.id)); S.places=S.places.filter(p=>p.id!==id); S.photos=S.photos.filter(x=>x.placeId!==id); commit(); return }
+  if(d.additem){ const nm='새 가구'; const it={id:uid(),placeId:d.additem,name:nm,w:100,d:50,h:0,qty:1,color:colorFor(nm+uid(),100,50)}; it.color=colorFor('',-1,-1); S.items.push(it); syncUnits(it); commit(); requestAnimationFrame(()=>{ const n=$('#n-'+it.id); if(n){n.focus();n.select()} }); return }
+  if(d.delunit){ const u=U(d.delunit); if(!u) return; if(!armed(t)) return; const it=I(u.itemId); const name=lbl(u); S.units=S.units.filter(x=>x!==u); if(it){ const us=unitsOf(it); it.qty=us.length; us.forEach((x,i)=>x.idx=i+1); if(!us.length) S.items=S.items.filter(x=>x!==it) } if(UI.sel&&UI.sel.id===u.id) UI.sel=null; if(UI.hl) UI.hl.ids.delete(u.id); commit(); toast(`${name}을(를) 삭제했어요.`); return }
+  if(d.delitem){ const it=I(d.delitem); const busy=unitsOf(it).some(u=>u.from||u.to||u.toPlaceId); if(busy&&!armed(t)) return; S.units=S.units.filter(u=>u.itemId!==it.id); S.items=S.items.filter(i=>i!==it); commit(); return }
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.chk){ const u=U(t.dataset.cu); if(!u) return; u.chk=Object.assign({},u.chk,{[t.dataset.chk]:t.checked}); t.closest('li')&&t.closest('li').classList.toggle('done',t.checked); save(); renderCheck(); return }
+  if(t.dataset.dest){ const u=U(t.dataset.dest); const v=t.value; if(!v){ u.to=null; u.toPlaceId=null } else if(!(u.to&&M(u.to.mapId)?.placeId===v)){ u.to=null; u.toPlaceId=v } commit(); return }
+  if(t.dataset.item){ onItemField(t); return }
+  if(t.dataset.pname){ const p=P(t.dataset.pname); p.name=t.value.trim()||p.name; commit(); return }
+  if(t.dataset.mname){ const m=M(t.dataset.mname); m.name=t.value.trim()||m.name; commit(); return }
+  if(t.dataset.col){ const side=t.dataset.col, k=t.dataset.key; const cols=getCols(); const set=new Set(cols[side]); t.checked?set.add(k):set.delete(k); const order=allKeys(); cols[side]=order.filter(x=>set.has(x)); UI.openMsel=side; saveCols(); UI.fitted=true; renderPlan(); fitAll(); requestAnimationFrame(fitAll); return }
+  if(t.dataset.vis){ const[k,v]=t.dataset.vis.split(':'); if(k==='layer'){ VIS[v]=t.checked; if(!VIS.a&&!VIS.b){ VIS[v==='a'?'b':'a']=true } } else { t.checked?VIS.hidden.delete(v):VIS.hidden.add(v) } saveVis(); UI.fitted=true; renderPlan(); fitAll(); requestAnimationFrame(fitAll); return }
+  if(t.dataset.wsel!==undefined){ const v=t.value; if(v.startsWith('p:')) setFocus(v.slice(2)); else setRoom(v.slice(2)); return }
+  if(t.dataset.slotsel!==undefined){ putSlot(+t.dataset.slotsel,t.value||null); return }
+  if(t.id==='snapSel'){ UI.snap=+t.value; return }
+});
+document.addEventListener('submit',e=>{ if(e.target.id==='qadd'){ e.preventDefault(); const nm=$('#qaName').value.trim(), w=Math.round(num($('#qaW').value,0)), d=Math.round(num($('#qaD').value,0)), h=Math.max(0,Math.round(num($('#qaH').value,0))), q=Math.max(1,Math.round(num($('#qaQ').value,1)));
+    if(!nm){ toast('가구 이름을 입력하세요.'); $('#qaName').focus(); return } if(!(w>0&&d>0)){ toast('가로와 세로를 cm로 입력하세요.'); (w>0?$('#qaD'):$('#qaW')).focus(); return }
+    const kind=$('#qaK').value==='item'?'item':'furn'; const isNew=(UI.wlayer||'a')==='b'; const pid=UI.focus; const same=S.items.find(i=>i.placeId===pid&&gkey(i)===nm+'|'+w+'|'+d+(kind==='item'?'|i':'')+(isNew?'|n':''));
+    if(same){ same.qty+=q; syncUnits(same) } else { const it={id:uid(),placeId:pid,name:nm,w,d,h,qty:q,kind,isNew,color:colorFor(nm+(isNew?'|n':''),w,d)}; S.items.push(it); syncUnits(it) }
+    UI.railTab=pid; commit(); toast(isNew?`새로 살 ${nm} ${q}개를 추가했어요. 대기 공간에서 끌어 놓을 자리에 놓으세요.`:`${nm} ${q}개를 추가했어요. 대기 공간에서 끌어 지금 위치에 놓으세요.`); requestAnimationFrame(()=>{ const n=$('#qaName'); if(n) n.focus() }); return }
+ if(e.target.id==='formSpace'){ e.preventDefault(); const nm=$('#newSpace').value.trim(); if(!nm){ $('#newSpace').focus(); return } S.places.push({id:uid(),name:nm}); commit(); requestAnimationFrame(()=>$('#newSpace')&&$('#newSpace').focus()) } });
+document.addEventListener('keydown',e=>{
+  if(e.target.closest('input,select,textarea')||$('dialog[open]')) return;
+  if(UI.view!=='plan'&&UI.view!=='space') return;
+  if(e.key==='r'||e.key==='R'){ rotateSel() }
+  else if((e.key==='Delete'||e.key==='Backspace')&&UI.sel){ e.preventDefault(); removeSlot(U(UI.sel.id),UI.sel.slot) }
+  else if(e.key==='Escape'){ UI.sel=null; UI.hl=null; UI.measure=null; renderPlan(); renderRail() }
+  else if(e.key==='m'||e.key==='M'){ toggleMeasure() }
+});
+function toggleMeasure(){ UI.measure=UI.measure?null:{pts:[]}; if(UI.measure) toast('두 점을 클릭하면 길이가 나와요. Esc로 끝내요.'); renderPlan() }
+$('#btnMeasure').onclick=toggleMeasure;
+try{ UI.railOff=localStorage.getItem('mb-railoff')==='1'; UI.photosOff=localStorage.getItem('mb-photosoff')==='1' }catch(e){}
+function applyRail(){ $('#view-plan').classList.toggle('railoff',!!UI.railOff); $('#btnRail').textContent=UI.railOff?'▶ 목록':'◀ 목록'; $('#railTab').hidden=!UI.railOff }
+$('#railTab').onclick=()=>$('#btnRail').click();
+applyRail();
+$('#btnRail').onclick=()=>{ UI.railOff=!UI.railOff; try{localStorage.setItem('mb-railoff',UI.railOff?'1':'0')}catch(e){} applyRail(); requestAnimationFrame(()=>{ V.apply(); updateSbars() }) };
+$('#photosTab').onclick=()=>{ UI.photosOff=false; try{localStorage.setItem('mb-photosoff','0')}catch(e){} renderPhotos(); requestAnimationFrame(()=>{ V.apply(); updateSbars() }) };
+$('#photos').addEventListener('click',e=>{ if(e.target.closest('#photosOff')){ UI.photosOff=true; try{localStorage.setItem('mb-photosoff','1')}catch(_){} renderPhotos(); requestAnimationFrame(()=>{ V.apply(); updateSbars() }) } });
+$('#btnZin').onclick=()=>V.zoomBy(1/1.12); $('#btnZout').onclick=()=>V.zoomBy(1.12);
+$('#zoomR').addEventListener('input',e=>{ if(!baseW) return; const z=Math.exp(+e.target.value); V.zoomBy((baseW/z)/V.w); $('#zoomP').textContent=Math.round(z*100)+'%' }); $('#btnFit').onclick=fitAll;
+$('#btnClearEx').onclick=()=>{ S=empty(); UI.slots=[null,null]; UI.sel=null; UI.hl=null; UI.fitted=false; savePanels(); commit(); switchView('spaces'); toast('예시를 지웠어요. 먼저 공간을 등록하세요.') };
+
+/* ---------- data dialog ---------- */
+$('#btnData').onclick=()=>{ renderLock(); $('#dlgData .dbody .hint').textContent=Cloud.on?'모든 내용이 클라우드(Firebase)에 저장되고, 링크로 들어온 사람 모두에게 실시간으로 공유돼요. 중간중간 파일로 내보내 백업해 두세요.':'지금 단계에서는 모든 내용이 이 브라우저에만 저장돼요. 다른 기기로 옮기거나 백업하려면 파일로 내보내세요.'; $('#commitScope').innerHTML='<option value="">전체 (모든 공간)</option>'+S.places.map(p=>{ const n=S.units.filter(u=>destPlace(u)===p.id).length; return n?`<option value="${p.id}">${esc(p.name)}로 들어온 가구만 (${n}개)</option>`:'' }).join(''); $('#dlgData').showModal() };
+$('#btnExport').onclick=async()=>{ const dt0=new Date(); const fname=`이사배치판-${dt0.getFullYear()}${String(dt0.getMonth()+1).padStart(2,'0')}${String(dt0.getDate()).padStart(2,'0')}.json`;
+  try{ const dl=window.claude&&await window.claude.use('downloads'); if(dl){ try{ await dl.save({filename:fname,data:JSON.stringify(S)}); toast('내보냈어요.') }catch(err){ if(!err||err.code!=='declined') toast('내보내기가 막혀 있어요.') } return } }catch(_){}
+  try{ const blob=new Blob([JSON.stringify(S)],{type:'application/json'}); const a=document.createElement('a'); const dt=new Date(); a.href=URL.createObjectURL(blob); a.download=`이사배치판-${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000) }catch(err){ toast('내보내기가 막혀 있어요. 웹에 올린 뒤 다시 시도하세요.') } };
+$('#btnImport').onclick=()=>{ $('#fileImport').value=''; $('#fileImport').click() };
+$('#fileImport').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; try{ const o=JSON.parse(await f.text()); if(!Array.isArray(o.places)||!Array.isArray(o.items)||!Array.isArray(o.units)||!Array.isArray(o.maps)) throw 0; S=Object.assign(empty(),o); UI.slots=[null,null]; UI.fitted=false; savePanels(); commit(); $('#dlgData').close(); toast('불러왔어요.') }catch(err){ toast('이 파일은 이사 배치판 데이터가 아니에요.') } };
+$('#btnLogin').onclick=async()=>{ try{ await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()) }catch(e){ console.error(e); toast(String(e&&e.code).includes('unauthorized-domain')?'이 주소가 Firebase 승인 도메인에 없어요. 안내대로 추가해 주세요.':'로그인하지 못했어요. 팝업 차단을 확인하세요.') } };
+$('#btnLogout').onclick=()=>{ try{ firebase.auth().signOut() }catch(e){} };
+$('#btnHide').onclick=async()=>{ try{ await Cloud.db.collection('settings').doc('lock').set({hidden:!Cloud.hidden,by:Cloud.user?Cloud.user.email:'',at:Date.now()},{merge:true}); toast(Cloud.hidden?'다시 공개했어요.':'비공개로 바꿨어요. 관리자만 볼 수 있어요.') }catch(e){ console.error(e); toast('관리자 계정이 아니라서 바꿀 수 없어요.') } };
+$('#btnLock').onclick=async()=>{ try{ await Cloud.db.collection('settings').doc('lock').set({locked:!Cloud.locked,by:Cloud.user?Cloud.user.email:'',at:Date.now()},{merge:true}); toast(Cloud.locked?'잠금을 풀었어요.':'수정을 잠갔어요.') }catch(e){ console.error(e); toast('관리자 계정이 아니라서 바꿀 수 없어요.') } };
+$('#btnCommit').onclick=e=>{ const scope=$('#commitScope').value; const target=S.units.filter(u=>isPlaced(u)&&(!scope||destPlace(u)===scope)); if(!target.length){ toast('반영할 가구가 없어요. 도착지가 정해진 가구만 반영돼요.'); return } if(!armed(e.currentTarget)) return;
+  for(const u of target){ const dp=destPlace(u); const it=I(u.itemId);
+    if(dp!==it.placeId){ let tgt=S.items.find(x=>x.placeId===dp&&gkey(x)===gkey(it)); if(!tgt){ tgt={...it,id:uid(),placeId:dp,qty:0}; S.items.push(tgt) } u.itemId=tgt.id }
+    u.from=u.to?{...u.to}:null; u.to=null; u.toPlaceId=null; u.chk={} }
+  S.items=S.items.filter(it=>S.units.some(u=>u.itemId===it.id)); for(const it of S.items){ const us=unitsOf(it); it.qty=us.length; us.forEach((u,i)=>u.idx=i+1) }
+  UI.sel=null; UI.hl=null; UI.wlayer='a'; commit(); $('#dlgData').close(); toast(`가구 ${target.length}개의 변경 후 위치를 새 변경 전으로 반영했어요.`) };
+$('#btnReset').onclick=e=>{ if(!armed(e.currentTarget)) return; S=empty(); UI.slots=[null,null]; UI.fitted=false; savePanels(); commit(); $('#dlgData').close(); toast('모두 지웠어요.') };
+
+/* ---------- map file → crop ---------- */
+const Crop={pdf:null,img:null,rot:0,page:1,pages:1,scale:1,sel:null,placeId:null,src:'',added:[]};
+const cropCanvas=$('#cropCanvas');
+$('#fileMap').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; await openCrop(UI.mapTarget,f) };
+async function openCrop(placeId,file){
+  Object.assign(Crop,{pdf:null,img:null,rot:0,page:1,pages:1,scale:1,sel:null,placeId,src:file.name,added:[]});
+  $('#cropTitle').textContent=`도면 잘라내기 · ${P(placeId)?.name||''}`; $('#cropAdded').innerHTML=''; $('#cropName').value='';
+  try{
+    if(file.type==='application/pdf'||/\.pdf$/i.test(file.name)){
+      if(!window.pdfjsLib){ toast('PDF 도구를 불러오지 못했어요. 인터넷 연결을 확인하세요.'); return }
+      Crop.pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise; Crop.pages=Crop.pdf.numPages; await cropRender(1);
+    } else {
+      const url=URL.createObjectURL(file); const img=new Image(); await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});
+      Crop.img=img; drawCropImage(); Crop.scale=1; cropNav();
+    }
+  }catch(err){ toast('파일을 열 수 없어요. PDF나 이미지 파일인지 확인하세요.'); return }
+  setCropSel(null); $('#cropRot').textContent='0°'; $('#dlgCrop').showModal();
+}
+function drawCropImage(){ const img=Crop.img, r=Crop.rot; const sw=r%180?img.naturalHeight:img.naturalWidth, sh=r%180?img.naturalWidth:img.naturalHeight; cropCanvas.width=sw; cropCanvas.height=sh; const g=cropCanvas.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,sw,sh); g.save(); g.translate(sw/2,sh/2); g.rotate(r*Math.PI/180); g.drawImage(img,-img.naturalWidth/2,-img.naturalHeight/2); g.restore(); setCropSel(null) }
+async function rotateCrop(dd){ Crop.rot=((Crop.rot+dd)%360+360)%360; $('#cropRot').textContent=Crop.rot+'°'; if(Crop.pdf) await cropRender(Crop.page); else if(Crop.img) drawCropImage() }
+$('#cropRotL').onclick=()=>rotateCrop(-90); $('#cropRotR').onclick=()=>rotateCrop(90);
+async function cropRender(n){ Crop.page=n; const page=await Crop.pdf.getPage(n); const rot=((page.rotate||0)+Crop.rot)%360; const v1=page.getViewport({scale:1,rotation:rot}); const sc=clamp(6000/Math.max(v1.width,v1.height),.5,10); const vp=page.getViewport({scale:sc,rotation:rot}); cropCanvas.width=Math.round(vp.width); cropCanvas.height=Math.round(vp.height); const ctx=cropCanvas.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cropCanvas.width,cropCanvas.height); await page.render({canvasContext:ctx,viewport:vp}).promise; Crop.scale=sc; setCropSel(null); cropNav() }
+function cropNav(){ $('#cropPage').textContent=`${Crop.page} / ${Crop.pages}`; $('#cropPrev').disabled=Crop.page<=1; $('#cropNext').disabled=Crop.page>=Crop.pages }
+$('#cropPrev').onclick=()=>Crop.pdf&&Crop.page>1&&cropRender(Crop.page-1);
+$('#cropNext').onclick=()=>Crop.pdf&&Crop.page<Crop.pages&&cropRender(Crop.page+1);
+function setCropSel(r){ Crop.sel=r; const el=$('#cropSel'); if(!r){ el.hidden=true; $('#cropSelInfo').textContent='선택하지 않으면 쪽 전체를 사용해요.'; return } const k=cropCanvas.getBoundingClientRect().width/cropCanvas.width; Object.assign(el.style,{left:r.x*k+'px',top:r.y*k+'px',width:r.w*k+'px',height:r.h*k+'px'}); el.hidden=false; $('#cropSelInfo').textContent='선택한 영역을 도면으로 만들어요.' }
+cropCanvas.addEventListener('pointerdown',e=>{
+  e.preventDefault(); const rc=cropCanvas.getBoundingClientRect(), k=cropCanvas.width/rc.width; const x0=(e.clientX-rc.left)*k, y0=(e.clientY-rc.top)*k;
+  try{cropCanvas.setPointerCapture(e.pointerId)}catch(_){}
+  const mv=ev=>{ const x=clamp((ev.clientX-rc.left)*k,0,cropCanvas.width), y=clamp((ev.clientY-rc.top)*k,0,cropCanvas.height); setCropSel({x:Math.min(x0,x),y:Math.min(y0,y),w:Math.abs(x-x0),h:Math.abs(y-y0)}) };
+  const up=()=>{ cropCanvas.removeEventListener('pointermove',mv); cropCanvas.removeEventListener('pointerup',up); if(Crop.sel&&(Crop.sel.w<20||Crop.sel.h<20)) setCropSel(null) };
+  cropCanvas.addEventListener('pointermove',mv); cropCanvas.addEventListener('pointerup',up);
+});
+$('#cropAdd').onclick=()=>{
+  const r=Crop.sel||{x:0,y:0,w:cropCanvas.width,h:cropCanvas.height};
+  const maxS=6000, f=Math.min(1,maxS/Math.max(r.w,r.h)); const c=document.createElement('canvas'); c.width=Math.round(r.w*f); c.height=Math.round(r.h*f);
+  const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(cropCanvas,r.x,r.y,r.w,r.h,0,0,c.width,c.height);
+  const n=S.maps.filter(m=>m.placeId===Crop.placeId).length+1;
+  const m={id:uid(),placeId:Crop.placeId,name:$('#cropName').value.trim()||`층 ${n}`,img:c.toDataURL('image/jpeg',.92),w:c.width,h:c.height,sx:0,sy:0,gx:0,gy:0,src:Crop.src,ppu:Crop.scale*f};
+  S.maps.push(m); Crop.added.push(m.id); save();
+  $('#cropAdded').innerHTML=Crop.added.map(id=>`<div>✓ ${esc(M(id)?.name)}</div>`).join(''); $('#cropName').value=''; setCropSel(null);
+  toast(`‘${m.name}’을(를) 추가했어요. 다른 부분도 잘라낼 수 있어요.`);
+};
+$('#cropDone').onclick=()=>{ $('#dlgCrop').close(); if(!Crop.added.length&&!Crop.sel){ } renderAll(); const first=Crop.added.find(id=>!cal(M(id))); if(first) openCal(first) };
+
+/* ---------- calibration ---------- */
+const calSvg=$('#calSvg'); const CV=Viewport(calSvg); CV.minW=20; CV.onzoom=()=>calOverlay(); // replaced below with loupe-aware version
+const Cal={m:null,mode:'scale',pts:[]};
+function openCal(id){
+  const m=M(id); if(!m) return; Cal.m=m; Cal.pts=[]; Cal.selPt=null; Cal.imgEl=new Image(); Cal.imgEl.src=m.img; setCalMode('scale');
+  $('#calTitle').textContent=`축척 맞추기 · ${P(m.placeId)?.name||''} · ${m.name}`; $('#calLen').value=''; $('#checkOut').textContent='–'; $('#calApply').textContent='적용';
+  if(m.calRef&&m.calRef.pts&&m.calRef.pts.length===2){ Cal.pts=m.calRef.pts.map(q=>({x:q.x,y:q.y})); Cal.selPt=1; $('#calLen').value=m.calRef.mm; const r=$(`input[name=calDir][value="${m.calRef.dir||'both'}"]`); if(r) r.checked=true; $('#calApply').textContent='수정 적용' }
+  if(m.blank) setCalMode('rooms');
+  $('#dlgCal').showModal(); calBase(); requestAnimationFrame(()=>{ CV.fit(0,0,m.w,m.h,.02); calBase() });
+}
+function calBase(){
+  const m=Cal.m; let grid='';
+  if(cal(m)){ const st=50*m.sx, sty=50*m.sy; let d=''; const x0=((m.gx%st)+st)%st, y0=((m.gy%sty)+sty)%sty; for(let x=x0;x<=m.w;x+=st) d+=`M${x.toFixed(1)} 0V${m.h}`; for(let y=y0;y<=m.h;y+=sty) d+=`M0 ${y.toFixed(1)}H${m.w}`; grid=`<path class="g2" d="${d}"/>` }
+  calSvg.innerHTML=`<image href="${m.img}" x="0" y="0" width="${m.w}" height="${m.h}"/>${grid}<g id="calTst"></g><g id="calOvl"></g>`;
+  calOverlay(); calStatus(); renderTesters();
+}
+function calOverlay(){
+  const g=$('#calOvl'); if(!g) return; const k=CV.w/600, m=Cal.m; let s='';
+  if(cal(m)&&Cal.mode==='origin'){ s+=`<path class="corigin" d="M${m.gx-14*k} ${m.gy}H${m.gx+14*k}M${m.gx} ${m.gy-14*k}V${m.gy+14*k}"/>` }
+  for(const r of roomsOf(m)){ const on=Cal.mode==='rooms'; s+=`<rect class="crm ${on?'on':''}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}"/><text class="crmt" x="${r.x+8*k}" y="${r.y+20*k}" font-size="${14*k}">${esc(r.name)}</text>` }
+  if(Cal.draft){ const b=Cal.draft; s+=`<rect class="crm on" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"/>` }
+  if(Cal.pts.length===1&&(Cal.mode==='scale'||Cal.mode==='check')){ const a=Cal.pts[0]; s+=`<line class="cguide" x1="0" y1="${a.y}" x2="${m.w}" y2="${a.y}"/><line class="cguide" x1="${a.x}" y1="0" x2="${a.x}" y2="${m.h}"/>`;
+    if(Cal.hover){ const q=snapAxis(a,Cal.hover); s+=`<line class="cline prev" x1="${a.x}" y1="${a.y}" x2="${q.x}" y2="${q.y}"/><circle class="cdot" cx="${q.x}" cy="${q.y}" r="${4*k}"/>`; if(cal(m)||Cal.mode==='scale'){ const lpx=Math.hypot(q.x-a.x,q.y-a.y); const t=cal(m)?`${fmt(Math.hypot((q.x-a.x)/m.sx,(q.y-a.y)/m.sy)*10)} mm`:''; if(t) s+=`<text class="cprevt" x="${(a.x+q.x)/2}" y="${(a.y+q.y)/2-8*k}" font-size="${13*k}">${t}</text>` } } }
+  Cal.pts.forEach((p,i)=>{ if(i===Cal.selPt) s+=`<circle class="cdot sel" cx="${p.x}" cy="${p.y}" r="${11*k}"/>` });
+  for(const p of Cal.pts) s+=`<circle class="cdot" cx="${p.x}" cy="${p.y}" r="${6*k}"/><path class="cline" d="M${p.x-10*k} ${p.y}H${p.x+10*k}M${p.x} ${p.y-10*k}V${p.y+10*k}"/>`;
+  if(Cal.pts.length===2){ const[a,b]=Cal.pts; s+=`<line class="cline" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>` }
+  g.innerHTML=s;
+  if(Cal.mode==='scale'&&Cal.pts.length===2&&Cal.m&&Cal.m.calRef){ $('#calHint').textContent='지난번에 찍은 두 점이에요. 점을 끌거나 화살표 키로 조정하고 수정 적용을 누르세요. 새로 찍으려면 빈 곳을 클릭하세요.'; g.innerHTML=s; return }
+  const hints={rooms:['방 하나를 드래그로 감싸세요. 여러 개를 이어서 그릴 수 있어요.'],scale:['치수선의 한쪽 끝을 클릭하세요. 돋보기로 끝을 확인하며 찍으세요.','점선을 따라 다른 쪽 끝을 클릭하세요. 거의 수평·수직이면 자동으로 맞춰져요.','점을 끌거나 화살표 키(Shift: 10칸씩)로 미세 조정한 뒤, 실제 길이를 넣고 적용을 누르세요.'],origin:['모눈이 시작할 벽 모서리를 클릭하세요.'],check:['재고 싶은 치수선의 한쪽 끝을 클릭하세요.','다른 쪽 끝을 클릭하세요.','점을 끌거나 화살표 키로 미세 조정하면 길이가 바로 바뀌어요.']};
+  const hs=hints[Cal.mode]; $('#calHint').textContent=hs[Math.min(Cal.pts.length,hs.length-1)];
+}
+function chkUpdate(){ const t=num($('#chkLen').value,0), v=Cal.chk; const ok=Cal.mode==='check'&&Cal.pts.length===2&&t>0&&v>0; $('#chkFix').disabled=!ok; if(!ok){ $('#chkDiff').textContent=''; return } const d=(v-t)/t*100; $('#chkDiff').innerHTML=Math.abs(d)<1.5?`<b style="color:var(--ok)">오차 ${d.toFixed(1)}% · 축척이 맞아요</b>`:`<b style="color:var(--warn)">오차 ${d>0?'+':''}${d.toFixed(1)}% · 아래 버튼으로 고치세요</b>` }
+$('#chkLen').addEventListener('input',chkUpdate);
+$('#chkFix').onclick=()=>{ const m=Cal.m; const t=num($('#chkLen').value,0); if(Cal.pts.length<2||!(t>0)) return; const[a,b]=Cal.pts; const cm=t/10; const dx=Math.abs(b.x-a.x), dy=Math.abs(b.y-a.y);
+  const sep=$('#chkSep').checked;
+  if(dy<=dx*.03){ const v=dx/cm; if(sep) m.sx=v; else m.sx=m.sy=v }
+  else if(dx<=dy*.03){ const v=dy/cm; if(sep) m.sy=v; else m.sx=m.sy=v }
+  else { const f=Math.hypot(dx/m.sx,dy/m.sy)/cm; m.sx*=f; m.sy*=f }
+  afterCal(); const lc=Math.hypot((b.x-a.x)/m.sx,(b.y-a.y)/m.sy); $('#checkOut').textContent=`${fmt(lc*10)} mm`; Cal.chk=lc*10; chkUpdate(); toast(`축척을 고쳤어요. 도면 크기 ${fmt(m.w/m.sx)} × ${fmt(m.h/m.sy)} cm`) };
+function snapAxis(a,q){ const dx=Math.abs(q.x-a.x), dy=Math.abs(q.y-a.y); if(dy<=dx*.03) return {x:q.x,y:a.y}; if(dx<=dy*.03) return {x:a.x,y:q.y}; return q }
+/* testers: reference rulers in real cm */
+const TCOL=['#0b7d5c','#7a3fd1','#c25a00','#1e5c84','#b0125b'];
+function renderTesters(){ const m=Cal.m; const g=$('#calTst'); const ts=(m&&m.testers)||[];
+  $('#tList').innerHTML=ts.map((t,i)=>`<div class="trow3"><span class="tsw" style="background:${TCOL[i%TCOL.length]}"></span><span class="mono">${t.w}${t.h?' × '+t.h:''} cm${!t.h?(t.vert?' · 세로선':' · 가로선'):''}</span><button class="btn small" data-trot="${t.id}" title="90° 돌리기">↻</button><button class="btn small" data-tdel="${t.id}">삭제</button></div>`).join('')+(ts.length>1?'<button class="btn small" data-tclear="1">모두 지우기</button>':'');
+  if(!g) return; if(!cal(m)){ g.innerHTML=''; return } const k=CV.w/600;
+  g.innerHTML=ts.map((t,i)=>{ const c=TCOL[i%TCOL.length]; const w=t.w*m.sx, h=(t.h||0)*m.sy; const lab=`${t.w}${t.h?'×'+t.h:''}cm`;
+    if(!t.h&&t.vert){ const L=t.w*m.sy; return `<g class="tst" data-tid="${t.id}" style="--tc:${c}"><line class="thit" x1="${t.x}" y1="${t.y}" x2="${t.x}" y2="${t.y+L}"/><line class="tln" x1="${t.x}" y1="${t.y}" x2="${t.x}" y2="${t.y+L}"/><line class="tln" x1="${t.x-8*k}" y1="${t.y}" x2="${t.x+8*k}" y2="${t.y}"/><line class="tln" x1="${t.x-8*k}" y1="${t.y+L}" x2="${t.x+8*k}" y2="${t.y+L}"/><text class="tlab" x="${t.x+10*k}" y="${t.y+L/2}" font-size="${12*k}" text-anchor="start" dominant-baseline="central">${lab}</text></g>` }
+    if(!t.h) return `<g class="tst" data-tid="${t.id}" style="--tc:${c}"><line class="thit" x1="${t.x}" y1="${t.y}" x2="${t.x+w}" y2="${t.y}"/><line class="tln" x1="${t.x}" y1="${t.y}" x2="${t.x+w}" y2="${t.y}"/><line class="tln" x1="${t.x}" y1="${t.y-8*k}" x2="${t.x}" y2="${t.y+8*k}"/><line class="tln" x1="${t.x+w}" y1="${t.y-8*k}" x2="${t.x+w}" y2="${t.y+8*k}"/><text class="tlab" x="${t.x+w/2}" y="${t.y-10*k}" font-size="${12*k}">${lab}</text></g>`;
+    return `<g class="tst" data-tid="${t.id}" style="--tc:${c}"><rect class="tbox" x="${t.x}" y="${t.y}" width="${w}" height="${h}"/><text class="tlab" x="${t.x+w/2}" y="${t.y-6*k}" font-size="${12*k}">${lab}</text></g>` }).join('') }
+$('#tAdd').onclick=()=>{ const m=Cal.m; if(!cal(m)){ toast('먼저 ① 축척을 맞춰야 테스터를 넣을 수 있어요.'); return } const w=Math.round(num($('#tW').value,0)*10)/10, h=Math.round(num($('#tH').value,0)*10)/10; if(!(w>0)){ toast('테스터 가로 길이를 cm로 넣으세요.'); $('#tW').focus(); return }
+  m.testers=m.testers||[]; const cx=CV.x+CV.w/2, cy=CV.y+CV.h/2; m.testers.push({id:uid(),w,h:h>0?h:0,x:Math.round(cx-w*m.sx/2),y:Math.round(cy-(h>0?h*m.sy:0)/2)}); save(); renderTesters(); toast('테스터를 넣었어요. 끌어서 치수선에 맞춰 보세요.') };
+$('#tList').addEventListener('click',e=>{ const m=Cal.m; const b=e.target.closest('button'); if(!b||!m) return;
+  if(b.dataset.tdel){ m.testers=(m.testers||[]).filter(t=>t.id!==b.dataset.tdel) } else if(b.dataset.trot){ const t=m.testers.find(t=>t.id===b.dataset.trot); if(t){ if(!t.h) t.vert=!t.vert; else { const w=t.w; t.w=t.h; t.h=w } } } else if(b.dataset.tclear){ m.testers=[] } save(); renderTesters() });
+calSvg.addEventListener('pointerdown',e=>{ const tg=e.target.closest('[data-tid]'); if(!tg||!Cal.m) return; if(e.pointerType==='mouse'&&e.button!==0) return; e.stopImmediatePropagation(); e.preventDefault();
+  const t=(Cal.m.testers||[]).find(t=>t.id===tg.dataset.tid); if(!t) return; const inv=calSvg.getScreenCTM().inverse(); const p0=CV.pt(e,inv), x0=t.x, y0=t.y; try{calSvg.setPointerCapture(e.pointerId)}catch(_){}
+  const mv=ev=>{ const p=CV.pt(ev,inv); t.x=Math.round(x0+p.x-p0.x); t.y=Math.round(y0+p.y-p0.y); renderTesters(); loupeEv={x:ev.clientX,y:ev.clientY,t:ev.pointerType==='touch'}; drawLoupe(ev.clientX,ev.clientY,loupeEv.t) };
+  const up=()=>{ calSvg.removeEventListener('pointermove',mv); calSvg.removeEventListener('pointerup',up); calSvg.removeEventListener('pointercancel',up); save() };
+  calSvg.addEventListener('pointermove',mv); calSvg.addEventListener('pointerup',up); calSvg.addEventListener('pointercancel',up) });
+
+/* loupe + point fine-tuning */
+const loupe=$('#loupe'), lctx=loupe.getContext('2d'), LS=170, LZ=5;
+function drawLoupe(cx,cy,touch){ const m=Cal.m, img=Cal.imgEl; if(!m||!img||!img.complete||!['scale','check','origin'].includes(Cal.mode)){ loupe.hidden=true; return }
+  const r=calSvg.getBoundingClientRect(); if(!r.width) return; const p=CV.pt({clientX:cx,clientY:cy}); const src=LS/LZ*(CV.w/r.width); const ox=p.x-src/2, oy=p.y-src/2, k=LS/src; const T=(x,y)=>[(x-ox)*k,(y-oy)*k];
+  lctx.fillStyle='#fff'; lctx.fillRect(0,0,LS,LS); lctx.imageSmoothingEnabled=true; try{ lctx.drawImage(img,ox,oy,src,src,0,0,LS,LS) }catch(_){}
+  lctx.lineWidth=1.5; lctx.strokeStyle='rgba(214,19,108,.75)'; lctx.setLineDash([5,4]);
+  if(Cal.pts.length===1&&Cal.mode!=='origin'){ const[a0,a1]=T(Cal.pts[0].x,Cal.pts[0].y); lctx.beginPath(); lctx.moveTo(0,a1); lctx.lineTo(LS,a1); lctx.moveTo(a0,0); lctx.lineTo(a0,LS); lctx.stroke() }
+  lctx.setLineDash([]); lctx.strokeStyle='#d6136c';
+  if(Cal.pts.length===2){ const[a0,a1]=T(Cal.pts[0].x,Cal.pts[0].y),[b0,b1]=T(Cal.pts[1].x,Cal.pts[1].y); lctx.beginPath(); lctx.moveTo(a0,a1); lctx.lineTo(b0,b1); lctx.stroke() }
+  Cal.pts.forEach((q,i)=>{ const[x,y]=T(q.x,q.y); lctx.beginPath(); lctx.arc(x,y,i===Cal.selPt?9:6,0,Math.PI*2); lctx.stroke() });
+  if(cal(m)) (m.testers||[]).forEach((t,i)=>{ lctx.strokeStyle=TCOL[i%TCOL.length]; lctx.lineWidth=2; const[x1,y1]=T(t.x,t.y); const w=t.w*m.sx*k, h=(t.h||0)*m.sy*k; lctx.beginPath(); if(t.h) lctx.rect(x1,y1,w,h); else if(t.vert){ const L=t.w*m.sy*k; lctx.moveTo(x1,y1); lctx.lineTo(x1,y1+L); lctx.moveTo(x1-8,y1); lctx.lineTo(x1+8,y1); lctx.moveTo(x1-8,y1+L); lctx.lineTo(x1+8,y1+L) } else { lctx.moveTo(x1,y1); lctx.lineTo(x1+w,y1); lctx.moveTo(x1,y1-8); lctx.lineTo(x1,y1+8); lctx.moveTo(x1+w,y1-8); lctx.lineTo(x1+w,y1+8) } lctx.stroke() }); lctx.lineWidth=1;
+  lctx.strokeStyle='rgba(20,30,28,.9)'; lctx.lineWidth=1; lctx.beginPath(); lctx.moveTo(LS/2,LS/2-14); lctx.lineTo(LS/2,LS/2-4); lctx.moveTo(LS/2,LS/2+4); lctx.lineTo(LS/2,LS/2+14); lctx.moveTo(LS/2-14,LS/2); lctx.lineTo(LS/2-4,LS/2); lctx.moveTo(LS/2+4,LS/2); lctx.lineTo(LS/2+14,LS/2); lctx.stroke();
+  const vr=calSvg.parentElement.getBoundingClientRect(); let lx=cx-vr.left+24, ly=touch?cy-vr.top-LS-40:cy-vr.top+24; if(lx+LS>vr.width-4) lx=cx-vr.left-LS-24; if(ly+LS>vr.height-4) ly=cy-vr.top-LS-24; if(ly<4) ly=4;
+  loupe.style.left=lx+'px'; loupe.style.top=ly+'px'; loupe.hidden=false }
+let loupeRaf=0, loupeEv=null;
+calSvg.addEventListener('pointermove',e=>{ loupeEv={x:e.clientX,y:e.clientY,t:e.pointerType==='touch'}; if(!loupeRaf) loupeRaf=requestAnimationFrame(()=>{ loupeRaf=0; if(loupeEv) drawLoupe(loupeEv.x,loupeEv.y,loupeEv.t) }) });
+calSvg.addEventListener('pointerleave',()=>{ loupeEv=null; loupe.hidden=true });
+CV.onzoom=()=>{ calOverlay(); renderTesters(); if(loupeEv) drawLoupe(loupeEv.x,loupeEv.y,loupeEv.t) };
+function ptsChanged(){ const m=Cal.m; calOverlay(); if(Cal.mode==='check'&&Cal.pts.length===2&&cal(m)){ const[a,b]=Cal.pts; const lc=Math.hypot((b.x-a.x)/m.sx,(b.y-a.y)/m.sy); $('#checkOut').textContent=`${fmt(lc*10)} mm`; Cal.chk=lc*10; chkUpdate() } if(loupeEv) drawLoupe(loupeEv.x,loupeEv.y,loupeEv.t) }
+calSvg.addEventListener('pointerdown',e=>{ if(!(Cal.mode==='scale'||Cal.mode==='check')||!Cal.pts.length) return; if(e.pointerType==='mouse'&&e.button!==0) return;
+  const ctm=calSvg.getScreenCTM(); let hit=-1, best=14; Cal.pts.forEach((q,i)=>{ const s=new DOMPoint(q.x,q.y).matrixTransform(ctm); const d=Math.hypot(s.x-e.clientX,s.y-e.clientY); if(d<best){best=d;hit=i} });
+  if(hit<0) return; e.stopImmediatePropagation(); e.preventDefault(); Cal.selPt=hit; const inv=ctm.inverse(); const p0=CV.pt(e,inv), q0={...Cal.pts[hit]}; try{calSvg.setPointerCapture(e.pointerId)}catch(_){}
+  const mv=ev=>{ const p=CV.pt(ev,inv); let q={x:clamp(q0.x+p.x-p0.x,0,Cal.m.w),y:clamp(q0.y+p.y-p0.y,0,Cal.m.h)}; if(Cal.pts.length===2){ q=snapAxis(Cal.pts[1-hit],q) } Cal.pts[hit]=q; loupeEv={x:ev.clientX,y:ev.clientY,t:ev.pointerType==='touch'}; ptsChanged() };
+  const up=()=>{ calSvg.removeEventListener('pointermove',mv); calSvg.removeEventListener('pointerup',up); calSvg.removeEventListener('pointercancel',up) };
+  calSvg.addEventListener('pointermove',mv); calSvg.addEventListener('pointerup',up); calSvg.addEventListener('pointercancel',up) });
+document.addEventListener('keydown',e=>{ if(!$('#dlgCal').open||Cal.selPt==null||!Cal.pts[Cal.selPt]) return; if(e.target.closest('input,select,textarea')) return; const st=e.shiftKey?10:1; const d={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,-st],ArrowDown:[0,st]}[e.key]; if(!d) return; e.preventDefault(); const q=Cal.pts[Cal.selPt]; Cal.pts[Cal.selPt]={x:clamp(q.x+d[0],0,Cal.m.w),y:clamp(q.y+d[1],0,Cal.m.h)}; ptsChanged() });
+let calRaf=0; /* */ calSvg.addEventListener('pointermove',e=>{ if(!Cal.m||Cal.pts.length!==1||!(Cal.mode==='scale'||Cal.mode==='check')) return; const p=CV.pt(e); Cal.hover={x:clamp(p.x,0,Cal.m.w),y:clamp(p.y,0,Cal.m.h)}; if(!calRaf) calRaf=requestAnimationFrame(()=>{ calRaf=0; calOverlay() }) });
+calSvg.addEventListener('pointerleave',()=>{ Cal.hover=null; calOverlay() });
+function calStatus(){ const m=Cal.m; const same=S.maps.filter(o=>o!==m&&cal(o)&&o.src===m.src);
+  $('#calStatus').innerHTML=cal(m)?`<b style="color:var(--ok)">축척 완료</b><span>도면 크기 ${fmt(m.w/m.sx)} × ${fmt(m.h/m.sy)} cm</span><span>가로 1m = ${(m.sx*100).toFixed(1)}px · 세로 1m = ${(m.sy*100).toFixed(1)}px</span><span>모눈 1칸 = 50cm</span>`:'<b style="color:var(--warn)">아직 축척이 없어요</b><span>벽 하나로 맞춘 뒤 ② 기준점, ③ 확인 순서로 진행하세요.</span>';
+  $('#calCopy').innerHTML=same.length?`<p class="hint">같은 PDF에서 잘라낸 도면의 축척을 그대로 쓸 수도 있어요.</p>${same.map(o=>`<button class="btn small" data-copyfrom="${o.id}">‘${esc(o.name)}’ 축척 쓰기</button>`).join(' ')}`:'';
+  $('#calNote').textContent=cal(m)?(roomsOf(m).length?`방 ${roomsOf(m).length}개로 나뉘어 있어요.`:'③ 길이 확인 후, ④ 방 나누기로 회의실·대표실 등을 나눠 보세요.'):'';
+}
+function setCalMode(mode){ const keep=mode==='scale'&&Cal.m&&Cal.m.calRef&&Cal.mode!=='scale'; Cal.mode=mode; Cal.pts=keep?Cal.m.calRef.pts.map(q=>({x:q.x,y:q.y})):[]; if(keep){ Cal.selPt=1; $('#calLen').value=Cal.m.calRef.mm } Cal.chk=0; if($('#chkLen')){ $('#chkLen').value=''; $('#chkDiff').textContent=''; $('#chkFix').disabled=true } calSvg.style.cursor=mode==='rooms'?'crosshair':''; if(mode==='rooms'&&Cal.m) calRooms(); $$('#calMode button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode)); $$('#dlgCal [data-pane]').forEach(p=>p.hidden=p.dataset.pane!==mode); $('#checkOut').textContent='–'; if(Cal.m){ calOverlay() } }
+$('#calMode').onclick=e=>{ const b=e.target.closest('[data-m]'); if(!b) return; if(b.dataset.m!=='scale'&&b.dataset.m!=='rooms'&&!cal(Cal.m)){ toast('먼저 ① 축척을 맞춰 주세요.'); return } setCalMode(b.dataset.m) };
+$('#calCopy').onclick=e=>{ const b=e.target.closest('[data-copyfrom]'); if(!b) return; const o=M(b.dataset.copyfrom), m=Cal.m; m.sx=o.sx/o.ppu*m.ppu; m.sy=o.sy/o.ppu*m.ppu; afterCal(); toast(`‘${o.name}’의 축척을 적용했어요.`) };
+function calRooms(){ const m=Cal.m; const rs=roomsOf(m); $('#roomList').innerHTML=rs.length?rs.map(r=>`<div class="roomrow"><input id="rn-${r.id}" data-roomname="${r.id}" value="${esc(r.name)}" aria-label="방 이름"><span class="mono hint">${cal(m)?`${fmt(r.w/m.sx)}×${fmt(r.h/m.sy)}`:''}</span><button class="btn small" data-roomdel="${r.id}">삭제</button></div>`).join(''):'<span class="hint">아직 나눈 방이 없어요.</span>' }
+calSvg.addEventListener('pointerdown',e=>{ if(Cal.mode!=='rooms') return; if(e.pointerType==='mouse'&&e.button!==0) return; e.stopImmediatePropagation(); e.preventDefault();
+  const m=Cal.m, inv=calSvg.getScreenCTM().inverse(), p0=CV.pt(e,inv); try{calSvg.setPointerCapture(e.pointerId)}catch(_){}
+  const box={x:p0.x,y:p0.y,w:0,h:0};
+  const mv=ev=>{ const p=CV.pt(ev,inv); const x=clamp(p.x,0,m.w), y=clamp(p.y,0,m.h); box.x=Math.min(p0.x,x); box.y=Math.min(p0.y,y); box.w=Math.abs(x-p0.x); box.h=Math.abs(y-p0.y); Cal.draft=box; calOverlay() };
+  const up=()=>{ calSvg.removeEventListener('pointermove',mv); calSvg.removeEventListener('pointerup',up); Cal.draft=null;
+    if(box.w>m.w*.02&&box.h>m.h*.02){ m.rooms=m.rooms||[]; const r={id:uid(),name:`방 ${m.rooms.length+1}`,x:Math.round(box.x),y:Math.round(box.y),w:Math.round(box.w),h:Math.round(box.h)}; m.rooms.push(r); save(); calRooms(); requestAnimationFrame(()=>{ const i=$('#rn-'+r.id); if(i){i.focus();i.select()} }); toast('방을 추가했어요. 이름을 입력하세요.') }
+    calOverlay() };
+  calSvg.addEventListener('pointermove',mv); calSvg.addEventListener('pointerup',up);
+});
+$('#roomList').addEventListener('change',e=>{ const t=e.target; if(!t.dataset.roomname) return; const r=roomsOf(Cal.m).find(r=>r.id===t.dataset.roomname); if(r){ r.name=t.value.trim()||r.name; save(); calOverlay() } });
+$('#roomList').addEventListener('click',e=>{ const b=e.target.closest('[data-roomdel]'); if(!b) return; if(!armed(b)) return; Cal.m.rooms=roomsOf(Cal.m).filter(r=>r.id!==b.dataset.roomdel); save(); calRooms(); calOverlay() });
+calSvg.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse'&&e.button!==0) return; CV.panStart(e,(moved,p)=>{ if(moved) return; const m=Cal.m; const q={x:clamp(p.x,0,m.w),y:clamp(p.y,0,m.h)};
+  if(Cal.mode==='origin'){ m.gx=q.x; m.gy=q.y; save(); calBase(); toast('모눈 기준점을 옮겼어요.'); return }
+  if(Cal.pts.length>=2) Cal.pts=[]; Cal.pts.push(Cal.pts.length===1?snapAxis(Cal.pts[0],q):q); Cal.selPt=Cal.pts.length-1; Cal.hover=null; calOverlay();
+  if(Cal.mode==='check'&&Cal.pts.length===2){ const[a,b]=Cal.pts; const lc=Math.hypot((b.x-a.x)/m.sx,(b.y-a.y)/m.sy); $('#checkOut').textContent=`${fmt(lc*10)} mm`; Cal.chk=lc*10; chkUpdate() }
+  if(document.activeElement&&document.activeElement.blur&&document.activeElement.closest&&document.activeElement.closest('#dlgCal input')) document.activeElement.blur();
+}) });
+$('#calApply').onclick=()=>{
+  const m=Cal.m; if(Cal.pts.length<2){ toast('벽 양 끝 두 점을 먼저 찍어 주세요.'); return }
+  const mm=num($('#calLen').value,0); if(!(mm>0)){ toast('실제 길이를 mm로 입력하세요.'); $('#calLen').focus(); return }
+  const cm=mm/10; const[a,b]=Cal.pts; const dx=Math.abs(b.x-a.x), dy=Math.abs(b.y-a.y), dist=Math.hypot(dx,dy);
+  const dir=$('input[name=calDir]:checked').value;
+  if(dir==='both'){ m.sx=m.sy=dist/cm }
+  else if(dir==='x'){ if(dx<dy*3){ toast('가로 방향으로 두 점을 찍어 주세요.'); return } m.sx=dx/cm; if(!m.sy) m.sy=m.sx }
+  else { if(dy<dx*3){ toast('세로 방향으로 두 점을 찍어 주세요.'); return } m.sy=dy/cm; if(!m.sx) m.sx=m.sy }
+  m.calRef={pts:Cal.pts.map(q=>({x:q.x,y:q.y})),mm,dir}; $('#calApply').textContent='수정 적용'; afterCal(); toast(`축척을 맞췄어요. 도면 크기 ${fmt(m.w/m.sx)} × ${fmt(m.h/m.sy)} cm · 점을 더 조정하고 수정 적용을 누를 수 있어요`);
+};
+function afterCal(){ const m0=Cal.m; if(m0&&cal(m0)){ const c=getCols(); const has=[...c.L,...c.R].some(k=>k.startsWith(m0.id+':')); if(!has){ c.L.push(`${m0.id}:*:a`); c.R.push(`${m0.id}:*:b`); saveCols() } } UI.fitted=false; save(); calBase(); renderAll() }
+$('#calZin').onclick=()=>CV.zoomBy(1/1.15); $('#calZout').onclick=()=>CV.zoomBy(1.15); $('#calFit').onclick=()=>CV.fit(0,0,Cal.m.w,Cal.m.h,.02);
+$('#dlgCal').addEventListener('close',()=>renderAll());
+
+/* ---------- example data ---------- */
+function drawPlan(sp){
+  const k=4, mg=70; const W=Math.round((sp.w+2*mg)*k), H=Math.round((sp.h+2*mg)*k);
+  const c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d'); const X=v=>(v+mg)*k;
+  g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
+  g.strokeStyle='#2b302e'; g.lineCap='square';
+  for(const w of sp.walls){ g.lineWidth=(w[4]||15)*k; g.beginPath(); g.moveTo(X(w[0]),X(w[1])); g.lineTo(X(w[2]),X(w[3])); g.stroke() }
+  g.fillStyle='#4a524f'; g.textAlign='center'; g.textBaseline='middle';
+  for(const l of sp.labels){ g.font=`500 ${(l[3]||28)*k}px sans-serif`; g.fillText(l[2],X(l[0]),X(l[1])) }
+  g.strokeStyle='#7d8682'; g.lineWidth=0.7*k; g.fillStyle='#5d6662'; g.font=`${20*k}px sans-serif`;
+  const ty=-40; g.beginPath(); g.moveTo(X(0),X(ty)); g.lineTo(X(sp.w),X(ty)); g.moveTo(X(0),X(ty-10)); g.lineTo(X(0),X(ty+10)); g.moveTo(X(sp.w),X(ty-10)); g.lineTo(X(sp.w),X(ty+10)); g.stroke();
+  g.fillText((sp.w*10).toLocaleString('en-US'),X(sp.w/2),X(ty-16));
+  const lx=-40; g.beginPath(); g.moveTo(X(lx),X(0)); g.lineTo(X(lx),X(sp.h)); g.moveTo(X(lx-10),X(0)); g.lineTo(X(lx+10),X(0)); g.moveTo(X(lx-10),X(sp.h)); g.lineTo(X(lx+10),X(sp.h)); g.stroke();
+  g.save(); g.translate(X(lx-16),X(sp.h/2)); g.rotate(-Math.PI/2); g.fillText((sp.h*10).toLocaleString('en-US'),0,0); g.restore();
+  return {img:c.toDataURL('image/jpeg',.9),w:W,h:H,sx:k,sy:k,gx:mg*k,gy:mg*k};
+}
+function makeExample(){
+  const s=empty(); s.meta.example=true;
+  const pA={id:uid(),name:'현재 사무실'}, pB={id:uid(),name:'창고'}, pC={id:uid(),name:'새 사무실'}, pD={id:uid(),name:'폐기'};
+  s.places.push(pA,pB,pC,pD);
+  const a=drawPlan({w:900,h:600,walls:[[0,0,900,0],[900,0,900,600],[900,600,520,600],[430,600,0,600],[0,600,0,0],[620,0,620,240,10],[620,330,620,600,10]],labels:[[310,300,'사무 공간'],[760,300,'대표실']]});
+  const c=drawPlan({w:1100,h:800,walls:[[0,0,1100,0],[1100,0,1100,800],[1100,800,200,800],[110,800,0,800],[0,800,0,0],[700,0,700,150,10],[700,240,700,550,10],[700,640,700,800,10],[700,400,1100,400,10],[0,560,170,560,10],[260,560,300,560,10],[300,560,300,800,10]],labels:[[380,280,'사무 공간'],[900,200,'회의실'],[900,600,'대표실'],[150,690,'탕비실',22]]});
+  const R=(x,y,w,h,name)=>({id:uid(),name,x:(x+70)*4,y:(y+70)*4,w:w*4,h:h*4});
+  const mA={id:uid(),placeId:pA.id,name:'3층',...a,src:'예시',ppu:1,rooms:[R(0,0,620,600,'사무 공간'),R(620,0,280,600,'대표실')]}, mC={id:uid(),placeId:pC.id,name:'5층',...c,src:'예시2',ppu:1,rooms:[R(0,0,700,560,'사무 공간'),R(0,560,300,240,'탕비실'),R(700,0,400,400,'회의실'),R(700,400,400,400,'대표실')]};
+  s.maps.push(mA,mC);
+  S=s;
+  const add=(pid,name,w,d,h,qty)=>{ const it={id:uid(),placeId:pid,name,w,d,h,qty,color:colorFor(name,w,d)}; S.items.push(it); syncUnits(it); return unitsOf(it) };
+  const desk=add(pA.id,'책상',140,70,73,6), chair=add(pA.id,'사무용 의자',60,60,0,6), shelfA=add(pA.id,'책장',80,35,180,2), ceo=add(pA.id,'대표 책상',180,80,75,1), fridge=add(pA.id,'냉장고',70,70,180,1);
+  const shelfB=add(pB.id,'책장',80,35,180,2), sofa=add(pB.id,'소파',200,90,80,1), table=add(pB.id,'회의 테이블',240,120,74,1);
+  const F=(u,x,y,rot=0)=>u.from={mapId:mA.id,x:x+70,y:y+70,rot}, T=(u,x,y,rot=0)=>u.to={mapId:mC.id,x:x+70,y:y+70,rot};
+  [[60,80],[220,80],[380,80],[60,300],[220,300],[380,300]].forEach((p,i)=>F(desk[i],p[0],p[1]));
+  F(shelfA[0],20,540); F(shelfA[1],110,540); F(ceo[0],680,90); F(fridge[0],520,20,0);
+  [[60,90],[220,90],[60,300],[220,300]].forEach((p,i)=>T(desk[i],p[0],p[1]));
+  T(ceo[0],820,560); T(table[0],780,140); T(shelfA[0],470,20); fridge[0].toPlaceId=pD.id;
+  UI.slots=[null,null]; savePanels();
+}
+
+/* ---------- boot ---------- */
+(async()=>{
+  await Store.open();
+  if(FIREBASE_CONFIG&&window.firebase&&cloudStart()){ S=empty(); renderAll(); return }
+  const saved=await Store.get('state');
+  if(saved&&Array.isArray(saved.places)){ S=Object.assign(empty(),saved); $('#saveState').textContent='이 브라우저에 저장됨' }
+  else { makeExample(); save() }
+  renderAll();
+})();
+})();
+</script>
+
+</body>
+</html>

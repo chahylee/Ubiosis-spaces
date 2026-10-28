@@ -1727,7 +1727,7 @@ $('#formBlank').addEventListener('submit',e=>{ e.preventDefault(); e.stopPropaga
   $('#dlgBlank').close(); UI.fitted=false; commit(); toast(f.mapId?'크기를 바꿨어요.':'빈 도면을 만들었어요. 바로 가구를 놓을 수 있어요.') });
 function switchView(view){
   if(view==='plan'){ UI.focus=null; UI.room=null }
-  if(view==='space'){ if(UI.view!=='space') UI.wlayer='a'; if(!UI.focus||!P(UI.focus)) UI.focus=UI.lastFocus&&P(UI.lastFocus)?UI.lastFocus:firstWorkPlace(); if(UI.focus) UI.railTab=itemsOf(UI.focus).length?UI.focus:'' }
+  if(view==='space'){ if(UI.view!=='space') UI.wlayer='b'; /* 공간 작업은 변경 후 화면으로 시작 */ if(!UI.focus||!P(UI.focus)) UI.focus=UI.lastFocus&&P(UI.lastFocus)?UI.lastFocus:firstWorkPlace(); if(UI.focus) UI.railTab=itemsOf(UI.focus).length?UI.focus:'' }
   UI.view=view; UI.sel=null; UI.multi=null; UI.fitted=false;
   $$('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.view===view));
   for(const n of ['plan','items','routes','check','spaces']) $('#view-'+n).hidden=!(n===view||(n==='plan'&&view==='space'));

@@ -573,7 +573,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
             <button id="btnRail" class="ibtn" title="자산 목록 접기·펼치기">◀ 목록</button>
             <label class="mono" style="font-size:12px;color:var(--muted)" for="snapSel">맞춤</label>
             <select id="snapSel"><option value="0">끄기</option><option value="5">5cm</option><option value="10" selected>10cm</option><option value="50">50cm</option></select>
-            <button id="btnMeasure" class="ibtn" title="거리 재기 (M) · 지점을 차례로 클릭 · 더블클릭/Enter로 끝 · Shift 수평·수직 · Esc 지우기">📏 거리 재기</button>
+            <button id="btnMeasure" class="ibtn" title="거리 재기 (M) · 지점을 차례로 클릭 · 더블클릭/Enter로 끝 · 상하좌우로만 잼 · Esc 지우기">📏 거리 재기</button>
             <button id="btnZout" class="ibtn" aria-label="축소">−</button>
             <input type="range" id="zoomR" min="-2.3" max="3.4" step="0.01" value="0" aria-label="확대 배율">
             <span id="zoomP" class="mono zoomp">100%</span>
@@ -1814,16 +1814,16 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='Escape'){ if(UI.measure&&UI.measure.pts.length){ UI.measure.pts=[]; UI.measure.done=false; UI.measure.hover=null; renderOverlay(); return } UI.sel=null; UI.multi=null; UI.hl=null; UI.measure=null; renderPlan(); renderRail() }
   else if(e.key==='m'||e.key==='M'){ toggleMeasure() }
 });
-function toggleMeasure(){ UI.measure=UI.measure?null:{pts:[],done:false,hover:null}; if(UI.measure){ UI.sel=null; UI.multi=null; toast('지점을 차례로 클릭하면 구간별 거리와 총 거리가 나와요. 더블클릭·Enter로 끝, Shift: 수평·수직, Esc: 지우기') } renderPlan() }
+function toggleMeasure(){ UI.measure=UI.measure?null:{pts:[],done:false,hover:null}; if(UI.measure){ UI.sel=null; UI.multi=null; toast('지점을 차례로 클릭하면 구간별 거리와 총 거리가 나와요. 상하좌우로만 재요. 더블클릭·Enter로 끝, Esc: 지우기') } renderPlan() }
 const fmtLen=cm=>cm>=100?`${(cm/100).toFixed(2)} m`:`${Math.round(cm)} cm`;
 function measureAdd(p){ const m=UI.measure; if(!m) return; if(m.done){ m.pts=[]; m.done=false } const c=colAtX(p.x)||'L'; let l=fromW(c,p.x,p.y);
-  if(m.pts.length){ const a=m.pts[m.pts.length-1]; if(m.shift){ if(Math.abs(l.x-a.x)>Math.abs(l.y-a.y)) l.y=a.y; else l.x=a.x } if(a.c!==c){ const q=toW(c,l.x,l.y); l=fromW(a.c,q.x,q.y); m.pts.push({c:a.c,x:l.x,y:l.y}); renderOverlay(); return } }
+  if(m.pts.length){ const a=m.pts[m.pts.length-1]; { if(Math.abs(l.x-a.x)>Math.abs(l.y-a.y)) l.y=a.y; else l.x=a.x } /* 항상 상하좌우로만 */ if(a.c!==c){ const q=toW(c,l.x,l.y); l=fromW(a.c,q.x,q.y); m.pts.push({c:a.c,x:l.x,y:l.y}); renderOverlay(); return } }
   if(m.pts.length){ const a=m.pts[m.pts.length-1]; const dd=a.c===c?Math.hypot(a.x-l.x,a.y-l.y):Infinity; if(m.pts.length>=2&&dd<12*V.w/1000){ m.done=true; m.hover=null; renderOverlay(); return } if(dd<2) return }
   m.pts.push({c,x:l.x,y:l.y}); renderOverlay() }
 function measureSVG(k){ const m=UI.measure; const P=m.pts.map(q=>({...toW(q.c,q.x,q.y),q})); let s=''; let tot=0;
   const seg=(a,b,live)=>{ const d=Math.hypot(b.q.x-a.q.x,b.q.y-a.q.y); const mx=(a.x+b.x)/2, my=(a.y+b.y)/2; s+=`<line class="mline${live?' live':''}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>`; if(d>1) s+=`<text class="mtext" x="${mx}" y="${my-8*k}" font-size="${13*k}">${fmtLen(d)}</text>`; return d };
   for(let i=1;i<P.length;i++) tot+=seg(P[i-1],P[i]);
-  let liveD=0; if(!m.done&&m.hover&&P.length){ const a=P[P.length-1]; let l=fromW(a.q.c,m.hover.x,m.hover.y); if(m.shift){ if(Math.abs(l.x-a.q.x)>Math.abs(l.y-a.q.y)) l.y=a.q.y; else l.x=a.q.x } const w=toW(a.q.c,l.x,l.y); liveD=seg(a,{...w,q:{x:l.x,y:l.y}},true); tot+=liveD }
+  let liveD=0; if(!m.done&&m.hover&&P.length){ const a=P[P.length-1]; let l=fromW(a.q.c,m.hover.x,m.hover.y); { if(Math.abs(l.x-a.q.x)>Math.abs(l.y-a.q.y)) l.y=a.q.y; else l.x=a.q.x } const w=toW(a.q.c,l.x,l.y); liveD=seg(a,{...w,q:{x:l.x,y:l.y}},true); tot+=liveD }
   for(const p of P) s+=`<circle class="mdot" cx="${p.x}" cy="${p.y}" r="${4*k}"/>`;
   if(P.length>=2||(P.length&&m.hover&&!m.done)){ const last=P[P.length-1]; const lx=m.done||!m.hover?last.x:m.hover.x, ly=m.done||!m.hover?last.y:m.hover.y; const nseg=P.length-1+(liveD>1?1:0); const txt=`총 ${fmtLen(tot)}${nseg>1?` · ${nseg}구간`:''}`; const w=txt.length*7.6*k+16*k;
     s+=`<g class="mtot" transform="translate(${lx+10*k} ${ly+12*k})"><rect width="${w}" height="${22*k}" rx="${5*k}"/><text x="${8*k}" y="${15*k}" font-size="${13*k}">${txt}</text></g>` }

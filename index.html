@@ -186,6 +186,10 @@ button.num.zero{opacity:.35}
 .hlline .hlnames{grid-column:1/-1;color:var(--muted);font-size:11.5px}
 .tsub{grid-column:2/-1;font-size:11px;color:var(--muted);padding:0 0 4px}
 .ritem{padding:6px 2px 4px;border-bottom:1px dashed var(--line)}
+.ritem.rcomp{display:flex;align-items:center;gap:6px;padding:7px 4px;cursor:pointer;border-radius:6px} .ritem.rcomp:hover{background:var(--soft)}
+.rcomp b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .rcomp .rsz{font-size:11px;color:var(--muted)} .rcomp .rcnt{margin-left:auto;font-size:11px;white-space:nowrap;color:var(--muted)} .rcomp .rcnt.wr{color:var(--warn)} .rcomp .rgo{color:var(--muted);font-size:15px}
+.newtag2{font-size:10.5px;padding:0 5px;border:1px solid var(--line);border-radius:999px;color:var(--muted);white-space:nowrap} .newtag2.on{color:#b0125b;border-color:currentColor}
+#dlgItem .ritem{border:0} #dlgItem .runits{max-height:55vh;overflow:auto}
 .rih{display:flex;align-items:center;gap:6px;padding:0 3px 3px}
 .rih .mono{font-size:10.5px;color:var(--muted)}
 .rih .c{margin-left:auto;font-size:12px;color:var(--muted)}
@@ -606,6 +610,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
 
 <input type="file" id="fileMap" accept="application/pdf,image/png,image/jpeg,image/webp" hidden>
 <input type="file" id="filePhoto" accept="image/*" hidden>
+<dialog id="dlgItem" class="small" aria-labelledby="itemTitle"><div class="dlg"><div class="dh"><h2 id="itemTitle">가구</h2><button class="btn small x" data-close>닫기</button></div><div class="dbody" id="itemBody" style="padding:12px 14px"></div></div></dialog>
 <dialog id="dlgPhoto" aria-labelledby="photoTitle">
   <div class="lightbox">
     <div class="dh"><h2 id="photoTitle">사진</h2><span id="photoCount" class="mono hint"></span><button class="btn small x" data-close>닫기</button></div>
@@ -1529,7 +1534,7 @@ function renderRail(){
   <div class="seg">${tabs.map(t=>`<button data-railtab="${t.id}" class="${t.id===UI.railTab?'on':''}">${esc(t.name)}</button>`).join('')}</div>${UI.view==='space'&&UI.focus&&P(UI.focus)?`<form class="qadd" id="qadd"><b>${esc(P(UI.focus).name)}에 자산 추가</b><div class="qrow qk"><input id="qaName" placeholder="이름" aria-label="이름" autocomplete="off"><select id="qaK" aria-label="종류"><option value="furn">가구</option><option value="item">올리는 물품</option></select><input id="qaQ" type="number" min="1" value="1" aria-label="수량" title="수량"></div><div class="qrow q3"><input id="qaW" type="number" min="1" placeholder="가로" aria-label="가로 cm"><input id="qaD" type="number" min="1" placeholder="세로" aria-label="세로 cm"><input id="qaH" type="number" min="0" placeholder="높이" aria-label="높이 cm (선택)"><button class="btn primary small">추가</button></div><label class="qnew" title="체크하지 않으면 지금 있는 기존 가구로 등록돼요"><input type="checkbox" id="qaNew"> <b>신규 구매</b><span class="hint">· 안 하면 기존 가구</span></label></form>`:''}</div><div class="raillist">`;
   if(!S.items.length&&UI.view!=='space'){ h+=`<div class="railempty"><span>가구가 아직 없어요. 공간별로 지금 있는 가구를 입력하세요.</span><button class="btn primary" data-view="items">자산 입력하기</button></div>` }
   else if(UI.railTab==='') h+=railTotal(); else h+=railSpace(UI.railTab);
-  rail.innerHTML=h+'</div>';
+  rail.innerHTML=h+'</div>'; renderItemDlg();
 }
 function railTotal(){
   let h=`<div class="thead"><span></span><span>가구 · 끌어서 도면에 놓기</span><span>사진</span><span>합계</span><span>배치</span><span>남음</span></div>`;
@@ -1556,18 +1561,25 @@ document.addEventListener('change',e=>{ const t=e.target.closest('[data-qtyit]')
 function railSpace(pid){
   let h=''; const items=itemsOf(pid); const sl=curSlot(); const rf=UI.railFilter||'';
   const all=items.flatMap(unitsOf).filter(u=>!(sl==='from'&&isNewU(u))); const na=all.filter(u=>u[sl]).length;
-  h+=`<div class="rfilter"><span>${sl==='from'?'변경 전':'변경 후'} 기준</span><button data-rfilter="" class="${rf===''?'on':''}">전체 ${all.length}</button><button data-rfilter="a" class="${rf==='a'?'on':''}">배정 ${na}</button><button data-rfilter="n" class="${rf==='n'?'on':''}">배정 필요 ${all.length-na}</button></div>`;
-  { const rs=UI.rsel; const shown=all.filter(u=>!rf||(rf==='a')===!!u[sl]); const allOn=shown.length&&rs&&shown.every(u=>rs.has(u.id));
-    h+=`<div class="rbulk${rs?' on':''}"><button class="btn small" data-rselall="${allOn?'off':'on'}">${allOn?'선택 해제':'보이는 것 전체 선택'}</button>${rs?`<b>${rs.size}개 선택</b>${bulkDestSel()}`:'<span class="hint">체크하거나 오른쪽 버튼으로 장소를 옮겨요</span>'}</div>` }
+  h+=`<div class="rfilter"><span>${sl==='from'?'변경 전':'변경 후'} 기준</span><button data-rfilter="" class="${rf===''?'on':''}">전체 ${all.length}</button><button data-rfilter="a" class="${rf==='a'?'on':''}">배정 ${na}</button><button data-rfilter="n" class="${rf==='n'?'on':''}">배정 필요 ${all.length-na}</button></div><div class="hint" style="padding:0 3px 6px">줄을 누르면 하나하나 볼 수 있어요 · 이름을 공간 탭에 끌면 소속 공간이 바뀌어요</div>`;
+  // 가구마다 한 줄. 누르면 팝업(itemDetail)에서 하나하나 보기
   for(const it of items){ const us=unitsOf(it).filter(u=>!rf||(sl==='from'&&isNewU(u)?false:(rf==='a')===!!u[sl])); if(!us.length) continue;
-    const allU=unitsOf(it);
-    h+=`<div class="ritem"><div class="rih"><span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b class="dragi" draggable="true" data-di="${it.id}" title="${esc(it.name)} · 위쪽 공간 탭에 끌어 놓으면 그 공간 가구로 바뀌어요">${esc(it.name)}</b><button class="newtg ${it.isNew?'on':''}" data-newtg="${it.id}" title="신규 구매 여부 (눌러서 바꾸기)">${it.isNew?'신규':'기존'}</button>${it.kind==='item'?'<span class="toptag">올림</span>':''}${assetPhotoBtn(it,'rp')}<span class="qstep" title="전체 수량"><button data-qstep="${it.id}:-1" aria-label="수량 줄이기">−</button><input data-qtyit="${it.id}" type="number" min="1" value="${it.qty}" aria-label="${esc(it.name)} 전체 수량"><button data-qstep="${it.id}:1" aria-label="수량 늘리기">+</button></span><div class="rih2">${dimInputs(it,{cls:'sm',noNote:true})}<span class="c">${allU.filter(isPlaced).length}/${allU.length} 배치</span><button class="idel" data-delitem="${it.id}" title="${esc(it.name)} 전체 삭제" aria-label="${esc(it.name)} 전체 삭제">삭제</button></div></div><ul class="runits tree">`;
-    for(const u of us){ const on=UI.hl&&UI.hl.ids.size===1&&UI.hl.ids.has(u.id);
-      h+=`<li draggable="true" data-du="${u.id}" data-u="${u.id}" class="${isPlaced(u)?'':'rem'} ${on?'on':''}"><input type="checkbox" class="rck" data-rsel="${u.id}" ${UI.rsel&&UI.rsel.has(u.id)?'checked':''} aria-label="${esc(lbl(u))} 고르기"><span class="sw" style="--c:${it.color}"></span><span class="nm" title="${esc(lbl(u))}">${esc((lbl(u).slice((it.name||'').trim().length).trim())||'1')}</span>${sl==='from'&&isNewU(u)?'<span class="flag newf" title="신규 구매 · 변경 후에서 배치">새</span>':u[sl]?`<button class="flag on" data-unassign="${u.id}" title="눌러서 미배치 가구로 돌려놓기">배정 ↩</button>`:`<span class="flag need" title="도면에 아직 놓지 않았어요">배정 필요</span>`}<select data-dest="${u.id}" aria-label="${esc(lbl(u))} 도착지">${destOptions(u)}</select><button class="udel" data-delunit="${u.id}" title="이 가구 삭제" aria-label="${esc(lbl(u))} 삭제">×</button></li>` }
-    h+='</ul></div>';
-  }
+    const allU=unitsOf(it), pl=allU.filter(isPlaced).length;
+    h+=`<div class="ritem rcomp" data-openitem="${it.id}" title="눌러서 하나하나 보기"><span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b class="dragi" draggable="true" data-di="${it.id}" title="${esc(it.name)} · 위쪽 공간 탭에 끌어 놓으면 그 공간 가구로 바뀌어요">${esc(it.name)}</b><span class="newtag2 ${it.isNew?'on':''}">${it.isNew?'신규':'기존'}</span>${it.kind==='item'?'<span class="toptag">올림</span>':''}${assetPhotoBtn(it,'rp')}<span class="rsz mono">${it.w}×${it.d}</span><span class="rcnt ${pl<allU.length?'wr':''}">${allU.length}개 · ${pl}/${allU.length} 배치</span><span class="rgo">›</span></div>` }
   return h;
 }
+/* 가구 한 종류의 세부(팝업) */
+function itemDetail(it){ const sl=curSlot(); const us=unitsOf(it); let h='';
+  const rs=UI.rsel; const allOn=us.length&&rs&&us.every(u=>rs.has(u.id));
+  h+=`<div class="rbulk${rs?' on':''}"><button class="btn small" data-rselall="${allOn?'off':'on'}">${allOn?'선택 해제':'전체 선택'}</button>${rs?`<b>${rs.size}개 선택</b>${bulkDestSel()}`:'<span class="hint">체크해서 여러 개를 한 번에 옮길 수 있어요</span>'}</div>`;
+  const allU=us;
+  h+=`<div class="ritem"><div class="rih"><span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b class="dragi" draggable="true" data-di="${it.id}" title="${esc(it.name)} · 위쪽 공간 탭에 끌어 놓으면 그 공간 가구로 바뀌어요">${esc(it.name)}</b><button class="newtg ${it.isNew?'on':''}" data-newtg="${it.id}" title="신규 구매 여부 (눌러서 바꾸기)">${it.isNew?'신규':'기존'}</button>${it.kind==='item'?'<span class="toptag">올림</span>':''}${assetPhotoBtn(it,'rp')}<span class="qstep" title="전체 수량"><button data-qstep="${it.id}:-1" aria-label="수량 줄이기">−</button><input data-qtyit="${it.id}" type="number" min="1" value="${it.qty}" aria-label="${esc(it.name)} 전체 수량"><button data-qstep="${it.id}:1" aria-label="수량 늘리기">+</button></span><div class="rih2">${dimInputs(it,{cls:'sm',noNote:true})}<span class="c">${allU.filter(isPlaced).length}/${allU.length} 배치</span><button class="idel" data-delitem="${it.id}" title="${esc(it.name)} 전체 삭제" aria-label="${esc(it.name)} 전체 삭제">삭제</button></div></div><ul class="runits tree">`;
+  for(const u of us){ const on=UI.hl&&UI.hl.ids.size===1&&UI.hl.ids.has(u.id);
+    h+=`<li draggable="true" data-du="${u.id}" data-u="${u.id}" class="${isPlaced(u)?'':'rem'} ${on?'on':''}"><input type="checkbox" class="rck" data-rsel="${u.id}" ${UI.rsel&&UI.rsel.has(u.id)?'checked':''} aria-label="${esc(lbl(u))} 고르기"><span class="sw" style="--c:${it.color}"></span><span class="nm" title="${esc(lbl(u))}">${esc((lbl(u).slice((it.name||'').trim().length).trim())||'1')}</span>${sl==='from'&&isNewU(u)?'<span class="flag newf" title="신규 구매 · 변경 후에서 배치">새</span>':u[sl]?`<button class="flag on" data-unassign="${u.id}" title="눌러서 미배치 가구로 돌려놓기">배정 ↩</button>`:`<span class="flag need" title="도면에 아직 놓지 않았어요">배정 필요</span>`}<select data-dest="${u.id}" aria-label="${esc(lbl(u))} 도착지">${destOptions(u)}</select><button class="udel" data-delunit="${u.id}" title="이 가구 삭제" aria-label="${esc(lbl(u))} 삭제">×</button></li>` }
+  return h+'</ul></div>' }
+function openItemDlg(id){ UI.itemDlg=id; UI.rsel=null; const d=$('#dlgItem'); if(!d.open) d.showModal(); renderItemDlg() }
+function renderItemDlg(){ const d=$('#dlgItem'); if(!d||!d.open) return; const it=I(UI.itemDlg); if(!it){ d.close(); return }
+  $('#itemTitle').textContent=`${(it.name||'').trim()||'가구'} · ${P(it.placeId)?.name||''}`; $('#itemBody').innerHTML=itemDetail(it) }
 $('#rail').addEventListener('dragstart',e=>{ const t=e.target.closest('[data-di],[data-dg],[data-du]'); if(!t) return; UI.drag=t.dataset.di?{i:t.dataset.di}:t.dataset.du?{u:t.dataset.du}:{g:t.dataset.dg}; try{e.dataTransfer.setData('text/plain','furniture');e.dataTransfer.effectAllowed='move'}catch(_){} });
 $('#rail').addEventListener('dragend',()=>{ setTimeout(()=>UI.drag=null,0); $$('#rail .droptab').forEach(b=>b.classList.remove('droptab')) });
 /* 잘못 등록한 가구를 위쪽 공간 탭에 끌어 놓아 소속(처음) 공간 바꾸기 */
@@ -1785,7 +1797,7 @@ document.addEventListener('click',e=>{
   if(d.view){ switchView(d.view); return }
   if(d.close!==undefined){ t.closest('dialog').close(); return }
   if(d.rfilter!==undefined){ UI.railFilter=d.rfilter; renderRail(); savePrefs(); return }
-  if(d.rselall){ if(d.rselall==='off'){ UI.rsel=null } else { const s=UI.rsel||new Set(); $$('#rail [data-rsel]').forEach(c=>s.add(c.dataset.rsel)); UI.rsel=s.size?s:null } renderRail(); return }
+  if(d.rselall){ if(d.rselall==='off'){ UI.rsel=null } else { const s=UI.rsel||new Set(); $$(($('#dlgItem').open?'#dlgItem':'#rail')+' [data-rsel]').forEach(c=>s.add(c.dataset.rsel)); UI.rsel=s.size?s:null } renderRail(); return }
   if(d.unassign){ const u=U(d.unassign); const sl=curSlot(); if(u&&u[sl]){ unplace(u,sl); if(UI.sel&&UI.sel.id===u.id) UI.sel=null; toast(`${lbl(u)}을(를) 미배치 가구로 돌려놓았어요.`); commit() } return }
   if(d.mq){ const[side,l]=d.mq.split(':'); const cols=getCols(); cols[side]=l==='none'?[]:S.maps.filter(cal).map(m=>`${m.id}:*:${l}`); UI.openMsel=side; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.swapcols!==undefined){ const c=getCols(); UI.cols={L:c.R,R:c.L}; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
@@ -1887,6 +1899,9 @@ $('#btnImport').onclick=()=>{ $('#fileImport').value=''; $('#fileImport').click(
 $('#fileImport').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; try{ const o=JSON.parse(await f.text()); if(!Array.isArray(o.places)||!Array.isArray(o.items)||!Array.isArray(o.units)||!Array.isArray(o.maps)) throw 0; S=Object.assign(empty(),o); UI.slots=[null,null]; UI.fitted=false; savePanels(); commit(); $('#dlgData').close(); toast('불러왔어요.') }catch(err){ toast('이 파일은 이사 배치판 데이터가 아니에요.') } };
 $('#btnLogout').onclick=()=>{ try{ firebase.auth().signOut() }catch(e){} };
 $('#btnLock').onclick=async()=>{ try{ await Cloud.db.collection('settings').doc('lock').set({locked:!Cloud.locked,by:Cloud.user?Cloud.user.email:'',at:Date.now()},{merge:true}); toast(Cloud.locked?'잠금을 풀었어요.':'수정을 잠갔어요.') }catch(e){ console.error(e); toast('관리자 계정이 아니라서 바꿀 수 없어요.') } };
+document.addEventListener('click',e=>{ const t=e.target.closest('[data-openitem]'); if(!t||e.target.closest('button,input,select,[data-swc]')) return; openItemDlg(t.dataset.openitem) });
+$('#dlgItem').addEventListener('close',()=>{ UI.itemDlg=null; if(UI.rsel){ UI.rsel=null; renderRail() } });
+$('#dlgItem').addEventListener('click',e=>{ if(e.target===e.currentTarget) e.currentTarget.close() });
 $('#btnUndo').onclick=()=>undoStep(false); $('#btnRedo').onclick=()=>undoStep(true);
 $('#btnVer').onclick=()=>{ renderVerList(); const n=(liveS().versions||[]).filter(v=>!v.auto).length+1; $('#verName').value=''; $('#verName').placeholder=`예: ${n}차 배치안`; $('#dlgVer').showModal() };
 $('#btnVerSave').onclick=()=>{ if(UI.viewVer){ toast('지난 버전을 보는 중이에요. 먼저 [현재로 돌아가기]를 누르세요.'); return } if(Cloud.on&&!canEdit()){ toast('관리자가 수정을 잠가 두었어요.'); return }

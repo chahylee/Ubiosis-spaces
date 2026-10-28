@@ -586,7 +586,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
           <button id="railTab" class="railtab" hidden title="자산 목록 펼치기">▶<span>자산 목록</span></button>
           <svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg>
           <div id="selbar" class="selbar" hidden></div>
-          <div class="legend" title="휠: 확대·축소 (Alt 같이: 더 세밀하게) · Ctrl+휠: 칸별 위아래 이동 · Ctrl+끌기: 화면 이동 · 스크롤바: 끌거나 클릭해서 이동 · 빈 곳 끌기: 범위 안 가구 한 번에 고르기 (Shift 같이: 더하기) · Ctrl/Shift+클릭: 하나씩 더 고르기 · 오른쪽 버튼: 장소 옮기기 · Ctrl+방향키: 1cm씩 이동 (Shift 같이: 10cm) · Alt+방향키: 90° 회전 · 공간 이름: 그 공간만"><span><i></i>1칸 = 50cm</span><span>휠 확대·축소 · Ctrl+휠/끌기 이동 · 빈 곳 끌기 범위 선택 · 오른쪽 버튼 장소 옮기기</span></div>
+          <div class="legend" title="휠: 칸별 위아래 이동 · Shift+휠: 좌우 · Ctrl+휠: 확대·축소 (Ctrl+Alt+휠: 더 세밀하게) · Ctrl+끌기: 화면 위아래·좌우 이동 · 스크롤바: 끌거나 클릭해서 이동 · 빈 곳 끌기: 범위 안 가구 한 번에 고르기 (Shift 같이: 더하기) · Ctrl/Shift+클릭: 하나씩 더 고르기 · 오른쪽 버튼: 장소 옮기기 · Ctrl+방향키: 1cm씩 이동 (Shift 같이: 10cm) · Alt+방향키: 90° 회전 · 공간 이름: 그 공간만"><span><i></i>1칸 = 50cm</span><span>Ctrl+휠 확대·축소 · Ctrl+끌기 이동 · 빈 곳 끌기 범위 선택 · 오른쪽 버튼 장소 옮기기</span></div>
           <div id="planEmpty" class="empty" hidden></div>
           <button id="photosTab" class="photos-tab" hidden>◀ 사진·들어온 가구</button>
           <div class="sbar" id="sbL" hidden><i></i></div><div class="sbar" id="sbR" hidden><i></i></div><div class="hbar" id="sbH" hidden><i></i></div>
@@ -1120,10 +1120,9 @@ $$('.sbar i').forEach(t=>t.addEventListener('pointerdown',e=>{ e.preventDefault(
 planSvg.addEventListener('wheel',e=>{ e.preventDefault(); const dy=e.deltaY*(e.deltaMode===1?33:e.deltaMode===2?400:1); const p=V.pt(e);
   const k=V.h/(planSvg.getBoundingClientRect().height||1);
   const dx=e.deltaX*(e.deltaMode===1?33:e.deltaMode===2?400:1);
-  // Ctrl+휠 = 위아래 이동
-  if(e.ctrlKey||e.metaKey){ const v=Math.abs(dy)>=Math.abs(dx)?dy:dx; if(Math.abs(v)<1) return; const c=colAtX(p.x); if(c) scrollBy(c,v*k); return }
-  if(Math.abs(dx)>Math.abs(dy)){ setHx((UI.hx||0)+dx*k); return } // 터치패드 옆으로 밀기
-  // 휠 = 확대·축소 (Alt 같이: 더 세밀하게)
+  // 휠 = 칸별 위아래 이동, Shift+휠 = 좌우
+  if(!e.ctrlKey&&!e.metaKey){ if(e.shiftKey&&Math.abs(dy)>=1){ setHx((UI.hx||0)+dy*k); return } if(Math.abs(dx)>Math.abs(dy)){ setHx((UI.hx||0)+dx*k); return } if(Math.abs(dy)<1) return; const c=colAtX(p.x); if(c) scrollBy(c,dy*k); return }
+  // Ctrl+휠 = 확대·축소 (Alt 같이: 더 세밀하게)
   { const notch=Math.abs(dy)>=40; const f=notch?Math.sign(dy)*(e.altKey?.02:.05):clamp(dy,-40,40)*(e.altKey?.002:.006); const c=colAtX(p.x); if(c&&UI.L.some(x=>x.col==='L')&&UI.L.some(x=>x.col==='R')) zoomCol(c,Math.exp(f),p.y); else { const cx=centerX(); V.zoomAt(cx!=null?cx:p.x,p.y,Math.exp(f)) } } },{passive:false});
 function zoomCol(c,k,wy){ const z0=colZ(c), z1=clamp(z0/k,.1,20); if(wy==null) wy=V.y+V.h/2; const a=anc(c); const s0=UI.scroll[c]||0; const ly=a.y0+(wy+s0-a.y0)/z0; UI.colz[c]=z1; setScroll(c,a.y0+(ly-a.y0)*z1-wy) }
 function syncColZoom(){ const both=(UI.L||[]).some(x=>x.col==='L')&&(UI.L||[]).some(x=>x.col==='R');

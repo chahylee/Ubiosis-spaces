@@ -1086,9 +1086,11 @@ function buildTray(L){ UI.trayPos={}; UI.trayBox=null; UI.trayZones=[]; if(UI.vi
     UI.trayZones.push({k:b.k,x1:bx,y1:by-90,x2:bx+bw,y2:by+bh});
     out+=`<g class="fixsz" data-col="L" data-fx="${bx}" data-fy="${by}" transform="translate(${bx} ${by-34})"><rect class="ptag tr${b.k==='n'?' trn':''}" x="0" y="-22" width="${tw}" height="40" rx="7"/><text class="ptagt tr" x="${tw/2}" y="-2">${b.title} ${b.list.length}</text></g><rect class="traybg" data-zone="${b.k}" x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="10"/>${s}`;
     by+=bh+160 }
-  UI.trayBox={x1:bx,y1:ty0-90,x2:bx+bw,y2:by-160};
-  return `<g class="tray">${out}</g>` }
-const trayZoneAt=l=>(UI.trayZones||[]).find(z=>l.x>=z.x1&&l.x<=z.x2&&l.y>=z.y1&&l.y<=z.y2);
+  UI.trayBox={x1:bx,y1:ty0-90,x2:bx+bw,y2:by-160}; UI.trayEnd=Math.max(...L.map(e=>e.oy+e.h));
+  return `<g class="tray" id="trayfix" transform="translate(0 ${trayDy()})">${out}</g>` }
+/* 미배치 칸은 도면을 아래로 내려도 따라 내려와 위쪽이 화면 같은 자리에 머묾 (도면 끝까지만) */
+function trayDy(){ if(!UI.trayBox) return 0; const s=(UI.scroll.L||0)/colZ('L'); return Math.max(0,Math.min(s,(UI.trayEnd||0)-UI.trayBox.y2)) }
+const trayZoneAt=l=>{ const dy=trayDy(); return (UI.trayZones||[]).find(z=>l.x>=z.x1&&l.x<=z.x2&&l.y-dy>=z.y1&&l.y-dy<=z.y2) };
 /* 미배치 칸에 놓기: a) 변경 전 위치 빼기  h) 이 공간 가구로(도면 자리 없음)  n) 도착 장소 미정 */
 function dropToZone(list,slot,k){ let n=0;
   for(const x of list){ if(k==='a'){ if(slot==='from'&&x.from){ x.from=null; n++ } continue }
@@ -1145,7 +1147,7 @@ function bootView(){ UI.booted=true; const pv=PREFS0.view; if(pv&&pv!=='plan'&&p
 function colExt(c){ const ps=(UI.L||[]).filter(e=>e.col===c); if(!ps.length) return null; const z=colZ(c), a=anc(c); const X=v=>a.ax+(v-a.ax)*z, Y=v=>a.y0+(v-a.y0)*z; const tb=c==='L'&&UI.view==='space'&&UI.trayBox?UI.trayBox:null; return {x1:X(Math.min(...ps.map(e=>e.ox))),x2:X(Math.max(...ps.map(e=>e.ox+e.w),tb?tb.x2:-Infinity)),y1:Y(Math.min(...ps.map(e=>e.oy))-90),y2:Y(Math.max(...ps.map(e=>e.oy+e.h),tb?tb.y2:-Infinity)+40)} }
 function colAtX(x){ let best=null,bd=Infinity; for(const c of ['L','R']){ const e=colExt(c); if(!e) continue; const d=x<e.x1?e.x1-x:x>e.x2?x-e.x2:0; if(d<bd){bd=d;best=c} } return best }
 function scrollRange(c){ const x=colExt(c); if(!x) return [0,0]; const lo=x.y1-V.y; return [lo,Math.max(lo,x.y2-(V.y+V.h))] }
-function setScroll(c,v){ UI.scroll[c]=v; saveVS(); const g=$('#col'+c); if(g) g.setAttribute('transform',colTransform(c)); renderOverlay(); updateSbars(); syncColZoom() }
+function setScroll(c,v){ UI.scroll[c]=v; saveVS(); const g=$('#col'+c); if(g) g.setAttribute('transform',colTransform(c)); if(c==='L'){ const tf=$('#trayfix'); if(tf) tf.setAttribute('transform',`translate(0 ${trayDy()})`) } renderOverlay(); updateSbars(); syncColZoom() }
 function scrollBy(c,ds){ const s0=UI.scroll[c]||0; const[lo,hi]=scrollRange(c); let ns=s0+ds; if(ds>0) ns=Math.min(ns,Math.max(hi,s0)); else ns=Math.max(ns,Math.min(lo,s0)); setScroll(c,ns) }
 function updateSbars(){ const wrap=$('#svgwrap'); if(!wrap) return; const wr=wrap.getBoundingClientRect(), sr=planSvg.getBoundingClientRect();
   for(const c of ['L','R']){ const bar=$('#sb'+c); const x=UI.view==='plan'||UI.view==='space'?colExt(c):null; if(!x||!sr.width){ bar.hidden=true; continue }
@@ -1390,7 +1392,7 @@ function moveGroupWith(u,slot,before,others,keepMulti,tp0){
   for(const m of mem){ const pos={mapId:m.mapId,x:Math.round(m.x+(m.keep?0:sx)),y:Math.round(m.y+(m.keep?0:sy)),rot:m.rot}; m.o[ps]=pos; if(ps==='to') m.o.toPlaceId=null }
   UI.multi=fromTray?null:keepMulti; UI.sel={id:u.id,slot:ps}; commit();
   if(skip) toast(`${skip}개는 다른 공간 가구라 기존 위치로는 옮기지 않았어요.`) }
-function trayRect(u){ const t=UI.trayPos&&UI.trayPos[u.id]; if(!t) return null; const z=colZ('L'); const q=toW('L',t.x,t.y); return {x:q.x,y:q.y,w:t.w*z,d:t.d*z,e:{col:'L'},lx:t.x,ly:t.y,lw:t.w,ld:t.d} }
+function trayRect(u){ const t=UI.trayPos&&UI.trayPos[u.id]; if(!t) return null; const z=colZ('L'); const q=toW('L',t.x,t.y+trayDy()); return {x:q.x,y:q.y,w:t.w*z,d:t.d*z,e:{col:'L'},lx:t.x,ly:t.y,lw:t.w,ld:t.d} }
 function alignSnap(e,id,x,y,w,d){
   const slot=e.layer==='a'?'from':'to'; const thr=clamp(V.w/1000*9/colZ(e.col),3,25); let bx=null,by=null;
   for(const o of S.units){ if(o.id===id) continue; const pos=o[slot]; if(!pos||pos.mapId!==e.m.id) continue; if(slot==='from'&&isPlaced(o)) continue;

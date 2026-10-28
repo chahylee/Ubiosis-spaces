@@ -735,7 +735,7 @@ async function applyCloud(){
   const merge=(oldArr,newArr)=>{ const om=new Map((oldArr||[]).map(o=>[o.id,o])); return newArr.map(n=>{ const o=om.get(n.id); if(!o) return n; for(const k of Object.keys(o)) if(!(k in n)) delete o[k]; return Object.assign(o,n) }) };
   for(const coll of COLLS) S[coll]=merge(S[coll],S2[coll]); S.meta=Object.assign(S.meta||{},S2.meta);
   if(Cal.m&&!S.maps.includes(Cal.m)&&$('#dlgCal').open){ $('#dlgCal').close(); toast('다른 사람이 이 도면을 지워서 축척 창을 닫았어요.') }
-  const first=!Cloud.ready; Cloud.ready=true; renderAll(); if(first){ UI.fitted=false; renderAll(); setSave('저장됨 · 모두에게 공유 중'); if(!S.places.length) toast('아직 내용이 없어요. 공간을 등록하거나, 데이터 → 파일 불러오기로 기존 작업을 올리세요.') }
+  const first=!Cloud.ready; Cloud.ready=true; renderAll(); if(first){ UI.fitted=false; renderAll(); bootView(); setSave('저장됨 · 모두에게 공유 중'); if(!S.places.length) toast('아직 내용이 없어요. 공간을 등록하거나, 데이터 → 파일 불러오기로 기존 작업을 올리세요.') }
 }
 function cloudStart(){
   try{ firebase.initializeApp(FIREBASE_CONFIG); Cloud.db=firebase.firestore(); Cloud.on=true }catch(e){ console.error(e); return false }
@@ -813,13 +813,13 @@ function Viewport(svg,opts={}){
 /* ---------- plan ---------- */
 const planSvg=$('#plan'); const V=Viewport(planSvg,{wheel:false}); V.minW=5; let baseW=null;
 function syncZoom(){ if(!baseW) return; const z=baseW/V.w; const r=$('#zoomR'); if(r&&document.activeElement!==r) r.value=Math.log(z).toFixed(2); const pz=$('#zoomP'); if(pz) pz.textContent=`${z>=10?Math.round(z*100):Math.round(z*100)}%` }
-V.onzoom=()=>{ renderOverlay(); syncZoom(); updateSbars&&updateSbars() };
+V.onzoom=()=>{ renderOverlay(); syncZoom(); updateSbars&&updateSbars(); typeof saveVS==='function'&&saveVS() };
 function centerX(){ const L=UI.L||[]; if(!L.length) return null; if(UI.view==='space'&&UI.trayBox) return (Math.min(...L.map(e=>e.ox))+UI.trayBox.x2)/2; const a=L.filter(e=>e.col==='L'), b=L.filter(e=>e.col==='R');
   if(a.length&&b.length) return (Math.max(...a.map(e=>e.ox+e.w))+Math.min(...b.map(e=>e.ox)))/2;
   return (Math.min(...L.map(e=>e.ox))+Math.max(...L.map(e=>e.ox+e.w)))/2 }
 function hExt(){ const es=['L','R'].map(colExt).filter(Boolean); if(!es.length) return null; const pad=40; return {x1:Math.min(...es.map(e=>e.x1))-pad, x2:Math.max(...es.map(e=>e.x2))+pad} }
 { const baseApply=V.apply; V.apply=()=>{ const cx=centerX(); if(cx!=null){ const base=cx-V.w/2; let x=base+(UI.hx||0); const h=hExt(); if(h&&h.x2-h.x1>V.w*1.01){ x=clamp(x,Math.min(h.x1,base),Math.max(h.x2-V.w,base)) } else x=base; UI.hx=x-base; V.x=x } baseApply() } }
-function setHx(v){ UI.hx=v; V.apply(); renderOverlay(); updateSbars() }
+function setHx(v){ UI.hx=v; saveVS(); V.apply(); renderOverlay(); updateSbars() }
 const GAP=70; const gapFor=w=>Math.max(220,Math.round(w*.16));
 const off=e=>(UI.scroll&&UI.scroll[e.col])||0;
 const colZ=c=>(UI.colz&&UI.colz[c])||1;
@@ -949,11 +949,23 @@ function renderPlan(){
 function fitAll(){ const L=UI.L; if(!L.length){ updateSbars(); return } UI.scroll={L:0,R:0}; UI.colz={L:1,R:1}; UI.hx=0; ['L','R'].forEach(c=>{ const g=$('#col'+c); if(g) g.setAttribute('transform',colTransform(c)) });
   const x1=Math.min(...L.map(e=>e.ox)), y1=Math.min(...L.map(e=>e.oy))-80, x2=Math.max(...L.map(e=>e.ox+e.w),UI.view==='space'&&UI.trayBox?UI.trayBox.x2:-Infinity);
   const colH=Math.max(...['L','R'].map(c=>{ const x=colExt(c); return x?x.y2-x.y1:0 }));
-  { const r=planSvg.getBoundingClientRect(); const asp=r.width>0?r.height/r.width:.6; V.fit(x1,y1,x2-x1,Math.min(colH,(x2-x1)*asp),.015) } V.y=y1-70; V.apply(); baseW=V.w; syncZoom(); renderOverlay(); updateSbars() }
+  { const r=planSvg.getBoundingClientRect(); const asp=r.width>0?r.height/r.width:.6; V.fit(x1,y1,x2-x1,Math.min(colH,(x2-x1)*asp),.015) } V.y=y1-70; V.apply(); baseW=V.w; UI.fitY=V.y; applyRestore(); syncZoom(); renderOverlay(); updateSbars(); saveVS() }
+/* ---------- 마지막 화면 기억 (이 브라우저) ---------- */
+const viewKey=()=>[UI.view,UI.focus||'',UI.room?UI.room.mapId+':'+UI.room.roomId:'',UI.view==='space'?UI.wlayer||'a':'',UI.view==='plan'?JSON.stringify(getCols()):''].join('|');
+let vsT=null;
+function saveVS(){ if(UI.restore||!(UI.view==='plan'||UI.view==='space')||!baseW) return; clearTimeout(vsT); vsT=setTimeout(()=>{ try{ localStorage.setItem('mb-viewstate',JSON.stringify({view:UI.view,focus:UI.focus||null,room:UI.room||null,wlayer:UI.wlayer||'a',key:viewKey(),z:baseW/V.w,dy:V.y-(UI.fitY||0),scroll:UI.scroll,colz:UI.colz,hx:UI.hx||0})) }catch(e){} },300) }
+function applyRestore(){ const r=UI.restore; if(!r) return; if(r.view!==UI.view||r.key!==viewKey()) return;
+  const cx=centerX(); V.zoomAt(cx!=null?cx:V.x+V.w/2,V.y,1/(r.z||1)); UI.colz={L:1,R:1,...(r.colz||{})}; UI.scroll={L:0,R:0,...(r.scroll||{})}; UI.hx=r.hx||0; V.y=(UI.fitY||0)+(r.dy||0);
+  ['L','R'].forEach(c=>{ const g=$('#col'+c); if(g) g.setAttribute('transform',colTransform(c)) }); V.apply(); syncColZoom&&syncColZoom();
+  clearTimeout(UI.restoreT); UI.restoreT=setTimeout(()=>{ UI.restore=null },700) }
+function bootView(){ let r=null; try{ r=JSON.parse(localStorage.getItem('mb-viewstate')||'null') }catch(e){} if(!r||!(r.view==='plan'||r.view==='space')){ return }
+  if(r.view==='space'){ if(r.focus&&!P(r.focus)) return; UI.focus=UI.lastFocus=r.focus; UI.room=r.room&&M(r.room.mapId)?r.room:null; UI.railTab=r.focus&&itemsOf(r.focus).length?r.focus:'' }
+  UI.restore=r; switchView(r.view); if(r.view==='space'&&r.wlayer==='b'){ UI.wlayer='b'; renderAll(); fitAll(); requestAnimationFrame(fitAll) }
+  setTimeout(()=>{ UI.restore=null },1500) }
 function colExt(c){ const ps=(UI.L||[]).filter(e=>e.col===c); if(!ps.length) return null; const z=colZ(c), a=anc(c); const X=v=>a.ax+(v-a.ax)*z, Y=v=>a.y0+(v-a.y0)*z; const tb=c==='L'&&UI.view==='space'&&UI.trayBox?UI.trayBox:null; return {x1:X(Math.min(...ps.map(e=>e.ox))),x2:X(Math.max(...ps.map(e=>e.ox+e.w),tb?tb.x2:-Infinity)),y1:Y(Math.min(...ps.map(e=>e.oy))-90),y2:Y(Math.max(...ps.map(e=>e.oy+e.h),tb?tb.y2:-Infinity)+40)} }
 function colAtX(x){ let best=null,bd=Infinity; for(const c of ['L','R']){ const e=colExt(c); if(!e) continue; const d=x<e.x1?e.x1-x:x>e.x2?x-e.x2:0; if(d<bd){bd=d;best=c} } return best }
 function scrollRange(c){ const x=colExt(c); if(!x) return [0,0]; const lo=x.y1-V.y; return [lo,Math.max(lo,x.y2-(V.y+V.h))] }
-function setScroll(c,v){ UI.scroll[c]=v; const g=$('#col'+c); if(g) g.setAttribute('transform',colTransform(c)); renderOverlay(); updateSbars(); syncColZoom() }
+function setScroll(c,v){ UI.scroll[c]=v; saveVS(); const g=$('#col'+c); if(g) g.setAttribute('transform',colTransform(c)); renderOverlay(); updateSbars(); syncColZoom() }
 function scrollBy(c,ds){ const s0=UI.scroll[c]||0; const[lo,hi]=scrollRange(c); let ns=s0+ds; if(ds>0) ns=Math.min(ns,Math.max(hi,s0)); else ns=Math.max(ns,Math.min(lo,s0)); setScroll(c,ns) }
 function updateSbars(){ const wrap=$('#svgwrap'); if(!wrap) return; const wr=wrap.getBoundingClientRect(), sr=planSvg.getBoundingClientRect();
   for(const c of ['L','R']){ const bar=$('#sb'+c); const x=UI.view==='plan'||UI.view==='space'?colExt(c):null; if(!x||!sr.width){ bar.hidden=true; continue }
@@ -1042,7 +1054,7 @@ function renderSelbar(){
   const u=U(sel.id); if(sel.slot==='tray'&&u){ const it=I(u.itemId); b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b><span class="mono">${it.w}×${it.d}${it.h?'×'+it.h:''}</span>${it.isNew?'<span class="rb new">새로 살 가구</span>':''}<span class="route">대기 중 · 끌어서 도면에 놓으세요</span><button class="btn small danger" data-delunit="${u.id}">가구 삭제</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`; b.hidden=false; return }
   if(!u||!u[sel.slot]){UI.sel=null;b.hidden=true;return}
   const it=I(u.itemId); const dp=destPlace(u);
-  b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b><span class="mono">${it.w}×${it.d}${it.h?'×'+it.h:''}</span>${routeBadge(u)}<button class="btn small" data-act="rot">회전<kbd>R</kbd></button><button class="btn small" data-act="rm">${sel.slot==='from'?'기존 위치 지우기':'도착 위치 빼기'}</button><button class="btn small danger" data-delunit="${u.id}">가구 삭제</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`;
+  b.innerHTML=`<span class="sw" style="--c:${it.color}"></span><b>${esc(lbl(u))}</b><span class="mono">${it.w}×${it.d}${it.h?'×'+it.h:''}</span>${routeBadge(u)}<button class="btn small" data-act="rot" title="R 또는 Alt+→ : 90° 회전 · Alt+← : 반대로">회전<kbd>Alt+←→</kbd></button><button class="btn small" data-act="rm">${sel.slot==='from'?'기존 위치 지우기':'도착 위치 빼기'}</button><button class="btn small danger" data-delunit="${u.id}">가구 삭제</button><button class="btn small" data-act="x" aria-label="선택 해제">닫기</button>`;
   b.hidden=false;
 }
 
@@ -1162,7 +1174,7 @@ function dropUnit(u,srcSlot,cx,cy,rot){
   UI.hl=null; commit();
 }
 function removeSlot(u,slot){ u[slot]=null; if(UI.sel&&UI.sel.id===u.id) UI.sel=null; toast(slot==='from'?`${lbl(u)}의 기존 위치를 지웠어요.`:`${lbl(u)}을(를) 도착 위치에서 뺐어요.`); commit() }
-function rotateSel(){ const s=UI.sel; if(!s) return; const u=U(s.id); const pos=u&&u[s.slot]; if(!pos) return; const it=I(u.itemId); const[w,d]=dims(it,pos.rot||0); const cx=pos.x+w/2, cy=pos.y+d/2; pos.rot=((pos.rot||0)+90)%360; const[w2,d2]=dims(it,pos.rot); pos.x=Math.round(cx-w2/2); pos.y=Math.round(cy-d2/2); commit() }
+function rotateSel(dir=1){ const s=UI.sel; if(!s) return; const u=U(s.id); const pos=u&&u[s.slot]; if(!pos) return; const it=I(u.itemId); const[w,d]=dims(it,pos.rot||0); const cx=pos.x+w/2, cy=pos.y+d/2; pos.rot=(((pos.rot||0)+90*dir)%360+360)%360; const[w2,d2]=dims(it,pos.rot); pos.x=Math.round(cx-w2/2); pos.y=Math.round(cy-d2/2); commit() }
 function commit(){ save(); renderAll() }
 
 /* drag from rail */
@@ -1419,7 +1431,8 @@ document.addEventListener('submit',e=>{ if(e.target.id==='qadd'){ e.preventDefau
 document.addEventListener('keydown',e=>{
   if(e.target.closest('input,select,textarea')||$('dialog[open]')) return;
   if(UI.view!=='plan'&&UI.view!=='space') return;
-  if(e.key==='r'||e.key==='R'){ rotateSel() }
+  if(e.altKey&&UI.sel&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){ e.preventDefault(); rotateSel(e.key==='ArrowLeft'||e.key==='ArrowDown'?-1:1) }
+  else if(e.key==='r'||e.key==='R'){ rotateSel() }
   else if((e.key==='Delete'||e.key==='Backspace')&&UI.sel){ e.preventDefault(); removeSlot(U(UI.sel.id),UI.sel.slot) }
   else if(e.key==='Escape'){ UI.sel=null; UI.hl=null; UI.measure=null; renderPlan(); renderRail() }
   else if(e.key==='m'||e.key==='M'){ toggleMeasure() }
@@ -1672,7 +1685,7 @@ function makeExample(){
   const saved=await Store.get('state');
   if(saved&&Array.isArray(saved.places)){ S=Object.assign(empty(),saved); $('#saveState').textContent='이 브라우저에 저장됨' }
   else { makeExample(); save() }
-  renderAll();
+  renderAll(); bootView();
 })();
 })();
 </script>

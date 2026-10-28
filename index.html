@@ -593,7 +593,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
           <button id="railTab" class="railtab" hidden title="자산 목록 펼치기">▶<span>자산 목록</span></button>
           <svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg>
           <div id="selbar" class="selbar" hidden></div>
-          <div class="legend" title="휠: 칸별 위아래 이동 · Shift+휠: 좌우 · Ctrl+휠: 확대·축소 (Ctrl+Alt+휠: 더 세밀하게) · Ctrl+끌기: 화면 위아래·좌우 이동 · 스크롤바: 끌거나 클릭해서 이동 · 빈 곳 끌기: 범위 안 가구 한 번에 고르기 (Shift 같이: 더하기) · Ctrl/Shift+클릭: 하나씩 더 고르기 · 오른쪽 버튼: 장소 옮기기 · Ctrl+방향키: 1cm씩 이동 (Shift 같이: 10cm) · Alt+방향키: 90° 회전 · 공간 이름: 그 공간만"><span><i></i>1칸 = 50cm</span><span>Ctrl+휠 확대·축소 · Ctrl+끌기 이동 · 빈 곳 끌기 범위 선택 · 오른쪽 버튼 장소 옮기기</span></div>
+          <div class="legend" title="휠: 칸별 위아래 이동 · Shift+휠: 좌우 · Ctrl+휠: 확대·축소 (Ctrl+Alt+휠: 더 세밀하게) · Ctrl+끌기: 화면 위아래·좌우 이동 · 스크롤바: 끌거나 클릭해서 이동 · 빈 곳 끌기: 범위 안 가구 한 번에 고르기 (Shift 같이: 더하기) · Ctrl/Shift+클릭: 하나씩 더 고르기 · 오른쪽 버튼: 장소 옮기기 · Ctrl+방향키: 1cm씩 이동 (Shift 같이: 10cm) · R 또는 Alt+방향키: 90° 회전 (붙어 있는 것은 한 덩어리로) · 공간 이름: 그 공간만"><span><i></i>1칸 = 50cm</span><span>Ctrl+휠 확대·축소 · Ctrl+끌기 이동 · 빈 곳 끌기 범위 선택 · 오른쪽 버튼 장소 옮기기</span></div>
           <div id="planEmpty" class="empty" hidden></div>
           <button id="photosTab" class="photos-tab" hidden>◀ 사진·들어온 가구</button>
           <div class="sbar" id="sbL" hidden><i></i></div><div class="sbar" id="sbR" hidden><i></i></div><div class="hbar" id="sbH" hidden><i></i></div>
@@ -1243,11 +1243,11 @@ document.addEventListener('change',e=>{ const t=e.target.closest('[data-dimf]');
 document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.closest&&e.target.closest('[data-dimf]')) e.target.blur() },true);
 function renderSelbar(){
   const b=$('#selbar'); const sel=UI.sel; if(!sel){b.hidden=true;return}
-  { const m=getMulti(); if(m.length>1){ const onMap=m.filter(x=>x.slot!=='tray').length; b.innerHTML=`<b title="${esc(m.map(x=>lbl(U(x.id))).join(', '))}">${m.length}개 선택</b>${bulkDestSel()}${onMap?`<button class="btn small" data-act="rm">↩ 모두 미배치 가구로</button>`:''}<span class="hint">오른쪽 버튼으로도 옮길 수 있어요</span>`; b.hidden=false; return } }
+  { const m=getMulti(); if(m.length>1){ const onMap=m.filter(x=>x.slot!=='tray').length; b.innerHTML=`<b title="${esc(m.map(x=>lbl(U(x.id))).join(', '))}">${m.length}개 선택</b>${bulkDestSel()}${onMap?`<button class="btn small" data-act="rot" title="R · 붙어 있는 것은 한 덩어리로 돌아요">↻ 90°</button><button class="btn small" data-act="rm">↩ 모두 미배치 가구로</button>`:''}<span class="hint">오른쪽 버튼으로도 옮길 수 있어요</span>`; b.hidden=false; return } }
   const u=U(sel.id); if(sel.slot==='tray'&&u){ const it=I(u.itemId); b.innerHTML=`<span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b>${esc(lbl(u))}</b>${dimInputs(it)}${assetPhotoBtn(it,'mini')}${it.isNew?'<span class="rb new">신규 구매</span>':''}`; b.hidden=false; return }
   if(!u||!u[sel.slot]){UI.sel=null;b.hidden=true;return}
   const it=I(u.itemId); const dp=destPlace(u);
-  b.innerHTML=`<span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b>${esc(lbl(u))}</b>${dimInputs(it)}${assetPhotoBtn(it,'mini')}${routeBadge(u)}<button class="btn small" data-act="rm" title="Delete 키">↩ 미배치 가구로</button>`;
+  b.innerHTML=`<span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b>${esc(lbl(u))}</b>${dimInputs(it)}${assetPhotoBtn(it,'mini')}${routeBadge(u)}<button class="btn small" data-act="rot" title="R">↻ 90°</button><button class="btn small" data-act="rm" title="Delete 키">↩ 미배치 가구로</button>`;
   b.hidden=false;
 }
 
@@ -1455,7 +1455,20 @@ function removeSel(){ const m=getMulti(); if(m.length>1){ for(const x of m){ con
 /* 변경 후 도면에서 빼도 도착 공간은 그대로 (그 공간의 '자리 미정' 가구로 돌아감) */
 function unplace(u,slot){ if(slot==='to'&&u.to){ const m=M(u.to.mapId); if(m) u.toPlaceId=m.placeId } u[slot]=null }
 function removeSlot(u,slot){ unplace(u,slot); if(UI.sel&&UI.sel.id===u.id) UI.sel=null; toast(`${lbl(u)}을(를) 미배치 가구로 돌려놓았어요.`); commit() }
-function rotateSel(dir=1){ const m=getMulti(); const list=m.length?m:(UI.sel?[UI.sel]:[]); let n=0; for(const s of list){ const u=U(s.id); const pos=u&&u[s.slot]; if(!pos) continue; const it=I(u.itemId); const[w,d]=dims(it,pos.rot||0); const cx=pos.x+w/2, cy=pos.y+d/2; pos.rot=(((pos.rot||0)+90*dir)%360+360)%360; const[w2,d2]=dims(it,pos.rot); pos.x=Math.round(cx-w2/2); pos.y=Math.round(cy-d2/2); n++ } if(n) commit() }
+/* 90° 돌리기: 고른 가구 중 서로 붙어 있는 것(1cm 이내)은 한 덩어리로 돌고, 따로 떨어진 것은 제자리에서 돎 */
+function rotateSel(dir=1){ const m=getMulti(); const list=(m.length?m:(UI.sel?[UI.sel]:[])).filter(s=>s.slot==='from'||s.slot==='to');
+  const its=list.map(s=>{ const u=U(s.id); const pos=u&&u[s.slot]; if(!pos) return null; const it=I(u.itemId); const[w,d]=dims(it,pos.rot||0); return {u,it,pos,k:s.slot+'|'+pos.mapId,x:pos.x,y:pos.y,w,d} }).filter(Boolean);
+  const par=its.map((_,i)=>i), root=i=>par[i]===i?i:(par[i]=root(par[i]));
+  for(let i=0;i<its.length;i++) for(let j=i+1;j<its.length;j++){ const a=its[i],b=its[j]; if(a.k===b.k&&a.x<=b.x+b.w+1&&b.x<=a.x+a.w+1&&a.y<=b.y+b.d+1&&b.y<=a.y+a.d+1) par[root(i)]=root(j) }
+  const groups=new Map(); its.forEach((o,i)=>{ const r=root(i); if(!groups.has(r)) groups.set(r,[]); groups.get(r).push(o) });
+  let n=0, skip=0;
+  for(const g of groups.values()){ const x1=Math.min(...g.map(o=>o.x)), y1=Math.min(...g.map(o=>o.y)), x2=Math.max(...g.map(o=>o.x+o.w)), y2=Math.max(...g.map(o=>o.y+o.d)); const cx=(x1+x2)/2, cy=(y1+y2)/2;
+    const nw=g.map(o=>{ const ux=o.x+o.w/2-cx, uy=o.y+o.d/2-cy; const nx=cx+(dir>0?-uy:uy), ny=cy+(dir>0?ux:-ux); const rot=(((o.pos.rot||0)+90*dir)%360+360)%360; const[w2,d2]=dims(o.it,rot); return {o,rot,x:nx-w2/2,y:ny-d2/2,w:w2,d:d2} });
+    const mp=M(g[0].pos.mapId); const W=mp?mp.w/mp.sx:Infinity, H=mp?mp.h/mp.sy:Infinity; let lox=-Infinity,hix=Infinity,loy=-Infinity,hiy=Infinity;
+    for(const q of nw){ lox=Math.max(lox,-q.x); hix=Math.min(hix,W-q.w-q.x); loy=Math.max(loy,-q.y); hiy=Math.min(hiy,H-q.d-q.y) }
+    if(g.length>1&&(lox>hix+.5||loy>hiy+.5)){ skip++; continue } const sx=g.length>1?clamp(0,lox,hix):0, sy=g.length>1?clamp(0,loy,hiy):0;
+    for(const q of nw){ q.o.pos.rot=q.rot; q.o.pos.x=Math.round(q.x+sx); q.o.pos.y=Math.round(q.y+sy); n++ } }
+  if(n) commit(); if(skip) toast(`붙어 있는 묶음 ${skip}개는 돌리면 도면 밖으로 나가서 돌리지 않았어요.`) }
 function commit(){ save(); renderAll() }
 /* ---------- 버전 (시점별 저장) ---------- */
 const liveS=()=>UI.viewVer?UI.live:S;

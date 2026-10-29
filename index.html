@@ -1208,7 +1208,7 @@ function renderOverlay(){ fixLabels();
     for(const sl0 of ['from','to']){ const sl=planSlot(linkU,sl0); if(!sl||sl===mySlot) continue; const pos=slotPos(linkU,sl); if(!pos) continue; let r=unitRect(linkU,sl);
       if(!r){ const[w,d]=dims(I(linkU.itemId),pos.rot||0); const e=UI.L.find(e=>e.m.id===pos.mapId&&inPanel(e,pos.x+w/2,pos.y+d/2)); if(e){ const z=colZ(e.col), q=toW(e.col,e.mx+pos.x,e.my+pos.y); r={x:q.x,y:q.y,w:w*z,d:d*z,ghost:true} } }
       if(r) tw.push({r,sl}) }
-    for(const {r,sl} of tw){ const pad=4*k; s+=`<g class="twin${r.ghost?' ghost':''}"><rect x="${r.x-pad}" y="${r.y-pad}" width="${r.w+pad*2}" height="${r.d+pad*2}" rx="${4*k}"/><text x="${r.x+r.w/2}" y="${r.y-pad-5*k}" font-size="${11*k}">${({from:'기존 위치',to:'변경 위치',first:'처음 위치',cur:'지금 위치',stay:'변경 위치 (그대로)'}[sl]||'')}</text></g>` } }
+    for(const {r,sl} of tw){ const pad=4*k; s+=`<g class="twin${r.ghost?' ghost':''}"><rect x="${r.x-pad}" y="${r.y-pad}" width="${r.w+pad*2}" height="${r.d+pad*2}" rx="${4*k}"/></g>` } }
   if(UI.sel){ const su=U(UI.sel.id); const r=su&&unitRect(su,UI.sel.slot); if(r) s+=gapsSVG(r.e,r.lx,r.ly,r.lw,r.ld,su.id) }
   if(UI.measure) s+=measureSVG(k);
   g.innerHTML=s;

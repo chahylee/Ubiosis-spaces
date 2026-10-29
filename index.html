@@ -365,13 +365,13 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .panel.b .ptagt{fill:var(--accent-ink)}
 .pname{fill:var(--ink);font:500 26px var(--sans);dominant-baseline:central}
 .unit{cursor:grab}
-.unit .ub{fill:var(--c);fill-opacity:.52;stroke:var(--c);stroke-width:2;vector-effect:non-scaling-stroke}
-.unit text{fill:var(--paper-ink);text-anchor:middle;dominant-baseline:central;font-family:var(--sans);pointer-events:none}
+.unit .ub{fill:var(--c);fill-opacity:.52;stroke:#1a1a1a;stroke-width:1;vector-effect:non-scaling-stroke} /* 외곽선은 얇은 검은색으로 통일 */
+.unit text{fill:var(--paper-ink);text-anchor:middle;dominant-baseline:central;font-family:'Malgun Gothic','맑은 고딕',var(--sans);pointer-events:none}
 .unit .un{font-weight:600}
-.unit .ud{font-family:var(--mono);opacity:.75}
+.unit .ud{opacity:.85}
 .unit .ufrom{font-weight:600;fill:#0f5d3a;paint-order:stroke;stroke:#fff;stroke-width:3px}
 .unit .ugo{font-weight:600;fill:var(--c);paint-order:stroke;stroke:#fff;stroke-width:3px}
-.unit.top .ub{fill-opacity:.38;stroke-dasharray:4 3;stroke-width:1.5}
+.unit.top .ub{fill-opacity:.38;stroke-dasharray:4 3;stroke-width:1}
 .unit.top .un{font-weight:500}
 .toptag{font-size:9.5px;border:1px dashed var(--muted);border-radius:4px;padding:0 4px;color:var(--muted)}
 .kindsel{border:1px solid transparent;background:transparent;border-radius:6px;padding:3px 4px;font-size:12.5px}
@@ -1740,7 +1740,7 @@ async function exportPPT(){ const ps=pptPanels(); if(!ps.length){ toast(UI.view=
       const col=(it.color||'#888888').replace('#',''); const wp=w*.2835, hp=d*.2835; const vert=(it.d>it.w*1.2)!==!!((pos.rot||0)%180); const name=u.person||lbl(u); const tw=vert?hp:wp, th=vert?wp:hp;
       const fs=Math.max(3,Math.min(14,th*.32,tw*.9/Math.max(1.4,name.length*.95))); const fd=Math.max(2.5,fs*.72);
       sl.addText([{text:name,options:{bold:true,fontSize:fs,breakLine:true}},{text:u.person?`${lbl(u)} · ${it.w}*${it.d}`:`${it.w}*${it.d}`,options:{fontSize:fd}}],
-        {x:IN(pos.x-e.cx+ox),y:IN(pos.y-e.cy+oy),w:IN(w),h:IN(d),shape:pp.ShapeType.rect,fill:{color:col,transparency:it.kind==='item'?60:45},line:{color:col,width:.75,dashType:it.kind==='item'?'dash':'solid'},
+        {x:IN(pos.x-e.cx+ox),y:IN(pos.y-e.cy+oy),w:IN(w),h:IN(d),shape:pp.ShapeType.rect,fill:{color:col,transparency:it.kind==='item'?60:45},line:{color:'1A1A1A',width:.5,dashType:it.kind==='item'?'dash':'solid'},
          align:'center',valign:'middle',color:'1A201E',fontFace:'Malgun Gothic',margin:0,vert:vert?'vert270':'horz',fit:'none',objectName:name}) } }
   const dt=new Date(); const fname=`유바이오시스공간구성-${UI.view==='space'?(P(UI.focus)?.name||'공간')+'-'+((UI.wlayer||'a')==='b'?'변경후':'변경전'):'변경후'}-${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}.pptx`;
   try{ const blob=await pp.write({outputType:'blob'}); await saveFile(fname,blob); toast(`PPT를 만들었어요 · ${ps.length}쪽 · 축척 1/100`) }catch(err){ console.error(err); toast('PPT를 만들지 못했어요.') } }

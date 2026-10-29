@@ -526,6 +526,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
 .cprevt{fill:var(--hl);font-family:var(--mono);text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:3px}
 .crm{fill:color-mix(in srgb,var(--accent) 6%,transparent);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:6 4;vector-effect:non-scaling-stroke}
 .cmask{fill:#fff;stroke:none;pointer-events:none} .cmask.on{stroke:#e0473b;stroke-width:1.5;stroke-dasharray:5 4;vector-effect:non-scaling-stroke}
+.cmask.erase{fill:rgba(224,71,59,.15)}
 .pmask{fill:#fff}
 .cpoly{fill:color-mix(in srgb,var(--accent) 10%,transparent);stroke:var(--accent);stroke-width:2.5;vector-effect:non-scaling-stroke;pointer-events:none}
 .crm.on{fill:color-mix(in srgb,var(--accent) 14%,transparent);stroke-width:2.5}
@@ -679,9 +680,9 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
           <button class="btn primary" id="calApply">적용</button>
           <div id="calCopy"></div>
         </div>
-        <div data-pane="mask" hidden class="field" style="gap:10px"><p class="hint">도면에 적힌 필요 없는 글씨나 선을 <b>끌어서</b> 흰 네모로 가리세요. 모눈은 그 위에 그대로 보여요. 가린 네모를 <b>클릭</b>하면 지워져요.</p><div id="maskInfo" class="hint"></div><button class="btn small" id="maskClear">가린 것 모두 지우기</button></div>
+        <div data-pane="mask" hidden class="field" style="gap:10px"><p class="hint">도면에 적힌 필요 없는 글씨나 선을 <b>끌어서</b> 흰 네모로 가리세요. 모눈은 그 위에 그대로 보여요. <b>✂ 일부 지우기</b>로 끌면 그 부분만 다시 보이고, 가린 네모를 <b>클릭</b>하면 통째로 지워져요. 도면 이동은 Ctrl+끌기(또는 마우스 오른쪽 버튼 끌기).</p><div class="seg" id="maskMode"><button data-mm="add" class="on">▢ 가리기</button><button data-mm="erase">✂ 일부 지우기</button></div><div id="maskInfo" class="hint"></div><div class="actions"><button class="btn small" id="maskUndo" title="Ctrl+Z">↶ 되돌리기</button><button class="btn small" id="maskClear">가린 것 모두 지우기</button></div></div>
         <div data-pane="origin" hidden><p class="hint">모눈이 시작할 벽 모서리를 클릭하세요. 모눈 선이 벽에 딱 맞게 옮겨져요.</p></div>
-        <div data-pane="rooms" hidden class="field" style="gap:10px"><p class="hint">방 모서리를 차례로 <b>클릭</b>하면 상하좌우 선으로 꺾이며 그려지고, <b>처음 점을 누르면</b> 방이 완성돼요(더블클릭·Enter도 돼요). Backspace는 한 점 지우기, Esc는 취소예요. 네모 방은 끌어서 그려도 돼요. 방별로도 보고 층 전체로도 볼 수 있어요.</p><div id="roomList" class="roomlist"></div></div>
+        <div data-pane="rooms" hidden class="field" style="gap:10px"><p class="hint">방 모서리를 차례로 <b>클릭</b>하면 상하좌우 선으로 꺾이며 그려지고, <b>처음 점을 누르면</b> 방이 완성돼요(더블클릭·Enter도 돼요). Backspace는 한 점 지우기, Esc는 취소예요. 네모 방은 끌어서 그려도 돼요. 방별로도 보고 층 전체로도 볼 수 있어요. 도면 이동은 Ctrl+끌기(또는 마우스 오른쪽 버튼 끌기), 확대·축소는 휠이에요.</p><div id="roomList" class="roomlist"></div></div>
         <div data-pane="check" hidden class="field" style="gap:10px"><p class="hint">다른 벽의 양 끝을 클릭하면 앱이 계산한 길이가 나와요. 도면에 적힌 치수와 같으면 축척이 맞은 거예요.</p><div id="checkOut" class="bignum">–</div><label class="field">도면에 적힌 값 (mm)<input id="chkLen" type="number" inputmode="decimal" min="1" placeholder="예: 9895"></label><div id="chkDiff" class="hint"></div><label class="hint" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="chkSep"> 이 방향(가로 또는 세로)만 고치기</label><button class="btn primary" id="chkFix" disabled>이 치수로 축척 고치기</button></div>
         <div class="calstatus" id="calStatus"></div>
         <div class="testerbox"><b>테스터 (기준 자)</b><p class="hint">원하는 길이의 선이나 네모를 도면 위에 겹쳐 놓고 끌어서 치수선과 맞춰 보세요. 축척이 맞으면 끝이 딱 맞아요.</p>
@@ -909,9 +910,9 @@ function undoStep(redo){ if(UI.viewVer) return; if(Cloud.on&&!canEdit()){ toast(
   for(const ch of d){ const t=redo?ch.after:ch.before; if(ch.c==='meta'){ S.meta=JSON.parse(t); continue }
     const arr=S[ch.c]||(S[ch.c]=[]); const i=arr.findIndex(x=>x.id===ch.id);
     if(!t){ if(i>=0) arr.splice(i,1); continue } const o=JSON.parse(t.j); if(t.img) o.img=t.img;
-    if(i>=0) arr[i]=o; else arr.splice(Math.min(t.i,arr.length),0,o) }
+    if(i>=0){ const cur=arr[i]; for(const k of Object.keys(cur)) if(!(k in o)&&k!=='img') delete cur[k]; Object.assign(cur,o) } else arr.splice(Math.min(t.i,arr.length),0,o) }
   (redo?UNDO.past:UNDO.future).push(d); UI.sel=null; UI.multi=null; UI.hl=null; UI.rsel=null;
-  UNDO.busy=true; try{ commit() } finally{ UNDO.busy=false } UNDO.snap=snapNow(); undoBtns();
+  UNDO.busy=true; try{ commit() } finally{ UNDO.busy=false } UNDO.snap=snapNow(); undoBtns(); if($('#dlgCal').open&&Cal.m){ Cal.m=M(Cal.m.id)||Cal.m; calOverlay(); if(Cal.mode==='rooms') calRooms(); if(Cal.mode==='mask') maskInfo() }
   toast(redo?'다시 했어요. (Ctrl+Y)':`되돌렸어요.${UNDO.past.length?` ${UNDO.past.length}번 더 되돌릴 수 있어요.`:''}`) }
 document.addEventListener('keydown',e=>{ if(!(e.ctrlKey||e.metaKey)||e.altKey) return; const k=e.key.toLowerCase(); if(k!=='z'&&k!=='y') return;
   if(e.target.closest&&e.target.closest('input,textarea,select,[contenteditable]')) return; e.preventDefault(); undoStep(k==='y'||(k==='z'&&e.shiftKey)) });
@@ -2097,6 +2098,11 @@ $('#cropDone').onclick=()=>{ $('#dlgCrop').close(); if(!Crop.added.length&&!Crop
 
 /* ---------- calibration ---------- */
 const calSvg=$('#calSvg'); const CV=Viewport(calSvg); CV.minW=20; CV.onzoom=()=>calOverlay(); // replaced below with loupe-aware version
+/* 축척·방·가리기 창에서 도면 옮기기: Ctrl+끌기, 마우스 가운데·오른쪽 버튼 끌기, Shift+휠(좌우), 두 손가락 */
+calSvg.addEventListener('pointerdown',e=>{ const pan=(e.pointerType==='mouse'&&(e.button===1||e.button===2))||e.ctrlKey||e.metaKey; if(!pan) return; e.stopImmediatePropagation(); e.preventDefault(); CV.panStart(e,()=>{}) },true);
+calSvg.addEventListener('contextmenu',e=>e.preventDefault());
+calSvg.addEventListener('wheel',e=>{ if(!e.shiftKey) return; e.preventDefault(); e.stopImmediatePropagation(); const r=calSvg.getBoundingClientRect(); const k=CV.w/(r.width||1); const d=(Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY)*(e.deltaMode===1?33:1); CV.x+=d*k; CV.apply() },{capture:true,passive:false});
+{ let mid=null; calSvg.addEventListener('touchmove',e=>{ if(e.touches.length!==2){ mid=null; return } const[a,b]=e.touches; const m={x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2}; if(mid){ const k=CV.w/(calSvg.getBoundingClientRect().width||1); CV.x-=(m.x-mid.x)*k; CV.y-=(m.y-mid.y)*k; CV.apply() } mid=m },{passive:true}); calSvg.addEventListener('touchend',e=>{ if(e.touches.length<2) mid=null }) }
 const Cal={m:null,mode:'scale',pts:[]};
 function openCal(id){
   const m=M(id); if(!m) return; Cal.m=m; Cal.pts=[]; Cal.selPt=null; Cal.imgEl=new Image(); Cal.imgEl.src=m.img; setCalMode('scale');
@@ -2115,7 +2121,7 @@ function calOverlay(){
   const g=$('#calOvl'); if(!g) return; const k=CV.w/600, m=Cal.m; let s='';
   if(cal(m)&&Cal.mode==='origin'){ s+=`<path class="corigin" d="M${m.gx-14*k} ${m.gy}H${m.gx+14*k}M${m.gx} ${m.gy-14*k}V${m.gy+14*k}"/>` }
   for(const q of (m.masks||[])) s+=`<rect class="cmask${Cal.mode==='mask'?' on':''}" x="${q.x}" y="${q.y}" width="${q.w}" height="${q.h}"/>`;
-  if(Cal.mdraft){ const b=Cal.mdraft; s+=`<rect class="cmask on" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"/>` }
+  if(Cal.mdraft){ const b=Cal.mdraft; s+=`<rect class="cmask on${Cal.maskMode==='erase'?' erase':''}" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"/>` }
   for(const r of roomsOf(m)){ const on=Cal.mode==='rooms'; const p0=roomPts(r)[0]; s+=(r.pts?`<polygon class="crm ${on?'on':''}" points="${r.pts.map(q=>q.x+','+q.y).join(' ')}"/>`:`<rect class="crm ${on?'on':''}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}"/>`)+`<text class="crmt" x="${p0.x+8*k}" y="${p0.y+20*k}" font-size="${14*k}">${esc(r.name)}</text>` }
   if(Cal.poly&&Cal.poly.length){ const P2=Cal.poly; const h=Cal.hover?polyNext(Cal.hover):null; const all=h?[...P2,h]:P2; const near=h&&P2.length>=3&&Math.hypot(h.x-P2[0].x,h.y-P2[0].y)<14*k;
     s+=`<polyline class="cpoly" points="${all.map(q=>q.x+','+q.y).join(' ')}"/>`; P2.forEach((q,i)=>{ s+=`<circle class="cdot${i===0&&near?' sel':''}" cx="${q.x}" cy="${q.y}" r="${(i===0?7:4)*k}"/>` });
@@ -2198,13 +2204,19 @@ $('#calMode').onclick=e=>{ const b=e.target.closest('[data-m]'); if(!b) return; 
 $('#calCopy').onclick=e=>{ const b=e.target.closest('[data-copyfrom]'); if(!b) return; const o=M(b.dataset.copyfrom), m=Cal.m; m.sx=o.sx/o.ppu*m.ppu; m.sy=o.sy/o.ppu*m.ppu; afterCal(); toast(`‘${o.name}’의 축척을 적용했어요.`) };
 function calRooms(){ const m=Cal.m; const rs=roomsOf(m); $('#roomList').innerHTML=rs.length?rs.map(r=>`<div class="roomrow"><input id="rn-${r.id}" data-roomname="${r.id}" value="${esc(r.name)}" aria-label="방 이름"><span class="mono hint">${cal(m)?`${fmt(r.w/m.sx)}×${fmt(r.h/m.sy)}`:''}</span><button class="btn small" data-roomdel="${r.id}">삭제</button></div>`).join(''):'<span class="hint">아직 나눈 방이 없어요.</span>' }
 /* 도면 가리기: 끌어서 흰 네모, 가린 네모를 클릭하면 지움 */
+function cutRect(r,e){ // r에서 e 부분을 뺀 나머지 네모들
+  const x1=Math.max(r.x,e.x), y1=Math.max(r.y,e.y), x2=Math.min(r.x+r.w,e.x+e.w), y2=Math.min(r.y+r.h,e.y+e.h); if(x1>=x2||y1>=y2) return [r];
+  return [{x:r.x,y:r.y,w:r.w,h:y1-r.y},{x:r.x,y:y2,w:r.w,h:r.y+r.h-y2},{x:r.x,y:y1,w:x1-r.x,h:y2-y1},{x:x2,y:y1,w:r.x+r.w-x2,h:y2-y1}].filter(q=>q.w>1&&q.h>1) }
+$('#maskMode').onclick=e=>{ const b=e.target.closest('[data-mm]'); if(!b) return; Cal.maskMode=b.dataset.mm; $$('#maskMode button').forEach(x=>x.classList.toggle('on',x===b)) };
+$('#maskUndo').onclick=()=>undoStep(false);
 function maskInfo(){ const n=(Cal.m&&Cal.m.masks||[]).length; const el=$('#maskInfo'); if(el) el.textContent=n?`가린 곳 ${n}개`:'아직 가린 곳이 없어요.' }
 calSvg.addEventListener('pointerdown',e=>{ if(Cal.mode!=='mask') return; if(e.pointerType==='mouse'&&e.button!==0) return; e.stopImmediatePropagation(); e.preventDefault();
   const m=Cal.m, inv=calSvg.getScreenCTM().inverse(), p0=CV.pt(e,inv), sx=e.clientX, sy=e.clientY; let drag=false; try{calSvg.setPointerCapture(e.pointerId)}catch(_){}
   const box={x:p0.x,y:p0.y,w:0,h:0};
   const mv=ev=>{ if(!drag&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<5) return; drag=true; const p=CV.pt(ev,inv); const x=clamp(p.x,0,m.w), y=clamp(p.y,0,m.h); box.x=Math.min(p0.x,x); box.y=Math.min(p0.y,y); box.w=Math.abs(x-p0.x); box.h=Math.abs(y-p0.y); Cal.mdraft=box; calOverlay() };
   const up=()=>{ calSvg.removeEventListener('pointermove',mv); calSvg.removeEventListener('pointerup',up); Cal.mdraft=null;
-    if(drag){ if(box.w>2&&box.h>2){ (m.masks||(m.masks=[])).push({x:Math.round(box.x),y:Math.round(box.y),w:Math.round(box.w),h:Math.round(box.h)}); save() } }
+    if(drag){ if(box.w>2&&box.h>2){ const b={x:Math.round(box.x),y:Math.round(box.y),w:Math.round(box.w),h:Math.round(box.h)};
+        if(Cal.maskMode==='erase'){ m.masks=(m.masks||[]).flatMap(r=>cutRect(r,b)); save() } else { (m.masks||(m.masks=[])).push(b); save() } } }
     else { const ms=m.masks||[]; for(let i=ms.length-1;i>=0;i--){ const q=ms[i]; if(p0.x>=q.x&&p0.x<=q.x+q.w&&p0.y>=q.y&&p0.y<=q.y+q.h){ ms.splice(i,1); save(); toast('가린 네모를 지웠어요.'); break } } }
     maskInfo(); calOverlay() };
   calSvg.addEventListener('pointermove',mv); calSvg.addEventListener('pointerup',up) },true);

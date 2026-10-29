@@ -208,6 +208,8 @@ button.num.zero{opacity:.35}
 .flag.need{border-color:var(--warn);color:var(--warn)}
 .rfilter{display:flex;align-items:center;gap:3px;flex-wrap:wrap;padding:2px 3px 8px;font-size:11px;color:var(--muted)} .rfilter span{margin-right:3px} .rfilter button{border:1px solid var(--line);background:var(--raise);color:var(--muted);border-radius:999px;padding:1px 8px;font-size:11px} .rfilter button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .runits .rck{margin:0;width:13px;height:13px;cursor:pointer}
+.pin{width:92px;padding:3px 6px;border:1px solid var(--accent);border-radius:6px;background:var(--raise);color:var(--ink);font:inherit;font-size:12.5px}
+#dlgItem .runits li{grid-template-columns:14px 10px 34px 1fr auto 90px 18px} .pin.pin2{width:100%;min-width:0;border-color:var(--line);font-size:12px}
 .dragi{cursor:grab} #rail .droptab{outline:2px dashed var(--accent);outline-offset:1px;background:var(--accent-soft)}
 .rbulk{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:0 3px 8px;font-size:11.5px} .rbulk select{font-size:12px;padding:2px 4px;border:1px solid var(--accent);border-radius:6px;background:var(--raise);max-width:150px} .rbulk.on{background:var(--accent-soft);border-radius:8px;padding:5px 6px;margin-bottom:6px}
 #ctxMenu{position:fixed;z-index:1000;min-width:180px;max-height:70vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:5px;display:grid;font-size:13px}
@@ -1053,8 +1055,8 @@ function planSlot(u,slot){ if(UI.view!=='plan') return slot; const f=u.first;
   if(slot==='from') return f?(!f.n&&f.at?'first':null):'from';
   return u.to?'to':(f&&u.from&&!destPlace(u)?'cur':null) }
 function unitSVG(u,slot,e,flags){
-  const it=I(u.itemId), pos=slotPos(u,slot); const[w,d]=dims(it,pos.rot||0); const x=e.mx+pos.x, y=e.my+pos.y; const name=lbl(u);
-  const dimTxt=`${it.w}*${it.d}`; const vert=(it.d>it.w*1.2)!==!!((pos.rot||0)%180); /* 글씨도 가구와 함께 돌아감 */ const tw=vert?d:w, th=vert?w:d; // 세로로 긴 가구는 글씨를 긴 쪽 방향으로
+  const it=I(u.itemId), pos=slotPos(u,slot); const[w,d]=dims(it,pos.rot||0); const x=e.mx+pos.x, y=e.my+pos.y; const name=u.person||lbl(u); /* 앉는 사람이 있으면 이름을 크게 */
+  const dimTxt=u.person?`${lbl(u)} · ${it.w}*${it.d}`:`${it.w}*${it.d}`; const vert=(it.d>it.w*1.2)!==!!((pos.rot||0)%180); /* 글씨도 가구와 함께 돌아감 */ const tw=vert?d:w, th=vert?w:d; // 세로로 긴 가구는 글씨를 긴 쪽 방향으로
   let fs=Math.min(th*.3,tw*.9/Math.max(1.4,name.length*.98)); fs=clamp(fs,3,30);
   let fd=Math.min(fs*.72,tw*.9/(dimTxt.length*.62)); fd=clamp(fd,2.5,20);
   const tot=fs*1.05+fd*1.1; if(tot>th*.9){ const k=th*.9/tot; fs*=k; fd*=k }
@@ -1070,7 +1072,7 @@ function unitSVG(u,slot,e,flags){
   if(flags.ghost){ const on='→ '+lastLabel(u); const f2=clamp(Math.min(fs*.72,w*1.1/Math.max(2,on.length*.95)),4,16); s+=`<text class="ugo" x="${w/2}" y="${d+f2*.9}" font-size="${f2.toFixed(1)}">${esc(on)}</text>` }
   return s+'</g>';
 }
-function trayUnitSVG(u,x,y){ const it=I(u.itemId); const w=it.w, d=it.d; const name=lbl(u); const dimTxt=`${it.w}*${it.d}`;
+function trayUnitSVG(u,x,y){ const it=I(u.itemId); const w=it.w, d=it.d; const name=u.person||lbl(u); const dimTxt=u.person?`${lbl(u)} · ${it.w}*${it.d}`:`${it.w}*${it.d}`;
   const vert=d>w*1.2, tw=vert?d:w, th=vert?w:d;
   let fs=Math.min(th*.3,tw*.9/Math.max(1.4,name.length*.98)); fs=clamp(fs,3,30); let fd=Math.min(fs*.72,tw*.9/(dimTxt.length*.62)); fd=clamp(fd,2.5,20); const tot=fs*1.05+fd*1.1; if(tot>th*.9){ const k=th*.9/tot; fs*=k; fd*=k }
   return `<g class="unit traywait${it.kind==='item'?' top':''}${it.isNew?' isnew':''}${(UI.sel&&UI.sel.slot==='tray'&&UI.sel.id===u.id)||inMulti(u.id,'tray')?' sel':''}" data-id="${u.id}" data-slot="tray" transform="translate(${x} ${y})" style="--c:${it.color}"><rect class="ub" width="${w}" height="${d}" rx="2"/><g${vert?` transform="rotate(-90 ${w/2} ${d/2})"`:''}><text class="un" x="${w/2}" y="${d/2-fd*.55}" font-size="${fs.toFixed(1)}">${esc(name)}</text><text class="ud" x="${w/2}" y="${d/2+fs*.55}" font-size="${fd.toFixed(1)}">${dimTxt}</text></g></g>` }
@@ -1254,10 +1256,10 @@ document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.closest&&e
 function renderSelbar(){
   const b=$('#selbar'); const sel=UI.sel; if(!sel){b.hidden=true;return}
   { const m=getMulti(); if(m.length>1){ const onMap=m.filter(x=>x.slot!=='tray').length; b.innerHTML=`<b title="${esc(m.map(x=>lbl(U(x.id))).join(', '))}">${m.length}개 선택</b>${bulkDestSel()}${onMap?`<button class="btn small" data-act="rot" title="R · 붙어 있는 것은 한 덩어리로 돌아요">↻ 90°</button><button class="btn small" data-act="rm">↩ 모두 미배치 가구로</button>`:''}<span class="hint">오른쪽 버튼으로도 옮길 수 있어요</span>`; b.hidden=false; return } }
-  const u=U(sel.id); if(sel.slot==='tray'&&u){ const it=I(u.itemId); b.innerHTML=`<span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b>${esc(lbl(u))}</b>${dimInputs(it)}${assetPhotoBtn(it,'mini')}${it.isNew?'<span class="rb new">신규 구매</span>':''}`; b.hidden=false; return }
+  const u=U(sel.id); if(sel.slot==='tray'&&u){ const it=I(u.itemId); b.innerHTML=`<span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b>${esc(lbl(u))}</b><input class="pin" data-person="${u.id}" value="${esc(u.person||'')}" placeholder="앉는 사람" aria-label="${esc(lbl(u))} 앉는 사람" autocomplete="off">${dimInputs(it)}${assetPhotoBtn(it,'mini')}${it.isNew?'<span class="rb new">신규 구매</span>':''}`; b.hidden=false; return }
   if(!u||!u[sel.slot]){UI.sel=null;b.hidden=true;return}
   const it=I(u.itemId); const dp=destPlace(u);
-  b.innerHTML=`<span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b>${esc(lbl(u))}</b>${dimInputs(it)}${assetPhotoBtn(it,'mini')}${routeBadge(u)}<button class="btn small" data-act="rot" title="R">↻ 90°</button><button class="btn small" data-act="rm" title="Delete 키">↩ 미배치 가구로</button>`;
+  b.innerHTML=`<span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b>${esc(lbl(u))}</b><input class="pin" data-person="${u.id}" value="${esc(u.person||'')}" placeholder="앉는 사람" aria-label="${esc(lbl(u))} 앉는 사람" autocomplete="off">${dimInputs(it)}${assetPhotoBtn(it,'mini')}${routeBadge(u)}<button class="btn small" data-act="rot" title="R">↻ 90°</button><button class="btn small" data-act="rm" title="Delete 키">↩ 미배치 가구로</button>`;
   b.hidden=false;
 }
 
@@ -1599,7 +1601,7 @@ function itemDetail(it){ const sl=curSlot(); const us=unitsOf(it); let h='';
   const allU=us;
   h+=`<div class="ritem"><div class="rih"><span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b class="dragi" draggable="true" data-di="${it.id}" title="${esc(it.name)} · 위쪽 공간 탭에 끌어 놓으면 그 공간 가구로 바뀌어요">${esc(it.name)}</b><button class="newtg ${it.isNew?'on':''}" data-newtg="${it.id}" title="신규 구매 여부 (눌러서 바꾸기)">${it.isNew?'신규':'기존'}</button>${it.kind==='item'?'<span class="toptag">올림</span>':''}${assetPhotoBtn(it,'rp')}<span class="qstep" title="전체 수량"><button data-qstep="${it.id}:-1" aria-label="수량 줄이기">−</button><input data-qtyit="${it.id}" type="number" min="1" value="${it.qty}" aria-label="${esc(it.name)} 전체 수량"><button data-qstep="${it.id}:1" aria-label="수량 늘리기">+</button></span><div class="rih2">${dimInputs(it,{cls:'sm',noNote:true})}<span class="c">${allU.filter(isPlaced).length}/${allU.length} 배치</span><button class="idel" data-delitem="${it.id}" title="${esc(it.name)} 전체 삭제" aria-label="${esc(it.name)} 전체 삭제">삭제</button></div></div><ul class="runits tree">`;
   for(const u of us){ const on=UI.hl&&UI.hl.ids.size===1&&UI.hl.ids.has(u.id);
-    h+=`<li draggable="true" data-du="${u.id}" data-u="${u.id}" class="${isPlaced(u)?'':'rem'} ${on?'on':''}"><input type="checkbox" class="rck" data-rsel="${u.id}" ${UI.rsel&&UI.rsel.has(u.id)?'checked':''} aria-label="${esc(lbl(u))} 고르기"><span class="sw" style="--c:${it.color}"></span><span class="nm" title="${esc(lbl(u))}">${esc((lbl(u).slice((it.name||'').trim().length).trim())||'1')}</span>${sl==='from'&&isNewU(u)?'<span class="flag newf" title="신규 구매 · 변경 후에서 배치">새</span>':u[sl]?`<button class="flag on" data-unassign="${u.id}" title="눌러서 미배치 가구로 돌려놓기">배정 ↩</button>`:`<span class="flag need" title="도면에 아직 놓지 않았어요">배정 필요</span>`}<select data-dest="${u.id}" aria-label="${esc(lbl(u))} 도착지">${destOptions(u)}</select><button class="udel" data-delunit="${u.id}" title="이 가구 삭제" aria-label="${esc(lbl(u))} 삭제">×</button></li>` }
+    h+=`<li draggable="true" data-du="${u.id}" data-u="${u.id}" class="${isPlaced(u)?'':'rem'} ${on?'on':''}"><input type="checkbox" class="rck" data-rsel="${u.id}" ${UI.rsel&&UI.rsel.has(u.id)?'checked':''} aria-label="${esc(lbl(u))} 고르기"><span class="sw" style="--c:${it.color}"></span><span class="nm" title="${esc(lbl(u))}">${esc((lbl(u).slice((it.name||'').trim().length).trim())||'1')}</span><input class="pin pin2" data-person="${u.id}" value="${esc(u.person||'')}" placeholder="앉는 사람" aria-label="${esc(lbl(u))} 앉는 사람" autocomplete="off">${sl==='from'&&isNewU(u)?'<span class="flag newf" title="신규 구매 · 변경 후에서 배치">새</span>':u[sl]?`<button class="flag on" data-unassign="${u.id}" title="눌러서 미배치 가구로 돌려놓기">배정 ↩</button>`:`<span class="flag need" title="도면에 아직 놓지 않았어요">배정 필요</span>`}<select data-dest="${u.id}" aria-label="${esc(lbl(u))} 도착지">${destOptions(u)}</select><button class="udel" data-delunit="${u.id}" title="이 가구 삭제" aria-label="${esc(lbl(u))} 삭제">×</button></li>` }
   return h+'</ul></div>' }
 function openItemDlg(id){ UI.itemDlg=id; UI.rsel=null; const d=$('#dlgItem'); if(!d.open) d.showModal(); renderItemDlg() }
 function renderItemDlg(){ const d=$('#dlgItem'); if(!d||!d.open) return; const it=I(UI.itemDlg); if(!it){ d.close(); return }
@@ -1735,9 +1737,9 @@ async function exportPPT(){ const ps=pptPanels(); if(!ps.length){ toast(UI.view=
     const nm=`${P(e.m.placeId)?.name||''}${mapNm(e.m)?' › '+mapNm(e.m):''}${e.room?' › '+e.room.name:''}`; const ttl=`${nm} · ${e.layer==='a'?'변경 전':'변경 후'}`; sl.addNotes(`${ttl} · 축척 1/100 (실제 100cm = 1cm)`);
     sl.addText([{text:ttl,options:{bold:true,fontSize:Math.max(9,Math.min(20,TOP*.2835*.42))}},{text:`   축척 1/100 · 도면 ${fmt(e.w)}×${fmt(e.h)}cm`,options:{fontSize:Math.max(7,Math.min(12,TOP*.2835*.26)),color:'5D6763'}}],{x:IN(MG),y:IN(MG*.4),w:IN(W),h:IN(TOP-MG*.6),valign:'middle',fontFace:'Malgun Gothic',color:'1A201E',margin:0,objectName:'제목'});
     for(const u of [...S.units].sort((a,b)=>zOrd(a)-zOrd(b))){ const ps2=planSlot(u,slot); const pos=ps2&&slotPos(u,ps2); if(!pos||pos.mapId!==e.m.id) continue; const it=I(u.itemId); const[w,d]=dims(it,pos.rot||0); if(!inPanel(e,pos.x+w/2,pos.y+d/2)) continue;
-      const col=(it.color||'#888888').replace('#',''); const wp=w*.2835, hp=d*.2835; const vert=(it.d>it.w*1.2)!==!!((pos.rot||0)%180); const name=lbl(u); const tw=vert?hp:wp, th=vert?wp:hp;
+      const col=(it.color||'#888888').replace('#',''); const wp=w*.2835, hp=d*.2835; const vert=(it.d>it.w*1.2)!==!!((pos.rot||0)%180); const name=u.person||lbl(u); const tw=vert?hp:wp, th=vert?wp:hp;
       const fs=Math.max(3,Math.min(14,th*.32,tw*.9/Math.max(1.4,name.length*.95))); const fd=Math.max(2.5,fs*.72);
-      sl.addText([{text:name,options:{bold:true,fontSize:fs,breakLine:true}},{text:`${it.w}*${it.d}`,options:{fontSize:fd}}],
+      sl.addText([{text:name,options:{bold:true,fontSize:fs,breakLine:true}},{text:u.person?`${lbl(u)} · ${it.w}*${it.d}`:`${it.w}*${it.d}`,options:{fontSize:fd}}],
         {x:IN(pos.x-e.cx+ox),y:IN(pos.y-e.cy+oy),w:IN(w),h:IN(d),shape:pp.ShapeType.rect,fill:{color:col,transparency:it.kind==='item'?60:45},line:{color:col,width:.75,dashType:it.kind==='item'?'dash':'solid'},
          align:'center',valign:'middle',color:'1A201E',fontFace:'Malgun Gothic',margin:0,vert:vert?'vert270':'horz',fit:'none',objectName:name}) } }
   const dt=new Date(); const fname=`유바이오시스공간구성-${UI.view==='space'?(P(UI.focus)?.name||'공간')+'-'+((UI.wlayer||'a')==='b'?'변경후':'변경전'):'변경후'}-${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}.pptx`;
@@ -1898,6 +1900,7 @@ document.addEventListener('change',e=>{
   const t=e.target;
   if(t.dataset.chk){ const u=U(t.dataset.cu); if(!u) return; u.chk=Object.assign({},u.chk,{[t.dataset.chk]:t.checked}); t.closest('li')&&t.closest('li').classList.toggle('done',t.checked); save(); renderCheck(); return }
   if(t.dataset.dest){ const u=U(t.dataset.dest); setDest(u,t.value); commit(); return }
+  if(t.dataset.person){ const u=U(t.dataset.person); if(!u) return; const v=t.value.trim(); if(v===(u.person||'')) return; if(v) u.person=v; else delete u.person; commit(); toast(v?`${lbl(u)}에 ${v} 님을 넣었어요.`:`${lbl(u)}의 이름을 지웠어요.`); return }
   if(t.dataset.bulkdest!==undefined){ const v=t.value; if(!v) return; moveUnitsTo(selUnitIds(),v==='__none'?'':v); return }
   if(t.dataset.rsel){ const s=UI.rsel||(UI.rsel=new Set()); t.checked?s.add(t.dataset.rsel):s.delete(t.dataset.rsel); if(!s.size) UI.rsel=null; renderRail(); return }
   if(t.dataset.item){ onItemField(t); return }

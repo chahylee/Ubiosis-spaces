@@ -213,6 +213,7 @@ button.num.zero{opacity:.35}
 .dragi{cursor:grab} #rail .droptab{outline:2px dashed var(--accent);outline-offset:1px;background:var(--accent-soft)}
 .rbulk{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:0 3px 8px;font-size:11.5px} .rbulk select{font-size:12px;padding:2px 4px;border:1px solid var(--accent);border-radius:6px;background:var(--raise);max-width:150px} .rbulk.on{background:var(--accent-soft);border-radius:8px;padding:5px 6px;margin-bottom:6px}
 #ctxMenu{position:fixed;z-index:1000;min-width:180px;max-height:70vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:5px;display:grid;font-size:13px}
+#ctxMenu .cform{display:flex;gap:4px;padding:4px 6px} #ctxMenu .cform input{flex:1;min-width:0;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font:inherit;background:var(--raise);color:var(--ink)} #ctxMenu .cform button{all:unset;padding:4px 9px;border-radius:6px;background:var(--accent);color:var(--accent-ink);cursor:pointer;white-space:nowrap;font-size:12.5px}
 #ctxMenu .ch{padding:5px 9px 6px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line);margin-bottom:3px}
 #ctxMenu button{all:unset;padding:6px 9px;border-radius:6px;cursor:pointer;white-space:nowrap} #ctxMenu button:hover,#ctxMenu button:focus{background:var(--soft)} #ctxMenu button.cur{font-weight:600} #ctxMenu hr{border:0;border-top:1px solid var(--line);margin:3px 0}
 .runits select{font-size:11px;padding:1px 3px;border:1px solid var(--line);border-radius:6px;background:var(--raise);min-width:0;width:100%}
@@ -1317,7 +1318,20 @@ document.addEventListener('keydown',e=>{ if(!$('#dlgPhoto').open) return; if(e.k
 /* 오른쪽 버튼(휴대폰·태블릿은 길게 누르기) 메뉴: 장소 옮기기 */
 const CTX={ids:[],slots:[],at:0};
 function closeCtx(){ const m=$('#ctxMenu'); if(m) m.remove() }
+/* 가구 종류 고치기 메뉴 (왼쪽 목록 줄 오른쪽 버튼, 또는 도면 가구 메뉴의 '이름·종류 고치기') */
+const KINDS=[['furn','가구'],['chair','의자(겹쳐 놓기)'],['item','올리는 물품']];
+function openItemCtx(items,x,y){ items=items.filter(Boolean); if(!items.length) return; if(Cloud.on&&!canEdit()){ toast('지금은 보기만 할 수 있어요.'); return }
+  const it=items[0], kind=it.kind||'furn'; closeCtx(); CTX.at=Date.now(); const m=document.createElement('div'); m.id='ctxMenu'; m.setAttribute('role','menu');
+  m.innerHTML=`<div class="ch">${esc((it.name||'').trim()||'가구')} ${it.w}×${it.d}${items.length>1?` · ${items.length}곳`:''} 고치기</div><form class="cform"><input id="ctxName" value="${esc(it.name||'')}" aria-label="가구 이름" autocomplete="off"><button class="btn small primary">이름 바꾸기</button></form><hr><div class="ch">종류</div>${KINDS.map(([k,t])=>`<button role="menuitem" data-ckind="${k}" class="${kind===k?'cur':''}">${kind===k?'✓ ':''}${t}</button>`).join('')}<hr><button role="menuitem" data-ccolor>🎨 색 바꾸기</button>`;
+  document.body.appendChild(m); const r=m.getBoundingClientRect(); m.style.left=Math.max(4,Math.min(x,innerWidth-r.width-4))+'px'; m.style.top=Math.max(4,Math.min(y,innerHeight-r.height-4))+'px';
+  const ids=items.map(i=>i.id);
+  m.querySelector('form').addEventListener('submit',e=>{ e.preventDefault(); const nm=$('#ctxName').value.trim(); closeCtx(); if(!nm) return; for(const i of ids.map(I).filter(Boolean)){ i.name=nm; i.kind=autoKind(nm,i.kind||'furn'); const c=sameNameColor(i); if(c) i.color=c } commit(); toast(`이름을 '${nm}'(으)로 바꿨어요. (Ctrl+Z로 되돌리기)`) });
+  m.addEventListener('click',e=>{ const b=e.target.closest('button[data-ckind],button[data-ccolor]'); if(!b) return; e.stopPropagation(); closeCtx();
+    if(b.dataset.ckind){ for(const i of ids.map(I).filter(Boolean)) i.kind=b.dataset.ckind; commit(); toast(`종류를 '${KINDS.find(k=>k[0]===b.dataset.ckind)[1]}'(으)로 바꿨어요.`); return }
+    pickColor(ids,{left:x,bottom:y}) });
+  const inp=$('#ctxName'); inp.focus(); inp.select() }
 function openCtx(el,x,y){
+  { const row=el.closest('#rail [data-openitem],#rail [data-dg]'); if(row&&!el.closest('#rail [data-u]')){ if(row.dataset.openitem) openItemCtx([I(row.dataset.openitem)],x,y); else { const g=GROUPS.find(g=>g.key===row.dataset.dg); if(g) openItemCtx(g.items,x,y) } return true } }
   const g=planSvg.contains(el)?el.closest('.unit'):null; const li=g?null:el.closest('#rail [data-u],#photos [data-u]'); if(!g&&!li) return false;
   const id=g?g.dataset.id:li.dataset.u, slot=g?g.dataset.slot:null; const u=U(id); if(!u) return false;
   if(Cloud.on&&!canEdit()){ toast('지금은 보기만 할 수 있어요.'); return true }
@@ -1325,11 +1339,12 @@ function openCtx(el,x,y){
   CTX.ids=many?selUnitIds():[id]; CTX.x=x; CTX.y=y; CTX.slots=g?(many?getMulti().filter(x=>x.slot==='from'||x.slot==='to'):(slot==='from'||slot==='to'?[{id,slot}]:[])):[]; CTX.at=Date.now();
   const dp=CTX.ids.length===1?destPlace(u):null;
   closeCtx(); const m=document.createElement('div'); m.id='ctxMenu'; m.setAttribute('role','menu');
-  m.innerHTML=`<div class="ch">${CTX.ids.length>1?`${CTX.ids.length}개 선택됨 · 장소 옮기기`:`${esc(lbl(u))} · 장소 옮기기`}</div>${S.places.map(p=>`<button role="menuitem" data-cdest="${p.id}" class="${dp===p.id?'cur':''}">→ ${esc(p.name)}${dp===p.id?' ✓':''}</button>`).join('')}<button role="menuitem" data-cdest="">도착지 미정</button><hr><button role="menuitem" data-ccolor>🎨 색 바꾸기${CTX.ids.length>1?` (${CTX.ids.length}개)`:''}</button><hr><div class="ch">소속(처음) 공간 바꾸기</div>${S.places.map(p=>`<button role="menuitem" data-cown="${p.id}">⇢ ${esc(p.name)} 가구로</button>`).join('')}${CTX.slots.length?`<hr><button role="menuitem" data-cunplace>↩ 미배치 가구로 돌려놓기</button>`:''}`;
+  m.innerHTML=`<div class="ch">${CTX.ids.length>1?`${CTX.ids.length}개 선택됨 · 장소 옮기기`:`${esc(lbl(u))} · 장소 옮기기`}</div>${S.places.map(p=>`<button role="menuitem" data-cdest="${p.id}" class="${dp===p.id?'cur':''}">→ ${esc(p.name)}${dp===p.id?' ✓':''}</button>`).join('')}<button role="menuitem" data-cdest="">도착지 미정</button><hr><button role="menuitem" data-ccolor>🎨 색 바꾸기${CTX.ids.length>1?` (${CTX.ids.length}개)`:''}</button><button role="menuitem" data-cedit>✏️ 이름·종류 고치기</button><hr><div class="ch">소속(처음) 공간 바꾸기</div>${S.places.map(p=>`<button role="menuitem" data-cown="${p.id}">⇢ ${esc(p.name)} 가구로</button>`).join('')}${CTX.slots.length?`<hr><button role="menuitem" data-cunplace>↩ 미배치 가구로 돌려놓기</button>`:''}`;
   document.body.appendChild(m); const r=m.getBoundingClientRect(); m.style.left=Math.max(4,Math.min(x,innerWidth-r.width-4))+'px'; m.style.top=Math.max(4,Math.min(y,innerHeight-r.height-4))+'px';
   m.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; e.stopPropagation(); closeCtx();
     if(b.dataset.cdest!==undefined){ moveUnitsTo(CTX.ids,b.dataset.cdest); return }
     if(b.dataset.cown){ setOwner(CTX.ids.map(U).filter(Boolean),b.dataset.cown); return }
+    if(b.dataset.cedit!==undefined){ openItemCtx([...new Set(CTX.ids.map(U).filter(Boolean).map(u=>u.itemId))].map(I),CTX.x,CTX.y); return }
     if(b.dataset.ccolor!==undefined){ pickColor(CTX.ids.map(U).filter(Boolean).map(u=>u.itemId),{left:CTX.x||innerWidth/2,bottom:CTX.y||innerHeight/2}); return }
     if(b.dataset.cunplace!==undefined){ for(const s of CTX.slots){ const uu=U(s.id); if(uu) unplace(uu,s.slot) } UI.multi=null; UI.sel=null; toast(CTX.slots.length>1?`${CTX.slots.length}개를 미배치 가구로 돌려놓았어요.`:`${lbl(U(CTX.slots[0].id))}을(를) 미배치 가구로 돌려놓았어요.`); commit() } });
   const f=m.querySelector('button'); if(f) f.focus({preventScroll:true}); return true }
@@ -1338,7 +1353,7 @@ document.addEventListener('pointerdown',e=>{ const m=$('#ctxMenu'); if(m&&!m.con
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeCtx() });
 window.addEventListener('resize',closeCtx);
 { let lp=null; // 터치 길게 누르기
-  document.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse') return; const el=e.target; if(!(planSvg.contains(el)?el.closest('.unit'):el.closest('#rail [data-u],#photos [data-u]'))) return; const x=e.clientX,y=e.clientY;
+  document.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse') return; const el=e.target; if(!(planSvg.contains(el)?el.closest('.unit'):el.closest('#rail [data-u],#photos [data-u],#rail [data-openitem],#rail [data-dg]'))) return; const x=e.clientX,y=e.clientY;
     clearTimeout(lp&&lp.t); lp={x,y,t:setTimeout(()=>{ lp=null; if(!$('#ctxMenu')) openCtx(el,x,y) },550)} },true);
   const stop=e=>{ if(!lp) return; if(e.type==='pointermove'&&Math.hypot(e.clientX-lp.x,e.clientY-lp.y)<10) return; clearTimeout(lp.t); lp=null };
   ['pointermove','pointerup','pointercancel'].forEach(t=>document.addEventListener(t,stop,true)) }

@@ -552,6 +552,14 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
   .plan>*{min-width:0} .tools{flex-wrap:wrap} .tools input[type=range]{width:80px} .slotsel,.slotsel select,.msel{max-width:100%;min-width:0}
   .aphm{display:block!important;margin-top:5px} .asset thead th:last-child,.asset td.aph,.asset tfoot th:last-child{display:none}
 }
+/* 위쪽 메뉴·도구줄을 낮게 (작업 화면을 넓게) */
+.top{padding-block:3px;gap:12px} .brand{font-size:14px;gap:7px} .mark{width:17px;height:17px}
+.tabs{padding:2px;border-radius:7px} .tabs button{padding:3px 11px;font-size:13px;border-radius:6px}
+.topr{gap:6px} .top .btn{padding:3px 9px;font-size:12.5px} .savestate{font-size:11.5px}
+.stagebar{padding:3px 8px;min-height:0;gap:6px} .slots{gap:5px} .slotsel{gap:4px} .slotsel .sl,.stagebar .sl{font-size:11.5px}
+.stagebar .btn.small{padding:2px 7px;font-size:12px} .slotsel select,.msel summary{padding:2px 6px;font-size:12px}
+.tools{gap:4px} .ibtn{height:24px;min-width:24px;padding:0 6px;font-size:12px;border-radius:6px} .tools select{padding:1px 4px;font-size:12px} .tools input[type=range]{width:90px}
+.stagebar .crumb{font-size:11.5px}
 </style>
 
 <div class="app">
@@ -1151,7 +1159,7 @@ function renderPlan(){
 function fitAll(){ const L=UI.L; if(!L.length){ updateSbars(); return } UI.scroll={L:0,R:0}; UI.colz={L:1,R:1}; UI.hx=0; ['L','R'].forEach(c=>{ const g=$('#col'+c); if(g) g.setAttribute('transform',colTransform(c)) });
   const x1=Math.min(...L.map(e=>e.ox)), y1=Math.min(...L.map(e=>e.oy))-80, x2=Math.max(...L.map(e=>e.ox+e.w),UI.view==='space'&&UI.trayBox?UI.trayBox.x2:-Infinity);
   const colH=Math.max(...['L','R'].map(c=>{ const x=colExt(c); return x?x.y2-x.y1:0 }));
-  { const r=planSvg.getBoundingClientRect(); const asp=r.width>0?r.height/r.width:.6; V.fit(x1,y1,x2-x1,Math.min(colH,(x2-x1)*asp),.015) } { const r=planSvg.getBoundingClientRect(); const upp=r.width?V.w/r.width:1; V.y=y1+80-(UI.view==='space'?90:62)*upp } V.apply(); baseW=V.w; UI.fitY=V.y; applyRestore(); syncZoom(); renderOverlay(); updateSbars(); saveVS() }
+  { const r=planSvg.getBoundingClientRect(); const asp=r.width>0?r.height/r.width:.6; V.fit(x1,y1,x2-x1,UI.view==='space'?colH+40:Math.min(colH,(x2-x1)*asp),.015) /* 공간 작업은 도면 전체가 한 화면에 */ } { const r=planSvg.getBoundingClientRect(); const upp=r.width?V.w/r.width:1; V.y=y1+80-(UI.view==='space'?90:62)*upp } V.apply(); baseW=V.w; UI.fitY=V.y; applyRestore(); syncZoom(); renderOverlay(); updateSbars(); saveVS() }
 /* ---------- 마지막 화면 기억 (이 브라우저) ---------- */
 const viewKey=()=>[UI.view,UI.focus||'',UI.room?UI.room.mapId+':'+UI.room.roomId:'',UI.view==='space'?UI.wlayer||'a':'',UI.view==='plan'?JSON.stringify(getCols()):''].join('|');
 let vsT=null;
@@ -1229,7 +1237,7 @@ function renderStagebar(){
     let o=''; for(const p of S.places){ const ms=S.maps.filter(m=>m.placeId===p.id&&cal(m)); if(!ms.length){ o+=`<option value="p:${p.id}" ${UI.focus===p.id?'selected':''}>${esc(p.name)} (도면 없음)</option>`; continue } o+=`<option value="p:${p.id}" ${UI.focus===p.id&&!UI.room?'selected':''}>${esc(p.name)} 전체</option>`;
       for(const m of ms) for(const r of roomsOf(m)) o+=`<option value="r:${m.id}:${r.id}" ${UI.room&&UI.room.roomId===r.id?'selected':''}>　└ ${mapNm(m)?esc(mapNm(m))+' › ':''}${esc(r.name)}</option>` }
     const unc=S.maps.filter(m=>!cal(m)).map(m=>`<button class="tchip need" data-cal="${m.id}"><b>${esc(P(m.placeId)?.name)}</b><span class="cm">${esc(m.name)}</span>축척 맞추기</button>`).join('');
-    h=o?`<div class="slots"><label class="slotsel"><span class="sl">작업할 공간</span><select id="wsel" data-wsel>${o}</select></label>${UI.room?`<button class="btn small" data-rename="room:${UI.room.mapId}:${UI.room.roomId}">방 이름 바꾸기</button>`:(UI.focus?`<button class="btn small" data-rename="place:${UI.focus}">공간 이름 바꾸기</button>`:'')}<button class="btn small" data-pptx title="지금 보이는 도면(변경 전/후)을 1/100 축척 PPT로">📄 PPT로 받기</button><button class="btn small${UI.selMode?' primary':''}" data-selmode title="켜면 가구를 톡 눌러 하나씩 더하고, 빈 곳을 끌어 범위로 고를 수 있어요 (태블릿용). 화면 이동은 두 손가락">${UI.selMode?'☑ 여러 개 선택 중':'☐ 여러 개 선택'}</button><button class="btn small" data-rot="-1" title="고른 가구를 왼쪽으로 90° (붙어 있는 것은 한 덩어리로)">↺ 왼쪽 90°</button><button class="btn small" data-rot="1" title="고른 가구를 오른쪽으로 90° (붙어 있는 것은 한 덩어리로) · 단축키 R">↻ 오른쪽 90°</button><span class="crumb">도면 위 버튼으로 변경 전·후 전환</span>${unc}</div>`:`<div class="slots"><span class="hint">축척을 맞춘 도면이 있는 공간이 없어요.</span>${unc}</div>`;
+    h=o?`<div class="slots"><label class="slotsel"><span class="sl">작업할 공간</span><select id="wsel" data-wsel>${o}</select></label>${UI.room?`<button class="btn small" data-rename="room:${UI.room.mapId}:${UI.room.roomId}">방 이름 바꾸기</button>`:(UI.focus?`<button class="btn small" data-rename="place:${UI.focus}">공간 이름 바꾸기</button>`:'')}<button class="btn small" data-pptx title="지금 보이는 도면(변경 전/후)을 1/100 축척 PPT로">📄 PPT로 받기</button><button class="btn small${UI.selMode?' primary':''}" data-selmode title="켜면 가구를 톡 눌러 하나씩 더하고, 빈 곳을 끌어 범위로 고를 수 있어요 (태블릿용). 화면 이동은 두 손가락">${UI.selMode?'☑ 여러 개 선택 중':'☐ 여러 개 선택'}</button><button class="btn small" data-rot="-1" title="고른 가구를 왼쪽으로 90° (붙어 있는 것은 한 덩어리로)">↺ 왼쪽 90°</button><button class="btn small" data-rot="1" title="고른 가구를 오른쪽으로 90° (붙어 있는 것은 한 덩어리로) · 단축키 R">↻ 오른쪽 90°</button>${unc}</div>`:`<div class="slots"><span class="hint">축척을 맞춘 도면이 있는 공간이 없어요.</span>${unc}</div>`;
   }
   else if(UI.room){ const m=M(UI.room.mapId), r=roomsOf(m).find(r=>r.id===UI.room.roomId); h=`<div class="slots"><button class="btn small" data-focus="">← 모든 공간</button><button class="btn small" data-focus="${m.placeId}">← ${esc(P(m.placeId)?.name)} 전체</button><span class="crumb">${esc(P(m.placeId)?.name)} › ${mapNm(m)?esc(mapNm(m))+' › ':''}<b>${esc(r?r.name:'')}</b></span></div>` }
   else if(UI.focus){ h=`<div class="slots"><button class="btn small" data-focus="">← 모든 공간</button><span class="crumb"><b>${esc(P(UI.focus)?.name)}</b> 전체 · 방 이름을 누르면 그 방만 보여요</span></div>` }

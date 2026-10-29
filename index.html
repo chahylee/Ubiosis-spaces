@@ -525,6 +525,8 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
 .cline.prev{stroke-dasharray:4 3;opacity:.8}
 .cprevt{fill:var(--hl);font-family:var(--mono);text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:3px}
 .crm{fill:color-mix(in srgb,var(--accent) 6%,transparent);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:6 4;vector-effect:non-scaling-stroke}
+.cmask{fill:#fff;stroke:none;pointer-events:none} .cmask.on{stroke:#e0473b;stroke-width:1.5;stroke-dasharray:5 4;vector-effect:non-scaling-stroke}
+.pmask{fill:#fff}
 .cpoly{fill:color-mix(in srgb,var(--accent) 10%,transparent);stroke:var(--accent);stroke-width:2.5;vector-effect:non-scaling-stroke;pointer-events:none}
 .crm.on{fill:color-mix(in srgb,var(--accent) 14%,transparent);stroke-width:2.5}
 .crmt{fill:var(--accent);font-family:var(--sans);font-weight:600;paint-order:stroke;stroke:#fff;stroke-width:3px}
@@ -665,7 +667,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
         <div class="zoomctl"><button class="ibtn" id="calZout" aria-label="축소">−</button><button class="ibtn" id="calZin" aria-label="확대">+</button><button class="ibtn" id="calFit">전체</button></div>
       </div>
       <aside>
-        <div class="seg" id="calMode"><button data-m="scale" class="on">① 축척</button><button data-m="origin">② 모눈 기준점</button><button data-m="check">③ 길이 확인</button><button data-m="rooms">④ 방 나누기</button></div>
+        <div class="seg" id="calMode"><button data-m="scale" class="on">① 축척</button><button data-m="origin">② 모눈 기준점</button><button data-m="check">③ 길이 확인</button><button data-m="rooms">④ 방 나누기</button><button data-m="mask">⑤ 가리기</button></div>
         <div data-pane="scale" class="field" style="gap:12px">
           <p class="hint">도면에 치수가 적힌 벽의 양 끝을 차례로 클릭하세요. 휠로 확대하면 정확히 찍을 수 있어요.</p>
           <label class="field">실제 길이 (mm)<input id="calLen" type="number" inputmode="decimal" min="1" placeholder="예: 3600"></label>
@@ -677,6 +679,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
           <button class="btn primary" id="calApply">적용</button>
           <div id="calCopy"></div>
         </div>
+        <div data-pane="mask" hidden class="field" style="gap:10px"><p class="hint">도면에 적힌 필요 없는 글씨나 선을 <b>끌어서</b> 흰 네모로 가리세요. 모눈은 그 위에 그대로 보여요. 가린 네모를 <b>클릭</b>하면 지워져요.</p><div id="maskInfo" class="hint"></div><button class="btn small" id="maskClear">가린 것 모두 지우기</button></div>
         <div data-pane="origin" hidden><p class="hint">모눈이 시작할 벽 모서리를 클릭하세요. 모눈 선이 벽에 딱 맞게 옮겨져요.</p></div>
         <div data-pane="rooms" hidden class="field" style="gap:10px"><p class="hint">방 모서리를 차례로 <b>클릭</b>하면 상하좌우 선으로 꺾이며 그려지고, <b>처음 점을 누르면</b> 방이 완성돼요(더블클릭·Enter도 돼요). Backspace는 한 점 지우기, Esc는 취소예요. 네모 방은 끌어서 그려도 돼요. 방별로도 보고 층 전체로도 볼 수 있어요.</p><div id="roomList" class="roomlist"></div></div>
         <div data-pane="check" hidden class="field" style="gap:10px"><p class="hint">다른 벽의 양 끝을 클릭하면 앱이 계산한 길이가 나와요. 도면에 적힌 치수와 같으면 축척이 맞은 거예요.</p><div id="checkOut" class="bignum">–</div><label class="field">도면에 적힌 값 (mm)<input id="chkLen" type="number" inputmode="decimal" min="1" placeholder="예: 9895"></label><div id="chkDiff" class="hint"></div><label class="hint" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="chkSep"> 이 방향(가로 또는 세로)만 고치기</label><button class="btn primary" id="chkFix" disabled>이 치수로 축척 고치기</button></div>
@@ -1067,7 +1070,7 @@ function panelSVG(e,i){
   <clipPath id="clip${i}"><rect x="${e.ox}" y="${e.oy}" width="${e.w}" height="${e.h}"/></clipPath>
   <g class="ptitle fixsz" data-col="${e.col||'L'}" data-fx="${e.ox}" data-fy="${e.oy}" ${e.room?`data-room="${e.m.id}:${e.room.id}"`:`data-focus="${e.m.placeId}"`} transform="translate(${e.ox} ${e.oy-34})"><rect class="ptag ${e.layer}" x="0" y="-22" width="76" height="40" rx="7"/><text class="ptagt" x="38" y="-2">${tag}</text><text class="pname" x="90" y="-2">${title}</text></g>
   <rect class="pframe" x="${e.ox}" y="${e.oy}" width="${e.w}" height="${e.h}"/>
-  <g clip-path="url(#clip${i})"><image class="pimg" href="${e.m.img}" x="${e.mx}" y="${e.my}" width="${c.w}" height="${c.h}" preserveAspectRatio="none"/>${gridPath(e)}${roomMask}</g>${rooms}</g>`;
+  <g clip-path="url(#clip${i})"><image class="pimg" href="${e.m.img}" x="${e.mx}" y="${e.my}" width="${c.w}" height="${c.h}" preserveAspectRatio="none"/>${(e.m.masks||[]).map(q=>`<rect class="pmask" x="${e.mx+q.x/e.m.sx}" y="${e.my+q.y/e.m.sy}" width="${q.w/e.m.sx}" height="${q.h/e.m.sy}"/>`).join('')}${gridPath(e)}${roomMask}</g>${rooms}</g>`;
 }
 /* 여러 개 선택 (Ctrl/⌘/Shift+클릭) */
 function getMulti(){ const m=(UI.multi||[]).filter(x=>{ const u=U(x.id); return u&&(x.slot==='tray'||slotPos(u,x.slot)) }); UI.multi=m.length?m:null; return m }
@@ -1774,6 +1777,7 @@ function pptPanels(){ // 배치판: 오른쪽(변경)에 체크한 화면 / 공�
 async function panelBg(e,W,H,k,ox=0,oy=0){ const m=e.m; const c=document.createElement('canvas'); c.width=Math.round(W*k); c.height=Math.round(H*k); const g=c.getContext('2d');
   g.fillStyle='#ffffff'; g.fillRect(0,0,c.width,c.height); g.translate(ox*k,oy*k); // 도면을 가운데로 (위쪽은 제목 자리)
   try{ const im=await loadImg(m.img); g.drawImage(im,e.cx*m.sx,e.cy*m.sy,e.w*m.sx,e.h*m.sy,0,0,e.w*k,e.h*k) }catch(_){}
+  g.fillStyle='#ffffff'; for(const q of (m.masks||[])) g.fillRect((q.x/m.sx-e.cx)*k,(q.y/m.sy-e.cy)*k,q.w/m.sx*k,q.h/m.sy*k); // 가린 곳
   const st=50; for(const [ax,len,g0,lim] of [['x',e.h,e.gx,e.w],['y',e.w,e.gy,e.h]]){ const c0=ax==='x'?e.cx:e.cy; let v=g0+Math.ceil((c0-g0)/st-1e-6)*st;
     for(;v<=c0+lim+.01;v+=st){ const i=Math.round((v-g0)/st); g.strokeStyle=i%2===0?'rgba(40,60,80,.32)':'rgba(40,60,80,.14)'; g.lineWidth=Math.max(1,k*(i%2===0?.6:.4)); const t=(v-c0)*k; g.beginPath(); if(ax==='x'){ g.moveTo(t,0); g.lineTo(t,len*k) } else { g.moveTo(0,t); g.lineTo(len*k,t) } g.stroke() } }
   if(!e.room){ g.strokeStyle='rgba(30,92,132,.7)'; g.lineWidth=Math.max(1.5,k*.8); g.setLineDash([k*6,k*4]); g.font=`600 ${Math.max(10,k*14)}px sans-serif`; g.fillStyle='rgba(30,92,132,.85)';
@@ -2081,7 +2085,7 @@ $('#cropAdd').onclick=()=>{
   const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(cropCanvas,r.x,r.y,r.w,r.h,0,0,c.width,c.height);
   if(Crop.replace&&M(Crop.replace)){ // 도면 바꾸기: 가구 위치(cm)는 그대로, 그림만 바꾸고 축척을 다시 맞춤
     const m=M(Crop.replace); if(cal(m)) m.roomsCm=roomsOf(m).map(r=>({id:r.id,name:r.name,x:r.x/m.sx,y:r.y/m.sy,w:r.w/m.sx,h:r.h/m.sy,pts:r.pts?r.pts.map(q=>({x:q.x/m.sx,y:q.y/m.sy})):undefined}));
-    Object.assign(m,{img:c.toDataURL('image/jpeg',.92),imgV:uid(),w:c.width,h:c.height,sx:0,sy:0,gx:0,gy:0,src:Crop.src,ppu:Crop.scale*f,blank:false,rooms:[]}); delete m.calRef;
+    Object.assign(m,{img:c.toDataURL('image/jpeg',.92),imgV:uid(),w:c.width,h:c.height,sx:0,sy:0,gx:0,gy:0,src:Crop.src,ppu:Crop.scale*f,blank:false,rooms:[],masks:[]}); delete m.calRef;
     Crop.added=[m.id]; Crop.replace=null; save(); $('#dlgCrop').close(); renderAll(); toast('도면 그림을 바꿨어요. 축척을 다시 맞추면 가구가 원래 cm 위치에 다시 나타나요.'); openCal(m.id); return }
   const n=S.maps.filter(m=>m.placeId===Crop.placeId).length+1;
   const m={id:uid(),placeId:Crop.placeId,name:$('#cropName').value.trim()||`층 ${n}`,img:c.toDataURL('image/jpeg',.92),w:c.width,h:c.height,sx:0,sy:0,gx:0,gy:0,src:Crop.src,ppu:Crop.scale*f};
@@ -2110,6 +2114,8 @@ function calBase(){
 function calOverlay(){
   const g=$('#calOvl'); if(!g) return; const k=CV.w/600, m=Cal.m; let s='';
   if(cal(m)&&Cal.mode==='origin'){ s+=`<path class="corigin" d="M${m.gx-14*k} ${m.gy}H${m.gx+14*k}M${m.gx} ${m.gy-14*k}V${m.gy+14*k}"/>` }
+  for(const q of (m.masks||[])) s+=`<rect class="cmask${Cal.mode==='mask'?' on':''}" x="${q.x}" y="${q.y}" width="${q.w}" height="${q.h}"/>`;
+  if(Cal.mdraft){ const b=Cal.mdraft; s+=`<rect class="cmask on" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"/>` }
   for(const r of roomsOf(m)){ const on=Cal.mode==='rooms'; const p0=roomPts(r)[0]; s+=(r.pts?`<polygon class="crm ${on?'on':''}" points="${r.pts.map(q=>q.x+','+q.y).join(' ')}"/>`:`<rect class="crm ${on?'on':''}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}"/>`)+`<text class="crmt" x="${p0.x+8*k}" y="${p0.y+20*k}" font-size="${14*k}">${esc(r.name)}</text>` }
   if(Cal.poly&&Cal.poly.length){ const P2=Cal.poly; const h=Cal.hover?polyNext(Cal.hover):null; const all=h?[...P2,h]:P2; const near=h&&P2.length>=3&&Math.hypot(h.x-P2[0].x,h.y-P2[0].y)<14*k;
     s+=`<polyline class="cpoly" points="${all.map(q=>q.x+','+q.y).join(' ')}"/>`; P2.forEach((q,i)=>{ s+=`<circle class="cdot${i===0&&near?' sel':''}" cx="${q.x}" cy="${q.y}" r="${(i===0?7:4)*k}"/>` });
@@ -2123,7 +2129,7 @@ function calOverlay(){
   if(Cal.pts.length===2){ const[a,b]=Cal.pts; s+=`<line class="cline" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>` }
   g.innerHTML=s;
   if(Cal.mode==='scale'&&Cal.pts.length===2&&Cal.m&&Cal.m.calRef){ $('#calHint').textContent='지난번에 찍은 두 점이에요. 점을 끌거나 화살표 키로 조정하고 수정 적용을 누르세요. 새로 찍으려면 빈 곳을 클릭하세요.'; g.innerHTML=s; return }
-  const hints={rooms:['방 모서리를 차례로 클릭해 둘레를 그리고(선은 상하좌우), 처음 점을 누르면 방이 완성돼요. 네모 방은 끌어서 그려도 돼요.'],scale:['치수선의 한쪽 끝을 클릭하세요. 돋보기로 끝을 확인하며 찍으세요.','점선을 따라 다른 쪽 끝을 클릭하세요. 거의 수평·수직이면 자동으로 맞춰져요.','점을 끌거나 화살표 키(Shift: 10칸씩)로 미세 조정한 뒤, 실제 길이를 넣고 적용을 누르세요.'],origin:['모눈이 시작할 벽 모서리를 클릭하세요.'],check:['재고 싶은 치수선의 한쪽 끝을 클릭하세요.','다른 쪽 끝을 클릭하세요.','점을 끌거나 화살표 키로 미세 조정하면 길이가 바로 바뀌어요.']};
+  const hints={rooms:['방 모서리를 차례로 클릭해 둘레를 그리고(선은 상하좌우), 처음 점을 누르면 방이 완성돼요. 네모 방은 끌어서 그려도 돼요.'],mask:['필요 없는 글씨나 선을 끌어서 흰 네모로 가리세요. 가린 네모를 클릭하면 지워져요.'],scale:['치수선의 한쪽 끝을 클릭하세요. 돋보기로 끝을 확인하며 찍으세요.','점선을 따라 다른 쪽 끝을 클릭하세요. 거의 수평·수직이면 자동으로 맞춰져요.','점을 끌거나 화살표 키(Shift: 10칸씩)로 미세 조정한 뒤, 실제 길이를 넣고 적용을 누르세요.'],origin:['모눈이 시작할 벽 모서리를 클릭하세요.'],check:['재고 싶은 치수선의 한쪽 끝을 클릭하세요.','다른 쪽 끝을 클릭하세요.','점을 끌거나 화살표 키로 미세 조정하면 길이가 바로 바뀌어요.']};
   const hs=hints[Cal.mode]; $('#calHint').textContent=hs[Math.min(Cal.pts.length,hs.length-1)];
 }
 function chkUpdate(){ const t=num($('#chkLen').value,0), v=Cal.chk; const ok=Cal.mode==='check'&&Cal.pts.length===2&&t>0&&v>0; $('#chkFix').disabled=!ok; if(!ok){ $('#chkDiff').textContent=''; return } const d=(v-t)/t*100; $('#chkDiff').innerHTML=Math.abs(d)<1.5?`<b style="color:var(--ok)">오차 ${d.toFixed(1)}% · 축척이 맞아요</b>`:`<b style="color:var(--warn)">오차 ${d>0?'+':''}${d.toFixed(1)}% · 아래 버튼으로 고치세요</b>` }
@@ -2187,10 +2193,22 @@ function calStatus(){ const m=Cal.m; const same=S.maps.filter(o=>o!==m&&cal(o)&&
   $('#calCopy').innerHTML=same.length?`<p class="hint">같은 PDF에서 잘라낸 도면의 축척을 그대로 쓸 수도 있어요.</p>${same.map(o=>`<button class="btn small" data-copyfrom="${o.id}">‘${esc(o.name)}’ 축척 쓰기</button>`).join(' ')}`:'';
   $('#calNote').textContent=cal(m)?(roomsOf(m).length?`방 ${roomsOf(m).length}개로 나뉘어 있어요.`:'③ 길이 확인 후, ④ 방 나누기로 회의실·대표실 등을 나눠 보세요.'):'';
 }
-function setCalMode(mode){ Cal.poly=null; const keep=mode==='scale'&&Cal.m&&Cal.m.calRef&&Cal.mode!=='scale'; Cal.mode=mode; Cal.pts=keep?Cal.m.calRef.pts.map(q=>({x:q.x,y:q.y})):[]; if(keep){ Cal.selPt=1; $('#calLen').value=Cal.m.calRef.mm } Cal.chk=0; if($('#chkLen')){ $('#chkLen').value=''; $('#chkDiff').textContent=''; $('#chkFix').disabled=true } calSvg.style.cursor=mode==='rooms'?'crosshair':''; if(mode==='rooms'&&Cal.m) calRooms(); $$('#calMode button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode)); $$('#dlgCal [data-pane]').forEach(p=>p.hidden=p.dataset.pane!==mode); $('#checkOut').textContent='–'; if(Cal.m){ calOverlay() } }
-$('#calMode').onclick=e=>{ const b=e.target.closest('[data-m]'); if(!b) return; if(b.dataset.m!=='scale'&&b.dataset.m!=='rooms'&&!cal(Cal.m)){ toast('먼저 ① 축척을 맞춰 주세요.'); return } setCalMode(b.dataset.m) };
+function setCalMode(mode){ Cal.poly=null; const keep=mode==='scale'&&Cal.m&&Cal.m.calRef&&Cal.mode!=='scale'; Cal.mode=mode; Cal.pts=keep?Cal.m.calRef.pts.map(q=>({x:q.x,y:q.y})):[]; if(keep){ Cal.selPt=1; $('#calLen').value=Cal.m.calRef.mm } Cal.chk=0; if($('#chkLen')){ $('#chkLen').value=''; $('#chkDiff').textContent=''; $('#chkFix').disabled=true } calSvg.style.cursor=mode==='rooms'||mode==='mask'?'crosshair':''; if(mode==='mask') maskInfo(); if(mode==='rooms'&&Cal.m) calRooms(); $$('#calMode button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode)); $$('#dlgCal [data-pane]').forEach(p=>p.hidden=p.dataset.pane!==mode); $('#checkOut').textContent='–'; if(Cal.m){ calOverlay() } }
+$('#calMode').onclick=e=>{ const b=e.target.closest('[data-m]'); if(!b) return; if(b.dataset.m!=='scale'&&b.dataset.m!=='rooms'&&b.dataset.m!=='mask'&&!cal(Cal.m)){ toast('먼저 ① 축척을 맞춰 주세요.'); return } setCalMode(b.dataset.m) };
 $('#calCopy').onclick=e=>{ const b=e.target.closest('[data-copyfrom]'); if(!b) return; const o=M(b.dataset.copyfrom), m=Cal.m; m.sx=o.sx/o.ppu*m.ppu; m.sy=o.sy/o.ppu*m.ppu; afterCal(); toast(`‘${o.name}’의 축척을 적용했어요.`) };
 function calRooms(){ const m=Cal.m; const rs=roomsOf(m); $('#roomList').innerHTML=rs.length?rs.map(r=>`<div class="roomrow"><input id="rn-${r.id}" data-roomname="${r.id}" value="${esc(r.name)}" aria-label="방 이름"><span class="mono hint">${cal(m)?`${fmt(r.w/m.sx)}×${fmt(r.h/m.sy)}`:''}</span><button class="btn small" data-roomdel="${r.id}">삭제</button></div>`).join(''):'<span class="hint">아직 나눈 방이 없어요.</span>' }
+/* 도면 가리기: 끌어서 흰 네모, 가린 네모를 클릭하면 지움 */
+function maskInfo(){ const n=(Cal.m&&Cal.m.masks||[]).length; const el=$('#maskInfo'); if(el) el.textContent=n?`가린 곳 ${n}개`:'아직 가린 곳이 없어요.' }
+calSvg.addEventListener('pointerdown',e=>{ if(Cal.mode!=='mask') return; if(e.pointerType==='mouse'&&e.button!==0) return; e.stopImmediatePropagation(); e.preventDefault();
+  const m=Cal.m, inv=calSvg.getScreenCTM().inverse(), p0=CV.pt(e,inv), sx=e.clientX, sy=e.clientY; let drag=false; try{calSvg.setPointerCapture(e.pointerId)}catch(_){}
+  const box={x:p0.x,y:p0.y,w:0,h:0};
+  const mv=ev=>{ if(!drag&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<5) return; drag=true; const p=CV.pt(ev,inv); const x=clamp(p.x,0,m.w), y=clamp(p.y,0,m.h); box.x=Math.min(p0.x,x); box.y=Math.min(p0.y,y); box.w=Math.abs(x-p0.x); box.h=Math.abs(y-p0.y); Cal.mdraft=box; calOverlay() };
+  const up=()=>{ calSvg.removeEventListener('pointermove',mv); calSvg.removeEventListener('pointerup',up); Cal.mdraft=null;
+    if(drag){ if(box.w>2&&box.h>2){ (m.masks||(m.masks=[])).push({x:Math.round(box.x),y:Math.round(box.y),w:Math.round(box.w),h:Math.round(box.h)}); save() } }
+    else { const ms=m.masks||[]; for(let i=ms.length-1;i>=0;i--){ const q=ms[i]; if(p0.x>=q.x&&p0.x<=q.x+q.w&&p0.y>=q.y&&p0.y<=q.y+q.h){ ms.splice(i,1); save(); toast('가린 네모를 지웠어요.'); break } } }
+    maskInfo(); calOverlay() };
+  calSvg.addEventListener('pointermove',mv); calSvg.addEventListener('pointerup',up) },true);
+$('#maskClear').onclick=e=>{ if(!Cal.m||!(Cal.m.masks||[]).length) return; if(!armed(e.currentTarget)) return; Cal.m.masks=[]; save(); maskInfo(); calOverlay() };
 /* 방 그리기: 클릭할 때마다 꺾이는 점(선은 상하좌우로만), 처음 점을 누르면(또는 더블클릭·Enter) 방 완성. 끌면 네모 방 */
 function orthoPt(a,q){ return Math.abs(q.x-a.x)>=Math.abs(q.y-a.y)?{x:q.x,y:a.y}:{x:a.x,y:q.y} }
 function polyNext(q){ const P2=Cal.poly, k=CV.w/600; if(!P2||!P2.length) return q; let r=orthoPt(P2[P2.length-1],q); const f=P2[0];

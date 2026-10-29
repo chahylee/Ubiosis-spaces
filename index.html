@@ -389,6 +389,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .unit.hl .ub{stroke:var(--hl);stroke-width:4;fill-opacity:.7;animation:pulse 1.1s ease-in-out infinite}
 @keyframes pulse{50%{stroke-width:9;stroke-opacity:.55}}
 @media (prefers-reduced-motion: reduce){.unit.hl .ub{animation:none}}
+.rmout{fill:var(--bg,#eceeec);fill-opacity:.72;pointer-events:none}
 .rmbox{fill:none;stroke:#2f6f9a;stroke-width:1.5;stroke-dasharray:7 5;vector-effect:non-scaling-stroke;pointer-events:none}
 .rmlbl{fill:#2f6f9a;font:600 22px var(--sans);paint-order:stroke;stroke:#fff;stroke-width:4px;cursor:pointer}
 .rmlbl:hover{text-decoration:underline}
@@ -524,6 +525,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
 .cline.prev{stroke-dasharray:4 3;opacity:.8}
 .cprevt{fill:var(--hl);font-family:var(--mono);text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:3px}
 .crm{fill:color-mix(in srgb,var(--accent) 6%,transparent);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:6 4;vector-effect:non-scaling-stroke}
+.cpoly{fill:color-mix(in srgb,var(--accent) 10%,transparent);stroke:var(--accent);stroke-width:2.5;vector-effect:non-scaling-stroke;pointer-events:none}
 .crm.on{fill:color-mix(in srgb,var(--accent) 14%,transparent);stroke-width:2.5}
 .crmt{fill:var(--accent);font-family:var(--sans);font-weight:600;paint-order:stroke;stroke:#fff;stroke-width:3px}
 .roomlist{display:grid;gap:6px}
@@ -676,7 +678,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
           <div id="calCopy"></div>
         </div>
         <div data-pane="origin" hidden><p class="hint">모눈이 시작할 벽 모서리를 클릭하세요. 모눈 선이 벽에 딱 맞게 옮겨져요.</p></div>
-        <div data-pane="rooms" hidden class="field" style="gap:10px"><p class="hint">도면에서 방 하나를 드래그로 감싸세요. 잘라낸 방은 층 안의 위치를 기억해서, 방별로도 보고 층 전체로도 볼 수 있어요. 확대·축소는 휠이나 아래 버튼으로 하세요.</p><div id="roomList" class="roomlist"></div></div>
+        <div data-pane="rooms" hidden class="field" style="gap:10px"><p class="hint">방 모서리를 차례로 <b>클릭</b>하면 상하좌우 선으로 꺾이며 그려지고, <b>처음 점을 누르면</b> 방이 완성돼요(더블클릭·Enter도 돼요). Backspace는 한 점 지우기, Esc는 취소예요. 네모 방은 끌어서 그려도 돼요. 방별로도 보고 층 전체로도 볼 수 있어요.</p><div id="roomList" class="roomlist"></div></div>
         <div data-pane="check" hidden class="field" style="gap:10px"><p class="hint">다른 벽의 양 끝을 클릭하면 앱이 계산한 길이가 나와요. 도면에 적힌 치수와 같으면 축척이 맞은 거예요.</p><div id="checkOut" class="bignum">–</div><label class="field">도면에 적힌 값 (mm)<input id="chkLen" type="number" inputmode="decimal" min="1" placeholder="예: 9895"></label><div id="chkDiff" class="hint"></div><label class="hint" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="chkSep"> 이 방향(가로 또는 세로)만 고치기</label><button class="btn primary" id="chkFix" disabled>이 치수로 축척 고치기</button></div>
         <div class="calstatus" id="calStatus"></div>
         <div class="testerbox"><b>테스터 (기준 자)</b><p class="hint">원하는 길이의 선이나 네모를 도면 위에 겹쳐 놓고 끌어서 치수선과 맞춰 보세요. 축척이 맞으면 끝이 딱 맞아요.</p>
@@ -1005,7 +1007,10 @@ function computeAnchors(L){ const A={}; const a=L.filter(e=>e.col==='L'), b=L.fi
   UI.anchor=A }
 const roomsOf=m=>(m&&m.rooms)||[];
 const mapNm=m=>m&&S.maps.filter(x=>x.placeId===m.placeId).length>1?m.name:''; // 도면이 하나뿐인 공간은 도면 이름(층 1 등)을 숨김
-function roomAt(m,x,y){ return roomsOf(m).find(r=>x>=r.x/m.sx&&x<=(r.x+r.w)/m.sx&&y>=r.y/m.sy&&y<=(r.y+r.h)/m.sy)||null }
+/* 방은 네모(x,y,w,h) 또는 꺾인 모양(pts: 도면 픽셀 점들). x,y,w,h는 항상 감싸는 네모 */
+const roomPts=r=>r.pts&&r.pts.length>=3?r.pts:[{x:r.x,y:r.y},{x:r.x+r.w,y:r.y},{x:r.x+r.w,y:r.y+r.h},{x:r.x,y:r.y+r.h}];
+function inPoly(pts,x,y){ let c=false; for(let i=0,j=pts.length-1;i<pts.length;j=i++){ const a=pts[i],b=pts[j]; if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x) c=!c } return c }
+function roomAt(m,x,y){ return roomsOf(m).find(r=>{ if(!(x>=r.x/m.sx&&x<=(r.x+r.w)/m.sx&&y>=r.y/m.sy&&y<=(r.y+r.h)/m.sy)) return false; return !r.pts||inPoly(r.pts,x*m.sx,y*m.sy) })||null }
 function unitRoom(u,slot){ return posRoom(u,u[slot]) }
 function posRoom(u,pos){ if(!pos) return null; const m=M(pos.mapId); if(!cal(m)) return null; const[w,d]=dims(I(u.itemId),pos.rot||0); return roomAt(m,pos.x+w/2,pos.y+d/2) }
 function destLabel(u){ const dp=destPlace(u); if(!dp) return ''; let s=P(dp)?.name||''; const tp=u.to||(isStay(u)?u.from:null); if(tp){ const m=M(tp.mapId); const r=u.to?unitRoom(u,'to'):unitRoom(u,'from'); if(m&&(r||S.maps.filter(x=>x.placeId===m.placeId).length>1)) s+=' › '+(r?r.name:m.name) } return s }
@@ -1054,12 +1059,15 @@ function panelSVG(e,i){
   const p=P(e.m.placeId); const tag=e.layer==='a'?'기존':'변경'; const c=cmOf(e.m);
   const mn=mapNm(e.m); const title=`${esc(p?p.name:'')}${mn?' › '+esc(mn):''}${e.room?' › '+esc(e.room.name):''}`;
   let rooms='';
-  if(!e.room) for(const r of roomsOf(e.m)){ const x=e.mx+r.x/e.m.sx, y=e.my+r.y/e.m.sy, w=r.w/e.m.sx, h=r.h/e.m.sy; rooms+=`<rect class="rmbox" x="${x}" y="${y}" width="${w}" height="${h}"/><text class="rmlbl" data-room="${e.m.id}:${r.id}" x="${x+12}" y="${y+26}">${esc(r.name)} ›</text>` }
+  const wp=pts=>pts.map(q=>`${(e.mx+q.x/e.m.sx).toFixed(1)},${(e.my+q.y/e.m.sy).toFixed(1)}`).join(' ');
+  let roomMask='';
+  if(e.room&&e.room.pts){ const P2=wp(e.room.pts); roomMask=`<path class="rmout" fill-rule="evenodd" d="M${e.ox} ${e.oy}h${e.w}v${e.h}h${-e.w}Z M${P2.replace(/ /g,' L')}Z"/><polygon class="rmbox" points="${P2}"/>` } /* 방만 볼 때 방 모양 바깥은 흐리게 */
+  if(!e.room) for(const r of roomsOf(e.m)){ const x=e.mx+r.x/e.m.sx, y=e.my+r.y/e.m.sy, w=r.w/e.m.sx, h=r.h/e.m.sy; rooms+=r.pts?`<polygon class="rmbox" points="${wp(r.pts)}"/>`:`<rect class="rmbox" x="${x}" y="${y}" width="${w}" height="${h}"/>`; const p0=roomPts(r)[0]; rooms+=`<text class="rmlbl" data-room="${e.m.id}:${r.id}" x="${e.mx+p0.x/e.m.sx+12}" y="${e.my+p0.y/e.m.sy+26}">${esc(r.name)} ›</text>` }
   return `<g class="panel ${e.layer}" data-key="${e.key}">
   <clipPath id="clip${i}"><rect x="${e.ox}" y="${e.oy}" width="${e.w}" height="${e.h}"/></clipPath>
   <g class="ptitle fixsz" data-col="${e.col||'L'}" data-fx="${e.ox}" data-fy="${e.oy}" ${e.room?`data-room="${e.m.id}:${e.room.id}"`:`data-focus="${e.m.placeId}"`} transform="translate(${e.ox} ${e.oy-34})"><rect class="ptag ${e.layer}" x="0" y="-22" width="76" height="40" rx="7"/><text class="ptagt" x="38" y="-2">${tag}</text><text class="pname" x="90" y="-2">${title}</text></g>
   <rect class="pframe" x="${e.ox}" y="${e.oy}" width="${e.w}" height="${e.h}"/>
-  <g clip-path="url(#clip${i})"><image class="pimg" href="${e.m.img}" x="${e.mx}" y="${e.my}" width="${c.w}" height="${c.h}" preserveAspectRatio="none"/>${gridPath(e)}</g>${rooms}</g>`;
+  <g clip-path="url(#clip${i})"><image class="pimg" href="${e.m.img}" x="${e.mx}" y="${e.my}" width="${c.w}" height="${c.h}" preserveAspectRatio="none"/>${gridPath(e)}${roomMask}</g>${rooms}</g>`;
 }
 /* 여러 개 선택 (Ctrl/⌘/Shift+클릭) */
 function getMulti(){ const m=(UI.multi||[]).filter(x=>{ const u=U(x.id); return u&&(x.slot==='tray'||slotPos(u,x.slot)) }); UI.multi=m.length?m:null; return m }
@@ -1769,7 +1777,8 @@ async function panelBg(e,W,H,k,ox=0,oy=0){ const m=e.m; const c=document.createE
   const st=50; for(const [ax,len,g0,lim] of [['x',e.h,e.gx,e.w],['y',e.w,e.gy,e.h]]){ const c0=ax==='x'?e.cx:e.cy; let v=g0+Math.ceil((c0-g0)/st-1e-6)*st;
     for(;v<=c0+lim+.01;v+=st){ const i=Math.round((v-g0)/st); g.strokeStyle=i%2===0?'rgba(40,60,80,.32)':'rgba(40,60,80,.14)'; g.lineWidth=Math.max(1,k*(i%2===0?.6:.4)); const t=(v-c0)*k; g.beginPath(); if(ax==='x'){ g.moveTo(t,0); g.lineTo(t,len*k) } else { g.moveTo(0,t); g.lineTo(len*k,t) } g.stroke() } }
   if(!e.room){ g.strokeStyle='rgba(30,92,132,.7)'; g.lineWidth=Math.max(1.5,k*.8); g.setLineDash([k*6,k*4]); g.font=`600 ${Math.max(10,k*14)}px sans-serif`; g.fillStyle='rgba(30,92,132,.85)';
-    for(const r of roomsOf(m)){ const x=(r.x/m.sx-e.cx)*k, y=(r.y/m.sy-e.cy)*k; g.strokeRect(x,y,r.w/m.sx*k,r.h/m.sy*k); g.fillText(r.name,x+k*8,y+k*20) } g.setLineDash([]) }
+    for(const r of roomsOf(m)){ const pts=roomPts(r).map(q=>[(q.x/m.sx-e.cx)*k,(q.y/m.sy-e.cy)*k]); g.beginPath(); pts.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y)); g.closePath(); g.stroke(); g.fillText(r.name,pts[0][0]+k*8,pts[0][1]+k*20) } g.setLineDash([]) }
+  else if(e.room.pts){ const pts=e.room.pts.map(q=>[(q.x/m.sx-e.cx)*k,(q.y/m.sy-e.cy)*k]); g.save(); g.beginPath(); g.rect(0,0,e.w*k,e.h*k); pts.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y)); g.closePath(); g.fillStyle='rgba(236,238,236,.72)'; g.fill('evenodd'); g.restore() }
   g.strokeStyle='#333'; g.lineWidth=Math.max(1,k*.5); g.strokeRect(0,0,e.w*k,e.h*k);
   return c.toDataURL('image/png') }
 async function exportPPT(){ const ps=pptPanels(); if(!ps.length){ toast(UI.view==='space'?'보이는 도면이 없어요.':'오른쪽(변경)에 볼 도면을 하나 이상 체크하세요.'); return }
@@ -2071,7 +2080,7 @@ $('#cropAdd').onclick=()=>{
   const maxS=6000, f=Math.min(1,maxS/Math.max(r.w,r.h)); const c=document.createElement('canvas'); c.width=Math.round(r.w*f); c.height=Math.round(r.h*f);
   const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(cropCanvas,r.x,r.y,r.w,r.h,0,0,c.width,c.height);
   if(Crop.replace&&M(Crop.replace)){ // 도면 바꾸기: 가구 위치(cm)는 그대로, 그림만 바꾸고 축척을 다시 맞춤
-    const m=M(Crop.replace); if(cal(m)) m.roomsCm=roomsOf(m).map(r=>({id:r.id,name:r.name,x:r.x/m.sx,y:r.y/m.sy,w:r.w/m.sx,h:r.h/m.sy}));
+    const m=M(Crop.replace); if(cal(m)) m.roomsCm=roomsOf(m).map(r=>({id:r.id,name:r.name,x:r.x/m.sx,y:r.y/m.sy,w:r.w/m.sx,h:r.h/m.sy,pts:r.pts?r.pts.map(q=>({x:q.x/m.sx,y:q.y/m.sy})):undefined}));
     Object.assign(m,{img:c.toDataURL('image/jpeg',.92),imgV:uid(),w:c.width,h:c.height,sx:0,sy:0,gx:0,gy:0,src:Crop.src,ppu:Crop.scale*f,blank:false,rooms:[]}); delete m.calRef;
     Crop.added=[m.id]; Crop.replace=null; save(); $('#dlgCrop').close(); renderAll(); toast('도면 그림을 바꿨어요. 축척을 다시 맞추면 가구가 원래 cm 위치에 다시 나타나요.'); openCal(m.id); return }
   const n=S.maps.filter(m=>m.placeId===Crop.placeId).length+1;
@@ -2101,7 +2110,11 @@ function calBase(){
 function calOverlay(){
   const g=$('#calOvl'); if(!g) return; const k=CV.w/600, m=Cal.m; let s='';
   if(cal(m)&&Cal.mode==='origin'){ s+=`<path class="corigin" d="M${m.gx-14*k} ${m.gy}H${m.gx+14*k}M${m.gx} ${m.gy-14*k}V${m.gy+14*k}"/>` }
-  for(const r of roomsOf(m)){ const on=Cal.mode==='rooms'; s+=`<rect class="crm ${on?'on':''}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}"/><text class="crmt" x="${r.x+8*k}" y="${r.y+20*k}" font-size="${14*k}">${esc(r.name)}</text>` }
+  for(const r of roomsOf(m)){ const on=Cal.mode==='rooms'; const p0=roomPts(r)[0]; s+=(r.pts?`<polygon class="crm ${on?'on':''}" points="${r.pts.map(q=>q.x+','+q.y).join(' ')}"/>`:`<rect class="crm ${on?'on':''}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}"/>`)+`<text class="crmt" x="${p0.x+8*k}" y="${p0.y+20*k}" font-size="${14*k}">${esc(r.name)}</text>` }
+  if(Cal.poly&&Cal.poly.length){ const P2=Cal.poly; const h=Cal.hover?polyNext(Cal.hover):null; const all=h?[...P2,h]:P2; const near=h&&P2.length>=3&&Math.hypot(h.x-P2[0].x,h.y-P2[0].y)<14*k;
+    s+=`<polyline class="cpoly" points="${all.map(q=>q.x+','+q.y).join(' ')}"/>`; P2.forEach((q,i)=>{ s+=`<circle class="cdot${i===0&&near?' sel':''}" cx="${q.x}" cy="${q.y}" r="${(i===0?7:4)*k}"/>` });
+    if(h&&cal(m)){ const a=P2[P2.length-1]; const L=Math.hypot((h.x-a.x)/m.sx,(h.y-a.y)/m.sy); if(L>1) s+=`<text class="cprevt" x="${(a.x+h.x)/2}" y="${(a.y+h.y)/2-8*k}" font-size="${13*k}">${fmtLen(L)}</text>` }
+    if(near) s+=`<text class="cprevt" x="${P2[0].x+12*k}" y="${P2[0].y-12*k}" font-size="${13*k}">여기를 누르면 방 완성</text>` }
   if(Cal.draft){ const b=Cal.draft; s+=`<rect class="crm on" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"/>` }
   if(Cal.pts.length===1&&(Cal.mode==='scale'||Cal.mode==='check')){ const a=Cal.pts[0]; s+=`<line class="cguide" x1="0" y1="${a.y}" x2="${m.w}" y2="${a.y}"/><line class="cguide" x1="${a.x}" y1="0" x2="${a.x}" y2="${m.h}"/>`;
     if(Cal.hover){ const q=snapAxis(a,Cal.hover); s+=`<line class="cline prev" x1="${a.x}" y1="${a.y}" x2="${q.x}" y2="${q.y}"/><circle class="cdot" cx="${q.x}" cy="${q.y}" r="${4*k}"/>`; if(cal(m)||Cal.mode==='scale'){ const lpx=Math.hypot(q.x-a.x,q.y-a.y); const t=cal(m)?`${fmt(Math.hypot((q.x-a.x)/m.sx,(q.y-a.y)/m.sy)*10)} mm`:''; if(t) s+=`<text class="cprevt" x="${(a.x+q.x)/2}" y="${(a.y+q.y)/2-8*k}" font-size="${13*k}">${t}</text>` } } }
@@ -2110,7 +2123,7 @@ function calOverlay(){
   if(Cal.pts.length===2){ const[a,b]=Cal.pts; s+=`<line class="cline" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>` }
   g.innerHTML=s;
   if(Cal.mode==='scale'&&Cal.pts.length===2&&Cal.m&&Cal.m.calRef){ $('#calHint').textContent='지난번에 찍은 두 점이에요. 점을 끌거나 화살표 키로 조정하고 수정 적용을 누르세요. 새로 찍으려면 빈 곳을 클릭하세요.'; g.innerHTML=s; return }
-  const hints={rooms:['방 하나를 드래그로 감싸세요. 여러 개를 이어서 그릴 수 있어요.'],scale:['치수선의 한쪽 끝을 클릭하세요. 돋보기로 끝을 확인하며 찍으세요.','점선을 따라 다른 쪽 끝을 클릭하세요. 거의 수평·수직이면 자동으로 맞춰져요.','점을 끌거나 화살표 키(Shift: 10칸씩)로 미세 조정한 뒤, 실제 길이를 넣고 적용을 누르세요.'],origin:['모눈이 시작할 벽 모서리를 클릭하세요.'],check:['재고 싶은 치수선의 한쪽 끝을 클릭하세요.','다른 쪽 끝을 클릭하세요.','점을 끌거나 화살표 키로 미세 조정하면 길이가 바로 바뀌어요.']};
+  const hints={rooms:['방 모서리를 차례로 클릭해 둘레를 그리고(선은 상하좌우), 처음 점을 누르면 방이 완성돼요. 네모 방은 끌어서 그려도 돼요.'],scale:['치수선의 한쪽 끝을 클릭하세요. 돋보기로 끝을 확인하며 찍으세요.','점선을 따라 다른 쪽 끝을 클릭하세요. 거의 수평·수직이면 자동으로 맞춰져요.','점을 끌거나 화살표 키(Shift: 10칸씩)로 미세 조정한 뒤, 실제 길이를 넣고 적용을 누르세요.'],origin:['모눈이 시작할 벽 모서리를 클릭하세요.'],check:['재고 싶은 치수선의 한쪽 끝을 클릭하세요.','다른 쪽 끝을 클릭하세요.','점을 끌거나 화살표 키로 미세 조정하면 길이가 바로 바뀌어요.']};
   const hs=hints[Cal.mode]; $('#calHint').textContent=hs[Math.min(Cal.pts.length,hs.length-1)];
 }
 function chkUpdate(){ const t=num($('#chkLen').value,0), v=Cal.chk; const ok=Cal.mode==='check'&&Cal.pts.length===2&&t>0&&v>0; $('#chkFix').disabled=!ok; if(!ok){ $('#chkDiff').textContent=''; return } const d=(v-t)/t*100; $('#chkDiff').innerHTML=Math.abs(d)<1.5?`<b style="color:var(--ok)">오차 ${d.toFixed(1)}% · 축척이 맞아요</b>`:`<b style="color:var(--warn)">오차 ${d>0?'+':''}${d.toFixed(1)}% · 아래 버튼으로 고치세요</b>` }
@@ -2174,19 +2187,39 @@ function calStatus(){ const m=Cal.m; const same=S.maps.filter(o=>o!==m&&cal(o)&&
   $('#calCopy').innerHTML=same.length?`<p class="hint">같은 PDF에서 잘라낸 도면의 축척을 그대로 쓸 수도 있어요.</p>${same.map(o=>`<button class="btn small" data-copyfrom="${o.id}">‘${esc(o.name)}’ 축척 쓰기</button>`).join(' ')}`:'';
   $('#calNote').textContent=cal(m)?(roomsOf(m).length?`방 ${roomsOf(m).length}개로 나뉘어 있어요.`:'③ 길이 확인 후, ④ 방 나누기로 회의실·대표실 등을 나눠 보세요.'):'';
 }
-function setCalMode(mode){ const keep=mode==='scale'&&Cal.m&&Cal.m.calRef&&Cal.mode!=='scale'; Cal.mode=mode; Cal.pts=keep?Cal.m.calRef.pts.map(q=>({x:q.x,y:q.y})):[]; if(keep){ Cal.selPt=1; $('#calLen').value=Cal.m.calRef.mm } Cal.chk=0; if($('#chkLen')){ $('#chkLen').value=''; $('#chkDiff').textContent=''; $('#chkFix').disabled=true } calSvg.style.cursor=mode==='rooms'?'crosshair':''; if(mode==='rooms'&&Cal.m) calRooms(); $$('#calMode button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode)); $$('#dlgCal [data-pane]').forEach(p=>p.hidden=p.dataset.pane!==mode); $('#checkOut').textContent='–'; if(Cal.m){ calOverlay() } }
+function setCalMode(mode){ Cal.poly=null; const keep=mode==='scale'&&Cal.m&&Cal.m.calRef&&Cal.mode!=='scale'; Cal.mode=mode; Cal.pts=keep?Cal.m.calRef.pts.map(q=>({x:q.x,y:q.y})):[]; if(keep){ Cal.selPt=1; $('#calLen').value=Cal.m.calRef.mm } Cal.chk=0; if($('#chkLen')){ $('#chkLen').value=''; $('#chkDiff').textContent=''; $('#chkFix').disabled=true } calSvg.style.cursor=mode==='rooms'?'crosshair':''; if(mode==='rooms'&&Cal.m) calRooms(); $$('#calMode button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode)); $$('#dlgCal [data-pane]').forEach(p=>p.hidden=p.dataset.pane!==mode); $('#checkOut').textContent='–'; if(Cal.m){ calOverlay() } }
 $('#calMode').onclick=e=>{ const b=e.target.closest('[data-m]'); if(!b) return; if(b.dataset.m!=='scale'&&b.dataset.m!=='rooms'&&!cal(Cal.m)){ toast('먼저 ① 축척을 맞춰 주세요.'); return } setCalMode(b.dataset.m) };
 $('#calCopy').onclick=e=>{ const b=e.target.closest('[data-copyfrom]'); if(!b) return; const o=M(b.dataset.copyfrom), m=Cal.m; m.sx=o.sx/o.ppu*m.ppu; m.sy=o.sy/o.ppu*m.ppu; afterCal(); toast(`‘${o.name}’의 축척을 적용했어요.`) };
 function calRooms(){ const m=Cal.m; const rs=roomsOf(m); $('#roomList').innerHTML=rs.length?rs.map(r=>`<div class="roomrow"><input id="rn-${r.id}" data-roomname="${r.id}" value="${esc(r.name)}" aria-label="방 이름"><span class="mono hint">${cal(m)?`${fmt(r.w/m.sx)}×${fmt(r.h/m.sy)}`:''}</span><button class="btn small" data-roomdel="${r.id}">삭제</button></div>`).join(''):'<span class="hint">아직 나눈 방이 없어요.</span>' }
+/* 방 그리기: 클릭할 때마다 꺾이는 점(선은 상하좌우로만), 처음 점을 누르면(또는 더블클릭·Enter) 방 완성. 끌면 네모 방 */
+function orthoPt(a,q){ return Math.abs(q.x-a.x)>=Math.abs(q.y-a.y)?{x:q.x,y:a.y}:{x:a.x,y:q.y} }
+function polyNext(q){ const P2=Cal.poly, k=CV.w/600; if(!P2||!P2.length) return q; let r=orthoPt(P2[P2.length-1],q); const f=P2[0];
+  if(P2.length>=2){ if(Math.abs(r.x-f.x)<10*k&&r.y===P2[P2.length-1].y) r.x=f.x; if(Math.abs(r.y-f.y)<10*k&&r.x===P2[P2.length-1].x) r.y=f.y } return r }
+function finishPoly(){ const m=Cal.m, P2=Cal.poly; if(!P2||P2.length<3){ if(P2&&P2.length) toast('점을 3개 이상 찍어야 방이 돼요.'); return }
+  const a=P2[P2.length-1], f=P2[0]; if(a.x!==f.x&&a.y!==f.y){ const prevH=P2.length>=2&&P2[P2.length-2].y===a.y; P2.push(prevH?{x:a.x,y:f.y}:{x:f.x,y:a.y}) } // 처음 점까지 수평·수직으로 잇기
+  const xs=P2.map(q=>q.x), ys=P2.map(q=>q.y), x=Math.min(...xs), y=Math.min(...ys), w=Math.max(...xs)-x, h=Math.max(...ys)-y; Cal.poly=null; Cal.hover=null;
+  if(w<m.w*.01||h<m.h*.01){ calOverlay(); return }
+  m.rooms=m.rooms||[]; const r={id:uid(),name:`방 ${m.rooms.length+1}`,x:Math.round(x),y:Math.round(y),w:Math.round(w),h:Math.round(h),pts:P2.map(q=>({x:Math.round(q.x),y:Math.round(q.y)}))};
+  m.rooms.push(r); save(); calRooms(); calOverlay(); requestAnimationFrame(()=>{ const i=$('#rn-'+r.id); if(i){i.focus();i.select()} }); toast('방을 만들었어요. 이름을 입력하세요.') }
 calSvg.addEventListener('pointerdown',e=>{ if(Cal.mode!=='rooms') return; if(e.pointerType==='mouse'&&e.button!==0) return; e.stopImmediatePropagation(); e.preventDefault();
-  const m=Cal.m, inv=calSvg.getScreenCTM().inverse(), p0=CV.pt(e,inv); try{calSvg.setPointerCapture(e.pointerId)}catch(_){}
+  const m=Cal.m, inv=calSvg.getScreenCTM().inverse(), p0=CV.pt(e,inv), sx=e.clientX, sy=e.clientY; let drag=false; try{calSvg.setPointerCapture(e.pointerId)}catch(_){}
   const box={x:p0.x,y:p0.y,w:0,h:0};
-  const mv=ev=>{ const p=CV.pt(ev,inv); const x=clamp(p.x,0,m.w), y=clamp(p.y,0,m.h); box.x=Math.min(p0.x,x); box.y=Math.min(p0.y,y); box.w=Math.abs(x-p0.x); box.h=Math.abs(y-p0.y); Cal.draft=box; calOverlay() };
+  const mv=ev=>{ if(Cal.poly&&Cal.poly.length) return; if(!drag&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<6) return; drag=true; const p=CV.pt(ev,inv); const x=clamp(p.x,0,m.w), y=clamp(p.y,0,m.h); box.x=Math.min(p0.x,x); box.y=Math.min(p0.y,y); box.w=Math.abs(x-p0.x); box.h=Math.abs(y-p0.y); Cal.draft=box; calOverlay() };
   const up=()=>{ calSvg.removeEventListener('pointermove',mv); calSvg.removeEventListener('pointerup',up); Cal.draft=null;
+    if(drag){
     if(box.w>m.w*.02&&box.h>m.h*.02){ m.rooms=m.rooms||[]; const r={id:uid(),name:`방 ${m.rooms.length+1}`,x:Math.round(box.x),y:Math.round(box.y),w:Math.round(box.w),h:Math.round(box.h)}; m.rooms.push(r); save(); calRooms(); requestAnimationFrame(()=>{ const i=$('#rn-'+r.id); if(i){i.focus();i.select()} }); toast('방을 추가했어요. 이름을 입력하세요.') }
-    calOverlay() };
+      calOverlay(); return }
+    const k=CV.w/600, q0={x:clamp(p0.x,0,m.w),y:clamp(p0.y,0,m.h)}; if(!Cal.poly) Cal.poly=[]; const P2=Cal.poly;
+    if(P2.length>=3&&Math.hypot(q0.x-P2[0].x,q0.y-P2[0].y)<14*k){ finishPoly(); return }
+    const q=polyNext(q0); const last=P2[P2.length-1]; if(!last||Math.hypot(q.x-last.x,q.y-last.y)>2*k) P2.push(q);
+    if(P2.length===1) toast('꺾이는 곳마다 클릭하고, 처음 점을 누르면 방이 완성돼요. (Backspace 한 점 지우기 · Esc 취소)'); calOverlay() };
   calSvg.addEventListener('pointermove',mv); calSvg.addEventListener('pointerup',up);
 });
+calSvg.addEventListener('pointermove',e=>{ if(Cal.mode!=='rooms'||!Cal.poly||!Cal.poly.length) return; const p=CV.pt(e); Cal.hover={x:clamp(p.x,0,Cal.m.w),y:clamp(p.y,0,Cal.m.h)}; if(!calRaf) calRaf=requestAnimationFrame(()=>{ calRaf=0; calOverlay() }) });
+calSvg.addEventListener('dblclick',e=>{ if(Cal.mode==='rooms'&&Cal.poly&&Cal.poly.length>=3){ e.preventDefault(); finishPoly() } });
+$('#dlgCal').addEventListener('keydown',e=>{ if(Cal.mode!=='rooms'||!Cal.poly||!Cal.poly.length||e.target.closest('input')) return;
+  if(e.key==='Enter'){ e.preventDefault(); finishPoly() } else if(e.key==='Backspace'){ e.preventDefault(); Cal.poly.pop(); if(!Cal.poly.length) Cal.poly=null; calOverlay() } });
+$('#dlgCal').addEventListener('cancel',e=>{ if(Cal.poly&&Cal.poly.length){ e.preventDefault(); Cal.poly=null; Cal.hover=null; calOverlay(); toast('그리던 방을 취소했어요.') } });
 $('#roomList').addEventListener('change',e=>{ const t=e.target; if(!t.dataset.roomname) return; const r=roomsOf(Cal.m).find(r=>r.id===t.dataset.roomname); if(r){ r.name=t.value.trim()||r.name; save(); calOverlay() } });
 $('#roomList').addEventListener('click',e=>{ const b=e.target.closest('[data-roomdel]'); if(!b) return; if(!armed(b)) return; Cal.m.rooms=roomsOf(Cal.m).filter(r=>r.id!==b.dataset.roomdel); save(); calRooms(); calOverlay() });
 calSvg.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse'&&e.button!==0) return; CV.panStart(e,(moved,p)=>{ if(moved) return; const m=Cal.m; const q={x:clamp(p.x,0,m.w),y:clamp(p.y,0,m.h)};
@@ -2205,7 +2238,7 @@ $('#calApply').onclick=()=>{
   else { if(dy<dx*3){ toast('세로 방향으로 두 점을 찍어 주세요.'); return } m.sy=dy/cm; if(!m.sx) m.sx=m.sy }
   m.calRef={pts:Cal.pts.map(q=>({x:q.x,y:q.y})),mm,dir}; $('#calApply').textContent='수정 적용'; afterCal(); toast(`축척을 맞췄어요. 도면 크기 ${fmt(m.w/m.sx)} × ${fmt(m.h/m.sy)} cm · 점을 더 조정하고 수정 적용을 누를 수 있어요`);
 };
-function afterCal(){ const m0=Cal.m; if(m0&&cal(m0)&&m0.roomsCm){ m0.rooms=m0.roomsCm.map(r=>({id:r.id,name:r.name,x:r.x*m0.sx,y:r.y*m0.sy,w:r.w*m0.sx,h:r.h*m0.sy})); delete m0.roomsCm }
+function afterCal(){ const m0=Cal.m; if(m0&&cal(m0)&&m0.roomsCm){ m0.rooms=m0.roomsCm.map(r=>{ const o={id:r.id,name:r.name,x:r.x*m0.sx,y:r.y*m0.sy,w:r.w*m0.sx,h:r.h*m0.sy}; if(r.pts) o.pts=r.pts.map(q=>({x:Math.round(q.x*m0.sx),y:Math.round(q.y*m0.sy)})); return o }); delete m0.roomsCm }
   if(m0&&cal(m0)){ const c=getCols(); const has=[...c.L,...c.R].some(k=>k.startsWith(m0.id+':')); if(!has){ c.L.push(`${m0.id}:*:a`); c.R.push(`${m0.id}:*:b`); saveCols() } } UI.fitted=false; save(); calBase(); renderAll() }
 $('#calZin').onclick=()=>CV.zoomBy(1/1.15); $('#calZout').onclick=()=>CV.zoomBy(1.15); $('#calFit').onclick=()=>CV.fit(0,0,Cal.m.w,Cal.m.h,.02);
 $('#dlgCal').addEventListener('close',()=>renderAll());

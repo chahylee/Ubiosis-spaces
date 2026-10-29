@@ -1208,7 +1208,7 @@ function renderOverlay(){ fixLabels();
     for(const sl0 of ['from','to']){ const sl=planSlot(linkU,sl0); if(!sl||sl===mySlot) continue; const pos=slotPos(linkU,sl); if(!pos) continue; let r=unitRect(linkU,sl);
       if(!r){ const[w,d]=dims(I(linkU.itemId),pos.rot||0); const e=UI.L.find(e=>e.m.id===pos.mapId&&inPanel(e,pos.x+w/2,pos.y+d/2)); if(e){ const z=colZ(e.col), q=toW(e.col,e.mx+pos.x,e.my+pos.y); r={x:q.x,y:q.y,w:w*z,d:d*z,ghost:true} } }
       if(r) tw.push({r,sl}) }
-    for(const {r,sl} of tw){ const pad=4*k; s+=`<g class="twin${r.ghost?' ghost':''}"><rect x="${r.x-pad}" y="${r.y-pad}" width="${r.w+pad*2}" height="${r.d+pad*2}" rx="${4*k}"/><text x="${r.x+r.w/2}" y="${r.y-pad-5*k}" font-size="${11*k}">${{from:'기존 위치',to:'변경 위치',first:'처음 위치',cur:'지금 위치'}[sl]}</text></g>` } }
+    for(const {r,sl} of tw){ const pad=4*k; s+=`<g class="twin${r.ghost?' ghost':''}"><rect x="${r.x-pad}" y="${r.y-pad}" width="${r.w+pad*2}" height="${r.d+pad*2}" rx="${4*k}"/><text x="${r.x+r.w/2}" y="${r.y-pad-5*k}" font-size="${11*k}">${({from:'기존 위치',to:'변경 위치',first:'처음 위치',cur:'지금 위치',stay:'변경 위치 (그대로)'}[sl]||'')}</text></g>` } }
   if(UI.sel){ const su=U(UI.sel.id); const r=su&&unitRect(su,UI.sel.slot); if(r) s+=gapsSVG(r.e,r.lx,r.ly,r.lw,r.ld,su.id) }
   if(UI.measure) s+=measureSVG(k);
   g.innerHTML=s;
@@ -1377,7 +1377,7 @@ function unitDrag(e,g){
   const inv=planSvg.getScreenCTM().inverse(), p0=V.pt(e,inv), r=slot==='tray'?trayRect(u):unitRect(u,slot), sx=e.clientX, sy=e.clientY; let moved=false; if(!r) return;
   try{planSvg.setPointerCapture(e.pointerId)}catch(_){}
   const kmod=e.ctrlKey||e.metaKey||e.shiftKey, mod=kmod||!!UI.selMode; // 여러 개 선택 모드: 톡 누르면 더하기/빼기
-  const grp=(!kmod&&inMulti(u.id,slot)&&getMulti().length>1)?getMulti().filter(x=>!(x.id===u.id&&x.slot===slot)&&x.slot===slot).map(x=>{ const el=planSvg.querySelector(`.unit[data-id="${x.id}"][data-slot="${x.slot}"]`); const m=el&&/translate\(([-\d.e]+)[ ,]+([-\d.e]+)\)/.exec(el.getAttribute('transform')); const uu=U(x.id); return {u:uu,el,tx:m?+m[1]:0,ty:m?+m[2]:0,pos:{...uu[x.slot]}} }):[];
+  const grp=(!kmod&&inMulti(u.id,slot)&&getMulti().length>1)?getMulti().filter(x=>!(x.id===u.id&&x.slot===slot)&&sameGrp(x.slot,slot)).map(x=>{ const el=planSvg.querySelector(`.unit[data-id="${x.id}"][data-slot="${x.slot}"]`); const m=el&&/translate\(([-\d.e]+)[ ,]+([-\d.e]+)\)/.exec(el.getAttribute('transform')); const uu=U(x.id); return {u:uu,slot:x.slot,el,tx:m?+m[1]:0,ty:m?+m[2]:0,pos:{...slotPos(uu,x.slot)}} }):[];
   const mv=ev=>{ if(V.pinching) return; if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<4) return; if(!moved){ moved=true; UI.dragging=true; $('#dragl').appendChild(g); g.classList.add('dragging'); grp.forEach(o=>o.el&&o.el.classList.add('dragging')) }
     if(UI.trayZones&&UI.trayZones.length){ const pq=V.pt(ev,inv); const z=trayZoneAt(fromW('L',pq.x,pq.y)); planSvg.querySelectorAll('.traybg').forEach(bg=>bg.classList.toggle('drophot',!!z&&bg.dataset.zone===z.k)) }
     const p=V.pt(ev,inv); let wx=r.x+p.x-p0.x, wy=r.y+p.y-p0.y; let z=colZ(r.e.col); const e2=panelAt(wx+r.w/2,wy+r.d/2); if(e2){ z=colZ(e2.col); const lc=fromW(e2.col,wx+r.w/2,wy+r.d/2); const a=alignSnap(e2,u.id,lc.x-e2.mx-r.lw/2,lc.y-e2.my-r.ld/2,r.lw,r.ld); const q=toW(e2.col,e2.mx+a.x,e2.my+a.y); wx=q.x; wy=q.y; drawGuides(e2,a,gapsSVG(e2,a.x,a.y,r.lw,r.ld,u.id)) } else drawGuides(null); g.setAttribute('transform',`translate(${wx} ${wy}) scale(${z})`);
@@ -1392,28 +1392,29 @@ function unitDrag(e,g){
     { const pq=V.pt(ev,inv); const z=trayZoneAt(fromW('L',pq.x,pq.y)); if(z){ const list=grp.length?[u,...grp.map(o=>o.u)]:[u]; dropToZone(list,slot,z.k); return } }
     const before=slot!=='tray'&&slotPos(u,slot)?{...slotPos(u,slot)}:null; const keepMulti=grp.length?getMulti():null;
     const p=V.pt(ev,inv); const tp0={...UI.trayPos}; dropUnit(u,src,r.x+p.x-p0.x+r.w/2,r.y+p.y-p0.y+r.d/2,slot==='tray'?0:(slotPos(u,slot).rot||0));
-    if(grp.length) moveGroupWith(u,slot,before,grp.map(o=>o.u),keepMulti,tp0);
+    if(grp.length) moveGroupWith(u,slot,before,grp.map(o=>({u:o.u,slot:o.slot})),keepMulti,tp0);
   };
   planSvg.addEventListener('pointermove',mv); planSvg.addEventListener('pointerup',up); planSvg.addEventListener('pointercancel',up);
 }
 /* 여러 개를 함께 끌어 놓기: 잡은 가구가 움직인 만큼 모두 똑같이 옮기고, 도면 밖으로 나가면 묶음째 안으로 밀어 넣음 (간격 유지) */
+const sameGrp=(a,b)=>a===b||(['to','stay'].includes(a)&&['to','stay'].includes(b)); // 변경 후: 옮긴 것과 그대로 둔 것은 한 묶음
 function moveGroupWith(u,slot,before,others,keepMulti,tp0){
   const fromTray=slot==='tray', ps=fromTray?((UI.wlayer||'a')==='b'?'to':'from'):slot==='stay'?'to':slot; const after=u[ps];
   if(!after||(before&&before.mapId===after.mapId&&before.x===after.x&&before.y===after.y)){ UI.multi=keepMulti; renderPlan(); return }
   const nm=M(after.mapId); const W=nm?nm.w/nm.sx:Infinity, H=nm?nm.h/nm.sy:Infinity;
   let bx,by; if(fromTray){ const t=tp0[u.id]; bx=t?t.x:0; by=t?t.y:0 } else { bx=before.x; by=before.y }
   const mem=[]; let skip=0;
-  for(const o of others){ const it=I(o.itemId); let ox,oy,rot=0,keep=false;
+  for(const {u:o,slot:os} of others){ const it=I(o.itemId); let ox,oy,rot=0,keep=false;
     if(fromTray){ const t=tp0[o.id]; if(!t) continue; ox=t.x; oy=t.y }
-    else { const pos=slotPos(o,slot); if(!pos) continue; ox=pos.x; oy=pos.y; rot=pos.rot||0; keep=pos.mapId!==before.mapId }
+    else { const pos=slotPos(o,os); if(!pos) continue; ox=pos.x; oy=pos.y; rot=pos.rot||0; keep=pos.mapId!==before.mapId }
     if(!keep&&ps==='from'&&nm&&(it.isNew||it.placeId!==nm.placeId)){ skip++; continue }
-    const[w,d]=dims(it,rot); mem.push({o,x:after.x+(ox-bx),y:after.y+(oy-by),w,d,rot,keep,mapId:keep?slotPos(o,slot).mapId:after.mapId}) }
+    const[w,d]=dims(it,rot); mem.push({o,x:after.x+(ox-bx),y:after.y+(oy-by),w,d,rot,keep,mapId:keep?slotPos(o,os).mapId:after.mapId}) }
   const[lw,ld]=dims(I(u.itemId),after.rot||0); let lox=-after.x, hix=W-lw-after.x, loy=-after.y, hiy=H-ld-after.y;
   for(const m of mem){ if(m.keep) continue; lox=Math.max(lox,-m.x); hix=Math.min(hix,W-m.w-m.x); loy=Math.max(loy,-m.y); hiy=Math.min(hiy,H-m.d-m.y) }
   if(lox>hix+.5||loy>hiy+.5){ if(fromTray) u[ps]=null; else u[slot]=before; UI.multi=keepMulti; commit(); toast('고른 가구가 도면보다 넓어서 한꺼번에 놓을 수 없어요. 나눠서 옮겨 주세요.'); return }
   const sx=Math.round(clamp(0,lox,hix)), sy=Math.round(clamp(0,loy,hiy)); after.x+=sx; after.y+=sy;
   for(const m of mem){ const pos={mapId:m.mapId,x:Math.round(m.x+(m.keep?0:sx)),y:Math.round(m.y+(m.keep?0:sy)),rot:m.rot}; m.o[ps]=pos; if(ps==='to') m.o.toPlaceId=null }
-  UI.multi=fromTray?null:keepMulti; UI.sel={id:u.id,slot:ps}; commit();
+  UI.multi=fromTray?null:(keepMulti||[]).map(x=>x.slot==='stay'&&U(x.id)?.to?{id:x.id,slot:'to'}:x); UI.sel={id:u.id,slot:ps}; commit();
   if(skip) toast(`${skip}개는 다른 공간 가구라 기존 위치로는 옮기지 않았어요.`) }
 function trayRect(u){ const t=UI.trayPos&&UI.trayPos[u.id]; if(!t) return null; const z=colZ('L'); const q=toW('L',t.x,t.y+trayDy()); return {x:q.x,y:q.y,w:t.w*z,d:t.d*z,e:{col:'L'},lx:t.x,ly:t.y,lw:t.w,ld:t.d} }
 function alignSnap(e,id,x,y,w,d){

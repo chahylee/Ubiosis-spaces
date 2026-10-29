@@ -769,6 +769,7 @@ const isPlaced=u=>!!destPlace(u);
 const gkey=it=>(it.name||'').trim()+'|'+it.w+'|'+it.d+(it.kind==='item'?'|i':'')+(it.isNew?'|n':'');
 const isNewU=u=>!!I(u.itemId)?.isNew;
 const isTop=u=>I(u.itemId)?.kind==='item';
+const unitLabel=u=>u.person?`${(I(u.itemId)?.name||'').trim()}:${u.person}`:lbl(u); // 앉는 사람이 있으면 '책상:이차현'
 /* 의자(겹쳐 놓기): 책상 등과 겹쳐도 겹침 표시 없음, 뒤쪽에 그림 */
 const isChair=u=>I(u.itemId)?.kind==='chair';
 const noClash=u=>isTop(u)||isChair(u);
@@ -1055,8 +1056,8 @@ function planSlot(u,slot){ if(UI.view!=='plan') return slot; const f=u.first;
   if(slot==='from') return f?(!f.n&&f.at?'first':null):'from';
   return u.to?'to':(f&&u.from&&!destPlace(u)?'cur':null) }
 function unitSVG(u,slot,e,flags){
-  const it=I(u.itemId), pos=slotPos(u,slot); const[w,d]=dims(it,pos.rot||0); const x=e.mx+pos.x, y=e.my+pos.y; const name=u.person||lbl(u); /* 앉는 사람이 있으면 이름을 크게 */
-  const dimTxt=u.person?`${lbl(u)} · ${it.w}*${it.d}`:`${it.w}*${it.d}`; const vert=(it.d>it.w*1.2)!==!!((pos.rot||0)%180); /* 글씨도 가구와 함께 돌아감 */ const tw=vert?d:w, th=vert?w:d; // 세로로 긴 가구는 글씨를 긴 쪽 방향으로
+  const it=I(u.itemId), pos=slotPos(u,slot); const[w,d]=dims(it,pos.rot||0); const x=e.mx+pos.x, y=e.my+pos.y; const name=unitLabel(u); /* 앉는 사람이 있으면 '책상:이름' */
+  const dimTxt=`${it.w}*${it.d}`; const vert=(it.d>it.w*1.2)!==!!((pos.rot||0)%180); /* 글씨도 가구와 함께 돌아감 */ const tw=vert?d:w, th=vert?w:d; // 세로로 긴 가구는 글씨를 긴 쪽 방향으로
   let fs=Math.min(th*.3,tw*.9/Math.max(1.4,name.length*.98)); fs=clamp(fs,3,30);
   let fd=Math.min(fs*.72,tw*.9/(dimTxt.length*.62)); fd=clamp(fd,2.5,20);
   const tot=fs*1.05+fd*1.1; if(tot>th*.9){ const k=th*.9/tot; fs*=k; fd*=k }
@@ -1072,7 +1073,7 @@ function unitSVG(u,slot,e,flags){
   if(flags.ghost){ const on='→ '+lastLabel(u); const f2=clamp(Math.min(fs*.72,w*1.1/Math.max(2,on.length*.95)),4,16); s+=`<text class="ugo" x="${w/2}" y="${d+f2*.9}" font-size="${f2.toFixed(1)}">${esc(on)}</text>` }
   return s+'</g>';
 }
-function trayUnitSVG(u,x,y){ const it=I(u.itemId); const w=it.w, d=it.d; const name=u.person||lbl(u); const dimTxt=u.person?`${lbl(u)} · ${it.w}*${it.d}`:`${it.w}*${it.d}`;
+function trayUnitSVG(u,x,y){ const it=I(u.itemId); const w=it.w, d=it.d; const name=unitLabel(u); const dimTxt=`${it.w}*${it.d}`;
   const vert=d>w*1.2, tw=vert?d:w, th=vert?w:d;
   let fs=Math.min(th*.3,tw*.9/Math.max(1.4,name.length*.98)); fs=clamp(fs,3,30); let fd=Math.min(fs*.72,tw*.9/(dimTxt.length*.62)); fd=clamp(fd,2.5,20); const tot=fs*1.05+fd*1.1; if(tot>th*.9){ const k=th*.9/tot; fs*=k; fd*=k }
   return `<g class="unit traywait${it.kind==='item'?' top':''}${it.isNew?' isnew':''}${(UI.sel&&UI.sel.slot==='tray'&&UI.sel.id===u.id)||inMulti(u.id,'tray')?' sel':''}" data-id="${u.id}" data-slot="tray" transform="translate(${x} ${y})" style="--c:${it.color}"><rect class="ub" width="${w}" height="${d}" rx="2"/><g${vert?` transform="rotate(-90 ${w/2} ${d/2})"`:''}><text class="un" x="${w/2}" y="${d/2-fd*.55}" font-size="${fs.toFixed(1)}">${esc(name)}</text><text class="ud" x="${w/2}" y="${d/2+fs*.55}" font-size="${fd.toFixed(1)}">${dimTxt}</text></g></g>` }
@@ -1737,9 +1738,9 @@ async function exportPPT(){ const ps=pptPanels(); if(!ps.length){ toast(UI.view=
     const nm=`${P(e.m.placeId)?.name||''}${mapNm(e.m)?' › '+mapNm(e.m):''}${e.room?' › '+e.room.name:''}`; const ttl=`${nm} · ${e.layer==='a'?'변경 전':'변경 후'}`; sl.addNotes(`${ttl} · 축척 1/100 (실제 100cm = 1cm)`);
     sl.addText([{text:ttl,options:{bold:true,fontSize:Math.max(9,Math.min(20,TOP*.2835*.42))}},{text:`   축척 1/100 · 도면 ${fmt(e.w)}×${fmt(e.h)}cm`,options:{fontSize:Math.max(7,Math.min(12,TOP*.2835*.26)),color:'5D6763'}}],{x:IN(MG),y:IN(MG*.4),w:IN(W),h:IN(TOP-MG*.6),valign:'middle',fontFace:'Malgun Gothic',color:'1A201E',margin:0,objectName:'제목'});
     for(const u of [...S.units].sort((a,b)=>zOrd(a)-zOrd(b))){ const ps2=planSlot(u,slot); const pos=ps2&&slotPos(u,ps2); if(!pos||pos.mapId!==e.m.id) continue; const it=I(u.itemId); const[w,d]=dims(it,pos.rot||0); if(!inPanel(e,pos.x+w/2,pos.y+d/2)) continue;
-      const col=(it.color||'#888888').replace('#',''); const wp=w*.2835, hp=d*.2835; const vert=(it.d>it.w*1.2)!==!!((pos.rot||0)%180); const name=u.person||lbl(u); const tw=vert?hp:wp, th=vert?wp:hp;
+      const col=(it.color||'#888888').replace('#',''); const wp=w*.2835, hp=d*.2835; const vert=(it.d>it.w*1.2)!==!!((pos.rot||0)%180); const name=unitLabel(u); const tw=vert?hp:wp, th=vert?wp:hp;
       const fs=Math.max(3,Math.min(14,th*.32,tw*.9/Math.max(1.4,name.length*.95))); const fd=Math.max(2.5,fs*.72);
-      sl.addText([{text:name,options:{bold:true,fontSize:fs,breakLine:true}},{text:u.person?`${lbl(u)} · ${it.w}*${it.d}`:`${it.w}*${it.d}`,options:{fontSize:fd}}],
+      sl.addText([{text:name,options:{bold:true,fontSize:fs,breakLine:true}},{text:`${it.w}*${it.d}`,options:{fontSize:fd}}],
         {x:IN(pos.x-e.cx+ox),y:IN(pos.y-e.cy+oy),w:IN(w),h:IN(d),shape:pp.ShapeType.rect,fill:{color:col,transparency:it.kind==='item'?60:45},line:{color:'1A1A1A',width:.5,dashType:it.kind==='item'?'dash':'solid'},
          align:'center',valign:'middle',color:'1A201E',fontFace:'Malgun Gothic',margin:0,vert:vert?'vert270':'horz',fit:'none',objectName:name}) } }
   const dt=new Date(); const fname=`유바이오시스공간구성-${UI.view==='space'?(P(UI.focus)?.name||'공간')+'-'+((UI.wlayer||'a')==='b'?'변경후':'변경전'):'변경후'}-${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}.pptx`;

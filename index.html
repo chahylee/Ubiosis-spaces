@@ -1256,7 +1256,7 @@ document.addEventListener('change',e=>{ const t=e.target.closest('[data-dimf]');
 document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.closest&&e.target.closest('[data-dimf]')) e.target.blur() },true);
 function renderSelbar(){
   const b=$('#selbar'); const sel=UI.sel; if(!sel){b.hidden=true;return}
-  { const m=getMulti(); if(m.length>1){ const onMap=m.filter(x=>x.slot!=='tray').length; b.innerHTML=`<b title="${esc(m.map(x=>lbl(U(x.id))).join(', '))}">${m.length}개 선택</b>${bulkDestSel()}${onMap?`<button class="btn small" data-act="rot" title="R · 붙어 있는 것은 한 덩어리로 돌아요">↻ 90°</button><button class="btn small" data-act="rm">↩ 모두 미배치 가구로</button>`:''}<span class="hint">오른쪽 버튼으로도 옮길 수 있어요</span>`; b.hidden=false; return } }
+  { const m=getMulti(); if(m.length>1){ const onMap=m.filter(x=>x.slot!=='tray').length; b.innerHTML=`<b title="${esc(m.map(x=>lbl(U(x.id))).join(', '))}">${m.length}개 선택</b>${bulkDestSel()}<button class="btn small" data-mcolor title="고른 가구 색 바꾸기 (이름이 같은 가구는 함께)">🎨 색</button>${onMap?`<button class="btn small" data-act="rot" title="R · 붙어 있는 것은 한 덩어리로 돌아요">↻ 90°</button><button class="btn small" data-act="rm">↩ 모두 미배치 가구로</button>`:''}<span class="hint">오른쪽 버튼으로도 옮길 수 있어요</span>`; b.hidden=false; return } }
   const u=U(sel.id); if(sel.slot==='tray'&&u){ const it=I(u.itemId); b.innerHTML=`<span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b>${esc(lbl(u))}</b><input class="pin" data-person="${u.id}" value="${esc(u.person||'')}" placeholder="앉는 사람" aria-label="${esc(lbl(u))} 앉는 사람" autocomplete="off">${dimInputs(it)}${assetPhotoBtn(it,'mini')}${it.isNew?'<span class="rb new">신규 구매</span>':''}`; b.hidden=false; return }
   if(!u||!u[sel.slot]){UI.sel=null;b.hidden=true;return}
   const it=I(u.itemId); const dp=destPlace(u);
@@ -1293,11 +1293,12 @@ const assetPhoto=it=>S.photos.find(p=>p.placeId==='@asset'&&p.dir===tkey(it));
 function assetPhotoBtn(it,cls=''){ const x=assetPhoto(it), nm=esc((it.name||'').trim()||'가구');
   return x?`<button class="athumb ${cls}" data-photo="${x.id}" title="${nm} 사진 크게 보기" aria-label="${nm} 사진 크게 보기"><img src="${x.img}" alt=""></button>`:`<button class="aadd ${cls}" data-addphoto="@asset" data-dir="${esc(tkey(it))}" title="${nm} 사진 올리기" aria-label="${nm} 사진 올리기">📷${cls==='mini'?'':' 사진'}</button>` }
 /* 가구 색 바꾸기: 색 네모를 누르면 색 고르기 (기본은 자동 색). 이름이 같은 가구는 크기가 달라도 함께 바뀜 */
-document.addEventListener('click',e=>{ const t=e.target.closest('[data-swc]'); if(!t) return; e.preventDefault(); e.stopPropagation(); const it=I(t.dataset.swc); if(!it) return;
-  if(Cloud.on&&!canEdit()){ toast('지금은 보기만 할 수 있어요.'); return }
+function pickColor(itemIds,r){ const its=[...new Set(itemIds)].map(I).filter(Boolean); if(!its.length) return; if(Cloud.on&&!canEdit()){ toast('지금은 보기만 할 수 있어요.'); return }
   let inp=$('#colorPick'); if(!inp){ inp=document.createElement('input'); inp.type='color'; inp.id='colorPick'; inp.style.cssText='position:fixed;opacity:0;pointer-events:none;width:1px;height:1px'; document.body.appendChild(inp);
-    inp.addEventListener('change',()=>{ const it=I(inp.dataset.item); if(!it) return; const k=nkey(it.name); for(const o of S.items) if(o===it||(k&&nkey(o.name)===k)) o.color=inp.value; commit(); toast(`${(it.name||'').trim()||'가구'} 색을 바꿨어요.`) }) }
-  const r=t.getBoundingClientRect(); inp.style.left=r.left+'px'; inp.style.top=r.bottom+'px'; inp.dataset.item=it.id; inp.value=/^#[0-9a-f]{6}$/i.test(it.color||'')?it.color:'#888888'; inp.click() },true);
+    inp.addEventListener('change',()=>{ const sel=(inp.dataset.items||'').split(',').map(I).filter(Boolean); if(!sel.length) return; const ks=new Set(sel.map(it=>nkey(it.name)).filter(Boolean));
+      for(const o of S.items) if(sel.includes(o)||ks.has(nkey(o.name))) o.color=inp.value; commit(); toast(sel.length>1?`고른 가구 ${ks.size||sel.length}종류의 색을 바꿨어요.`:`${(sel[0].name||'').trim()||'가구'} 색을 바꿨어요.`) }) }
+  inp.style.left=(r?r.left:innerWidth/2)+'px'; inp.style.top=(r?r.bottom:innerHeight/2)+'px'; inp.dataset.items=its.map(it=>it.id).join(','); inp.dataset.item=its[0].id; inp.value=/^#[0-9a-f]{6}$/i.test(its[0].color||'')?its[0].color:'#888888'; inp.click() }
+document.addEventListener('click',e=>{ const t=e.target.closest('[data-swc]'); if(!t) return; e.preventDefault(); e.stopPropagation(); pickColor([t.dataset.swc],t.getBoundingClientRect()) },true);
 const PH={list:[],i:0};
 function openPhoto(id){ const x=S.photos.find(p=>p.id===id); if(!x) return; PH.list=x.placeId==='@asset'?[x]:DIRS.map(d=>spPhoto(x.placeId,d,phOf(x))).filter(Boolean); PH.i=PH.list.indexOf(x); const asset=x.placeId==='@asset'; $('#dlgPhoto').classList.toggle('mid',asset); $('#photoPrev').hidden=$('#photoNext').hidden=asset; showPhoto(); $('#dlgPhoto').showModal() }
 function showPhoto(){ const x=PH.list[PH.i]; if(!x){ $('#dlgPhoto').close(); return } $('#photoImg').src=x.img; $('#photoTitle').textContent=x.placeId==='@asset'?((GROUPS.find(g=>g.key===x.dir)||{}).name||'자산')+' 사진':`${P(x.placeId)?.name||''} · ${PHN[phOf(x)]} · ${DIRA[x.dir]}${x.dir==='전체'?'':' '+DIRN[x.dir]}`; $('#photoCount').textContent=`${PH.i+1} / ${PH.list.length}`; $('#photoPrev').disabled=PH.i<=0; $('#photoNext').disabled=PH.i>=PH.list.length-1 }
@@ -1316,14 +1317,15 @@ function openCtx(el,x,y){
   const id=g?g.dataset.id:li.dataset.u, slot=g?g.dataset.slot:null; const u=U(id); if(!u) return false;
   if(Cloud.on&&!canEdit()){ toast('지금은 보기만 할 수 있어요.'); return true }
   const many=g?(inMulti(id,slot)&&getMulti().length>1):!!(UI.rsel&&UI.rsel.has(id)&&selUnitIds().length>1);
-  CTX.ids=many?selUnitIds():[id]; CTX.slots=g?(many?getMulti().filter(x=>x.slot==='from'||x.slot==='to'):(slot==='from'||slot==='to'?[{id,slot}]:[])):[]; CTX.at=Date.now();
+  CTX.ids=many?selUnitIds():[id]; CTX.x=x; CTX.y=y; CTX.slots=g?(many?getMulti().filter(x=>x.slot==='from'||x.slot==='to'):(slot==='from'||slot==='to'?[{id,slot}]:[])):[]; CTX.at=Date.now();
   const dp=CTX.ids.length===1?destPlace(u):null;
   closeCtx(); const m=document.createElement('div'); m.id='ctxMenu'; m.setAttribute('role','menu');
-  m.innerHTML=`<div class="ch">${CTX.ids.length>1?`${CTX.ids.length}개 선택됨 · 장소 옮기기`:`${esc(lbl(u))} · 장소 옮기기`}</div>${S.places.map(p=>`<button role="menuitem" data-cdest="${p.id}" class="${dp===p.id?'cur':''}">→ ${esc(p.name)}${dp===p.id?' ✓':''}</button>`).join('')}<button role="menuitem" data-cdest="">도착지 미정</button><hr><div class="ch">소속(처음) 공간 바꾸기</div>${S.places.map(p=>`<button role="menuitem" data-cown="${p.id}">⇢ ${esc(p.name)} 가구로</button>`).join('')}${CTX.slots.length?`<hr><button role="menuitem" data-cunplace>↩ 미배치 가구로 돌려놓기</button>`:''}`;
+  m.innerHTML=`<div class="ch">${CTX.ids.length>1?`${CTX.ids.length}개 선택됨 · 장소 옮기기`:`${esc(lbl(u))} · 장소 옮기기`}</div>${S.places.map(p=>`<button role="menuitem" data-cdest="${p.id}" class="${dp===p.id?'cur':''}">→ ${esc(p.name)}${dp===p.id?' ✓':''}</button>`).join('')}<button role="menuitem" data-cdest="">도착지 미정</button><hr><button role="menuitem" data-ccolor>🎨 색 바꾸기${CTX.ids.length>1?` (${CTX.ids.length}개)`:''}</button><hr><div class="ch">소속(처음) 공간 바꾸기</div>${S.places.map(p=>`<button role="menuitem" data-cown="${p.id}">⇢ ${esc(p.name)} 가구로</button>`).join('')}${CTX.slots.length?`<hr><button role="menuitem" data-cunplace>↩ 미배치 가구로 돌려놓기</button>`:''}`;
   document.body.appendChild(m); const r=m.getBoundingClientRect(); m.style.left=Math.max(4,Math.min(x,innerWidth-r.width-4))+'px'; m.style.top=Math.max(4,Math.min(y,innerHeight-r.height-4))+'px';
   m.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; e.stopPropagation(); closeCtx();
     if(b.dataset.cdest!==undefined){ moveUnitsTo(CTX.ids,b.dataset.cdest); return }
     if(b.dataset.cown){ setOwner(CTX.ids.map(U).filter(Boolean),b.dataset.cown); return }
+    if(b.dataset.ccolor!==undefined){ pickColor(CTX.ids.map(U).filter(Boolean).map(u=>u.itemId),{left:CTX.x||innerWidth/2,bottom:CTX.y||innerHeight/2}); return }
     if(b.dataset.cunplace!==undefined){ for(const s of CTX.slots){ const uu=U(s.id); if(uu) unplace(uu,s.slot) } UI.multi=null; UI.sel=null; toast(CTX.slots.length>1?`${CTX.slots.length}개를 미배치 가구로 돌려놓았어요.`:`${lbl(U(CTX.slots[0].id))}을(를) 미배치 가구로 돌려놓았어요.`); commit() } });
   const f=m.querySelector('button'); if(f) f.focus({preventScroll:true}); return true }
 document.addEventListener('contextmenu',e=>{ if(openCtx(e.target,e.clientX,e.clientY)) e.preventDefault() });
@@ -1867,6 +1869,7 @@ document.addEventListener('click',e=>{
   if(d.mq){ const[side,l]=d.mq.split(':'); const cols=getCols(); cols[side]=l==='none'?[]:S.maps.filter(cal).map(m=>`${m.id}:*:${l}`); UI.openMsel=side; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.swapcols!==undefined){ const c=getCols(); UI.cols={L:c.R,R:c.L}; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.pptx!==undefined){ exportPPT(); return }
+  if(d.mcolor!==undefined){ pickColor(selUnitIds().map(U).filter(Boolean).map(u=>u.itemId),t.getBoundingClientRect()); return }
   if(d.selmode!==undefined){ UI.selMode=!UI.selMode; renderStagebar(); toast(UI.selMode?'여러 개 선택 켬 · 가구를 톡 누르면 더하거나 빼요. 빈 곳을 끌면 범위로 골라요. 화면 이동은 두 손가락으로.':'여러 개 선택을 껐어요.'); return }
   if(d.rot){ if(!(UI.sel&&(UI.sel.slot==='from'||UI.sel.slot==='to'))&&!getMulti().some(x=>x.slot==='from'||x.slot==='to')){ toast('먼저 도면에서 돌릴 가구를 클릭하거나 끌어서 고르세요.'); return } rotateSel(+d.rot); return }
   if(d.colsreset!==undefined){ UI.cols=defaultCols(); UI.openMsel=null; saveCols(); UI.fitted=true; renderPlan(); fitAll(); return }

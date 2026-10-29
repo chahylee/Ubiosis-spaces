@@ -186,7 +186,7 @@ button.num.zero{opacity:.35}
 .hlline .hlnames{grid-column:1/-1;color:var(--muted);font-size:11.5px}
 .tsub{grid-column:2/-1;font-size:11px;color:var(--muted);padding:0 0 4px}
 .ritem{padding:6px 2px 4px;border-bottom:1px dashed var(--line)}
-.ritem.rcomp{display:flex;align-items:center;gap:6px;padding:7px 4px;cursor:pointer;border-radius:6px} .ritem.rcomp:hover{background:var(--soft)}
+.ritem.selrow,.trow.selrow{background:var(--accent-soft)!important;box-shadow:inset 3px 0 0 var(--accent)} .ritem.rcomp{display:flex;align-items:center;gap:6px;padding:7px 4px;cursor:pointer;border-radius:6px} .ritem.rcomp:hover{background:var(--soft)}
 .rcomp b{flex:1;min-width:3em;word-break:keep-all;overflow-wrap:anywhere;line-height:1.25} .rcomp .rsz{font-size:11px;color:var(--muted)} .rcomp .rcnt{font-size:12px;font-weight:600;white-space:nowrap;min-width:2.6em;text-align:right} .rcomp .rsz{white-space:nowrap} .rcomp .noh{font-family:var(--sans);opacity:.7} .rcomp .rgo{color:var(--muted);font-size:15px}
 .newtag2{font-size:10.5px;padding:0 5px;border:1px solid var(--line);border-radius:999px;color:var(--muted);white-space:nowrap} .newtag2.on{color:#b0125b;border-color:currentColor}
 #dlgItem .ritem{border:0} #dlgItem .runits{max-height:55vh;overflow:auto}
@@ -1368,7 +1368,7 @@ function boxSelect(e,click){ const sx=e.clientX, sy=e.clientY, add=e.shiftKey||U
     const m=add?getMulti():[];
     planSvg.querySelectorAll('.unit:not(.first):not(.cur)').forEach(g=>{ const b=(g.querySelector('.ub')||g).getBoundingClientRect(); const cx=b.x+b.width/2, cy=b.y+b.height/2;
       if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom) return; const id=g.dataset.id, slot=g.dataset.slot; if(!m.some(x=>x.id===id&&x.slot===slot)) m.push({id,slot}) });
-    UI.multi=m.length?m:null; UI.sel=m.length?{...m[m.length-1]}:null; UI.hl=null; renderPlan(); renderRail();
+    UI.multi=m.length?m:null; UI.sel=m.length?{...m[m.length-1]}:null; UI.hl=null; renderPlan(); renderRail(); focusRailSel();
     if(m.length>1) toast(`${m.length}개를 골랐어요. 위쪽 ‘장소 옮기기’나 오른쪽 버튼으로 한 번에 옮길 수 있어요.`) };
   planSvg.addEventListener('pointermove',mv); planSvg.addEventListener('pointerup',up); planSvg.addEventListener('pointercancel',up) }
 function unitDrag(e,g){
@@ -1383,9 +1383,9 @@ function unitDrag(e,g){
     const p=V.pt(ev,inv); let wx=r.x+p.x-p0.x, wy=r.y+p.y-p0.y; let z=colZ(r.e.col); const e2=panelAt(wx+r.w/2,wy+r.d/2); if(e2){ z=colZ(e2.col); const lc=fromW(e2.col,wx+r.w/2,wy+r.d/2); const a=alignSnap(e2,u.id,lc.x-e2.mx-r.lw/2,lc.y-e2.my-r.ld/2,r.lw,r.ld); const q=toW(e2.col,e2.mx+a.x,e2.my+a.y); wx=q.x; wy=q.y; drawGuides(e2,a,gapsSVG(e2,a.x,a.y,r.lw,r.ld,u.id)) } else drawGuides(null); g.setAttribute('transform',`translate(${wx} ${wy}) scale(${z})`);
     if(grp.length){ const z0=colZ(r.e.col); const dx=(wx-r.x)/z0, dy=(wy-r.y)/z0; grp.forEach(o=>o.el&&o.el.setAttribute('transform',`translate(${o.tx+dx} ${o.ty+dy})`)) } }; // 고른 가구는 잡은 가구와 똑같이(모눈·정렬 포함) 움직임
   const up=ev=>{ planSvg.removeEventListener('pointermove',mv); planSvg.removeEventListener('pointerup',up); planSvg.removeEventListener('pointercancel',up); UI.dragging=false; if(Cloud.pendingApply) setTimeout(applyCloud,0);
-    if(!moved){ if(slot==='tray'&&!mod){ UI.multi=null; UI.sel={id:u.id,slot:'tray'}; UI.hl=null; renderPlan(); return }
-      if(mod){ let m=getMulti(); if(!m.length&&UI.sel&&!(UI.sel.id===u.id&&UI.sel.slot===slot)) m=[{...UI.sel}]; const i=m.findIndex(x=>x.id===u.id&&x.slot===slot); if(i>=0) m.splice(i,1); else m.push({id:u.id,slot}); UI.multi=m.length?m:null; UI.sel=m.length?{...m[m.length-1]}:null; UI.hl=null; renderPlan(); renderRail(); return }
-      if(!inMulti(u.id,slot)) UI.multi=null; UI.sel={id:u.id,slot}; UI.hl=null; renderPlan(); renderRail(); return }
+    if(!moved){ if(slot==='tray'&&!mod){ UI.multi=null; UI.sel={id:u.id,slot:'tray'}; UI.hl=null; renderPlan(); renderRail(); focusRailSel(); return }
+      if(mod){ let m=getMulti(); if(!m.length&&UI.sel&&!(UI.sel.id===u.id&&UI.sel.slot===slot)) m=[{...UI.sel}]; const i=m.findIndex(x=>x.id===u.id&&x.slot===slot); if(i>=0) m.splice(i,1); else m.push({id:u.id,slot}); UI.multi=m.length?m:null; UI.sel=m.length?{...m[m.length-1]}:null; UI.hl=null; renderPlan(); renderRail(); focusRailSel(); return }
+      if(!inMulti(u.id,slot)) UI.multi=null; UI.sel={id:u.id,slot}; UI.hl=null; renderPlan(); renderRail(); focusRailSel(); return }
     const el=document.elementFromPoint(ev.clientX,ev.clientY);
     if(el&&el.closest('#rail')){ if(slot==='tray'){ renderPlan(); return } removeSlot(u,slot); return }
     const src=slot==='tray'||slot==='stay'?null:slot;
@@ -1562,7 +1562,7 @@ function setHL(ids,label){
 }
 
 /* ---------- rail ---------- */
-function renderRail(){
+function renderRail(){ SELI=selItemIds();
   const rail=$('#rail'); const tot=S.units.length, pl=S.units.filter(isPlaced).length;
   const tabs=[{id:'',name:'전체'},...S.places.filter(p=>itemsOf(p.id).length).map(p=>({id:p.id,name:p.name}))];
   if(!tabs.find(t=>t.id===UI.railTab)) UI.railTab='';
@@ -1572,10 +1572,15 @@ function renderRail(){
   else if(UI.railTab==='') h+=railTotal(); else h+=railSpace(UI.railTab);
   rail.innerHTML=h+'</div>'; renderItemDlg();
 }
+/* 도면에서 고른 가구를 왼쪽 목록에서 강조 */
+let SELI=new Set();
+function selItemIds(){ const ids=new Set(selUnitIds()); if(UI.sel) ids.add(UI.sel.id); return new Set([...ids].map(U).filter(Boolean).map(u=>u.itemId)) }
+function focusRailSel(){ const its=selItemIds(); if(!its.size) return; const it=I([...its][0]); if(UI.railTab&&it&&UI.railTab!==it.placeId&&itemsOf(it.placeId).length){ UI.railTab=it.placeId; renderRail() }
+  requestAnimationFrame(()=>{ const el=$('#rail .selrow'); if(el) el.scrollIntoView({block:'nearest'}) }) }
 function railTotal(){
   let h=`<div class="thead"><span></span><span>가구 · 끌어서 도면에 놓기</span><span>사진</span><span>합계</span><span>배치</span><span>남음</span></div>`;
-  for(const g of GROUPS){ const on=UI.hl&&UI.hl.label; const open=UI.open.has(g.key);
-    h+=`<div class="trow" draggable="true" data-dg="${esc(g.key)}"><span class="sw swc" data-swc="${g.items[0].id}" style="--c:${g.color}" title="눌러서 색 바꾸기"></span><button class="tname" data-openg="${esc(g.key)}" aria-expanded="${open}"><b>${esc(g.name)}</b><span class="mono">${g.w}×${g.d}</span>${g.newN?`<span class="newtagh">신규 ${g.newN}</span>`:''}</button>${assetPhotoBtn(g.items[0],'rp')}<span class="num">${g.units.length}</span><button class="num ok ${g.placed.length?'':'zero'} ${on==='p:'+g.key?'on':''}" data-hl="p" data-g="${esc(g.key)}" title="배치된 것 도면에 표시">${g.placed.length}</button><button class="num wr ${g.remain.length?'':'zero'} ${on==='r:'+g.key?'on':''}" data-hl="r" data-g="${esc(g.key)}" title="남은 것 도면에 표시">${g.remain.length}</button>`;
+  for(const g of [...GROUPS].sort((a,b)=>b.items.some(i=>SELI.has(i.id))-a.items.some(i=>SELI.has(i.id)))){ const on=UI.hl&&UI.hl.label; const open=UI.open.has(g.key);
+    h+=`<div class="trow${g.items.some(i=>SELI.has(i.id))?' selrow':''}" draggable="true" data-dg="${esc(g.key)}"><span class="sw swc" data-swc="${g.items[0].id}" style="--c:${g.color}" title="눌러서 색 바꾸기"></span><button class="tname" data-openg="${esc(g.key)}" aria-expanded="${open}"><b>${esc(g.name)}</b><span class="mono">${g.w}×${g.d}</span>${g.newN?`<span class="newtagh">신규 ${g.newN}</span>`:''}</button>${assetPhotoBtn(g.items[0],'rp')}<span class="num">${g.units.length}</span><button class="num ok ${g.placed.length?'':'zero'} ${on==='p:'+g.key?'on':''}" data-hl="p" data-g="${esc(g.key)}" title="배치된 것 도면에 표시">${g.placed.length}</button><button class="num wr ${g.remain.length?'':'zero'} ${on==='r:'+g.key?'on':''}" data-hl="r" data-g="${esc(g.key)}" title="남은 것 도면에 표시">${g.remain.length}</button>`;
     if(on==='p:'+g.key||on==='r:'+g.key){ const placed=on[0]==='p'; const by=new Map();
       for(const u of (placed?g.placed:g.remain)){ const it=I(u.itemId); const k=placed?destLabel(u):`${P(it.placeId)?.name||''} › ${fromLabel(u)}`; if(!by.has(k)) by.set(k,[]); by.get(k).push(u) }
       h+=`<div class="hlbox ${placed?'ok':'wr'}"><b>${placed?'배치된 곳':'남은 위치'}</b>${by.size?[...by].map(([k,us])=>`<div class="hlline"><span>${esc(k)}</span><span class="mono">${us.length}개</span><span class="hlnames">${us.map(u=>esc(lbl(u))).join(', ')}</span></div>`).join(''):'<span class="hint">없어요.</span>'}</div>` }
@@ -1595,13 +1600,13 @@ function setNew(it,v){ it.isNew=!!v; let cleared=0; if(it.isNew) for(const u of 
 document.addEventListener('click',e=>{ const t=e.target.closest('[data-qstep]'); if(!t) return; const[id,dv]=t.dataset.qstep.split(':'); const it=I(id); if(!it) return; const q=it.qty+(+dv); if(q<1){ toast('1개보다 줄이려면 [삭제]를 누르세요.'); return } setQty(it,q) });
 document.addEventListener('change',e=>{ const t=e.target.closest('[data-qtyit]'); if(!t) return; const it=I(t.dataset.qtyit); if(it) setQty(it,t.value) });
 function railSpace(pid){
-  let h=''; const items=itemsOf(pid); const sl=curSlot(); const rf=UI.railFilter||'';
+  let h=''; const items=itemsOf(pid).sort((a,b)=>SELI.has(b.id)-SELI.has(a.id)); /* 고른 가구가 맨 위로 */ const sl=curSlot(); const rf=UI.railFilter||'';
   const all=items.flatMap(unitsOf).filter(u=>!(sl==='from'&&isNewU(u))); const na=all.filter(u=>hasSlot(u,sl)).length;
   h+=`<div class="rfilter"><span>${sl==='from'?'변경 전':'변경 후'} 기준</span><button data-rfilter="" class="${rf===''?'on':''}">전체 ${all.length}</button><button data-rfilter="a" class="${rf==='a'?'on':''}">배정 ${na}</button><button data-rfilter="n" class="${rf==='n'?'on':''}">배정 필요 ${all.length-na}</button></div><div class="hint" style="padding:0 3px 6px">줄을 누르면 하나하나 볼 수 있어요 · 이름을 공간 탭에 끌면 소속 공간이 바뀌어요</div>`;
   // 가구마다 한 줄. 누르면 팝업(itemDetail)에서 하나하나 보기
   for(const it of items){ const us=unitsOf(it).filter(u=>!rf||(sl==='from'&&isNewU(u)?false:(rf==='a')===hasSlot(u,sl))); if(!us.length) continue;
     const allU=unitsOf(it), pl=allU.filter(isPlaced).length;
-    h+=`<div class="ritem rcomp" data-openitem="${it.id}" title="눌러서 하나하나 보기"><span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b class="dragi" draggable="true" data-di="${it.id}" title="${esc(it.name)} · 위쪽 공간 탭에 끌어 놓으면 그 공간 가구로 바뀌어요">${esc(it.name)}</b>${it.isNew?'<span class="newtag2 on">신규</span>':''}<span class="rsz mono">${it.w}×${it.d}×${it.h?it.h:'<span class="noh">높이</span>'}</span>${assetPhotoBtn(it,'rp')}<span class="rcnt">${allU.length}개</span><span class="rgo">›</span></div>` }
+    h+=`<div class="ritem rcomp${SELI.has(it.id)?' selrow':''}" data-openitem="${it.id}" title="눌러서 하나하나 보기"><span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b class="dragi" draggable="true" data-di="${it.id}" title="${esc(it.name)} · 위쪽 공간 탭에 끌어 놓으면 그 공간 가구로 바뀌어요">${esc(it.name)}</b>${it.isNew?'<span class="newtag2 on">신규</span>':''}<span class="rsz mono">${it.w}×${it.d}×${it.h?it.h:'<span class="noh">높이</span>'}</span>${assetPhotoBtn(it,'rp')}<span class="rcnt">${allU.length}개</span><span class="rgo">›</span></div>` }
   return h;
 }
 /* 가구 한 종류의 세부(팝업) */

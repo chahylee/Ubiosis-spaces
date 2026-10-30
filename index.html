@@ -333,7 +333,8 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .svgwrap.hasphotos .selbar{left:calc(50% - 180px)}
 .nt-sec{display:grid;gap:6px}
 #nMemo{width:100%;box-sizing:border-box;resize:vertical;min-height:240px;font:inherit;font-size:12.5px;line-height:1.5;padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:var(--raise);color:var(--ink)}
-.nt-hd{display:flex;align-items:baseline;gap:6px}.nt-cnt{margin-left:auto;font-size:11.5px;color:var(--muted)}
+.nt-hd{display:flex;align-items:center;gap:6px}
+#nNew:empty{display:none}.nt-cnt{margin-left:auto;font-size:11.5px;color:var(--muted)}
 .nt-list{display:grid;gap:2px}
 .nt-item{display:grid;grid-template-columns:18px 1fr 18px;gap:5px;align-items:start;padding:3px 2px;border-radius:6px}
 .nt-item:hover{background:var(--raise)}
@@ -1481,10 +1482,12 @@ function renderPhotos(){ // 배치판·공간 작업 오른쪽 창: 내 전체 �
   $('#photosTab').hidden=!(can&&UI.photosOff);
   $('#svgwrap').classList.toggle('hasphotos',show); box.hidden=!show; if(!show){ box.innerHTML=''; box.dataset.pid=''; return }
   const pid=UI.view==='space'&&UI.focus&&P(UI.focus)?UI.focus:''; const p=pid?P(pid):null;
-  if(!$('#nMemo')){ box.innerHTML=`<div class="ph-head"><b class="ph-title">내 메모</b><label class="nt-pub" id="nPubL" title="켜면 다른 사람도 이 메모를 볼 수 있어요 (고치는 건 나만)"><input type="checkbox" id="nPub"> <span id="nPubT">🔒 나만</span></label><button id="photosOff" title="접기">접기 ▶</button></div>
+  if(!$('#nMemo')){ box.innerHTML=`<div class="ph-head"><b class="ph-title" id="nTopT"></b><button id="photosOff" title="접기">접기 ▶</button></div><div id="nNew"></div>
+      <div class="nt-hd"><b class="ph-title">내 메모</b><label class="nt-pub" id="nPubL" title="켜면 다른 사람도 이 메모를 볼 수 있어요 (고치는 건 나만)"><input type="checkbox" id="nPub"> <span id="nPubT">🔒 나만</span></label></div>
       <div class="nt-bar" role="toolbar" aria-label="메모 꾸미기"><button data-mcmd="strikeThrough" title="가로줄 긋기 (글자를 고르거나, 줄에 커서를 두고 누르면 그 줄 전체) · Ctrl+D"><s>가로줄</s></button><button data-mcmd="bold" title="굵게 · Ctrl+B"><b>B</b></button><span class="nt-sw">${MCOL.map(([c,n])=>`<button data-mcol="${c}" title="글자색 ${n}" aria-label="글자색 ${n}" style="--sw:${c}"></button>`).join('')}</span><button data-mcmd="removeFormat" title="고른 글자의 색·가로줄 지우기">지우기</button></div>
       <div class="nt-ed-wrap"><div id="nMemo" class="nt-ed" contenteditable="true" role="textbox" aria-multiline="true" aria-label="내 메모"></div></div><span id="nMemoErr" class="hint nt-err" hidden></span><div id="nOthers" class="nt-others" hidden></div><div id="nOld" class="nt-old" hidden></div>` }
-  box.dataset.pid=pid;
+  box.dataset.pid=pid; $('#nTopT').textContent=p?p.name:'배치판';
+  const nn=$('#nNew'); if(nn.dataset.np!==pid){ nn.dataset.np=pid; nn.innerHTML=p?`<form class="qadd" id="qadd"><b>🆕 새 가구 추가 <span class="hint">· ${esc(p.name)}</span></b><div class="qrow qk"><input id="qaName" placeholder="이름" aria-label="이름" autocomplete="off"><select id="qaK" aria-label="종류"><option value="furn">가구</option><option value="chair">의자(겹쳐 놓기)</option><option value="item">올리는 물품</option></select><input id="qaQ" type="number" min="1" value="1" aria-label="수량" title="수량"></div><div class="qrow q3"><input id="qaW" type="number" min="1" placeholder="가로" aria-label="가로 cm"><input id="qaD" type="number" min="1" placeholder="세로" aria-label="세로 cm"><input id="qaH" type="number" min="0" placeholder="높이" aria-label="높이 cm (선택)"><button class="btn primary small">추가</button></div><span class="hint">새로 살 가구만 여기서 추가해요. 지금 있는 가구는 자산 목록에서 등록하세요.</span></form>`:'' } // 새 가구 추가: 공간 작업에서만, 공간이 바뀔 때만 다시 그림(치던 글자 유지)
   const ed=$('#nMemo'); if(document.activeElement!==ed&&!NOTES.t){ const h=cleanMemo(memoHtml()); if(ed.innerHTML!==h) ed.innerHTML=h } const pub=!!NOTES.pub[MK];
   $('#nPubL').hidden=!Cloud.on; $('#nPub').checked=pub; $('#nPubT').textContent=pub?'👥 공개':'🔒 나만'; $('#nPubL').classList.toggle('on',pub);
   ed.dataset.ph=pub?'이 메모는 다른 사람도 볼 수 있어요. 어느 화면에서나 같은 메모예요.':'메모를 적어 두세요. 어느 화면에서나 같은 메모예요. 나만 보여요.';
@@ -1803,7 +1806,7 @@ function renderRail(){ SELI=selItemIds();
   const tabs=[{id:'',name:'전체'},...S.places.filter(p=>itemsOf(p.id).length).map(p=>({id:p.id,name:p.name}))];
   if(!tabs.find(t=>t.id===UI.railTab)) UI.railTab='';
   let h=`<div class="railhead"><div class="railtop"><b>자산 목록</b><button class="railfold" data-railfold title="자산 목록 접기">◀ 접기</button></div><div class="sum"><div class="sumnums"><span>전체<b>${tot}</b></span><span>배치<b>${pl}</b></span><span class="w">남음<b>${tot-pl}</b></span></div><div class="bar"><i style="width:${tot?pl/tot*100:0}%"></i></div></div>
-  <div class="seg">${tabs.map(t=>`<button data-railtab="${t.id}" class="${t.id===UI.railTab?'on':''}">${esc(t.name)}</button>`).join('')}</div>${UI.view==='space'&&UI.focus&&P(UI.focus)?`<form class="qadd" id="qadd"><b>🆕 새 가구 추가 <span class="hint">· ${esc(P(UI.focus).name)}</span></b><div class="qrow qk"><input id="qaName" placeholder="이름" aria-label="이름" autocomplete="off"><select id="qaK" aria-label="종류"><option value="furn">가구</option><option value="chair">의자(겹쳐 놓기)</option><option value="item">올리는 물품</option></select><input id="qaQ" type="number" min="1" value="1" aria-label="수량" title="수량"></div><div class="qrow q3"><input id="qaW" type="number" min="1" placeholder="가로" aria-label="가로 cm"><input id="qaD" type="number" min="1" placeholder="세로" aria-label="세로 cm"><input id="qaH" type="number" min="0" placeholder="높이" aria-label="높이 cm (선택)"><button class="btn primary small">추가</button></div><span class="hint">새로 살 가구만 여기서 추가해요. 지금 있는 가구는 자산 목록에서 등록하세요.</span></form>`:''}</div><div class="raillist">`;
+  <div class="seg">${tabs.map(t=>`<button data-railtab="${t.id}" class="${t.id===UI.railTab?'on':''}">${esc(t.name)}</button>`).join('')}</div></div><div class="raillist">`;
   if(!S.items.length&&UI.view!=='space'){ h+=`<div class="railempty"><span>가구가 아직 없어요. 공간별로 지금 있는 가구를 입력하세요.</span><button class="btn primary" data-view="items">자산 입력하기</button></div>` }
   else if(UI.railTab==='') h+=railTotal(); else h+=railSpace(UI.railTab);
   rail.innerHTML=h+'</div>'; renderItemDlg();
@@ -2206,7 +2209,7 @@ document.addEventListener('submit',e=>{ if(e.target.id==='qadd'){ e.preventDefau
     if(!nm){ toast('가구 이름을 입력하세요.'); $('#qaName').focus(); return } if(!(w>0&&d>0)){ toast('가로와 세로를 cm로 입력하세요.'); (w>0?$('#qaD'):$('#qaW')).focus(); return }
     const kind=autoKind($('#qaName').value,['item','chair'].includes($('#qaK').value)?$('#qaK').value:'furn'); const isNew=true; /* 공간 작업에서는 새 가구만 추가 */ const pid=UI.focus; const same=S.items.find(i=>i.placeId===pid&&gkey(i)===nm+'|'+w+'|'+d+(kind==='item'?'|i':'')+(isNew?'|n':''));
     if(same){ same.qty+=q; syncUnits(same) } else { const it={id:uid(),placeId:pid,name:nm,w,d,h,qty:q,kind,isNew,color:colorFor(nm,w,d)}; S.items.push(it); syncUnits(it) }
-    UI.railTab=pid; /* 도면 화면(변경 전/후)은 바꾸지 않음 */ commit(); if(UI.view==='space'){ UI.fitted=true; fitAll() } toast(isNew?`신규 구매 ${nm} ${q}개를 추가했어요. 변경 후 화면에서 놓을 자리에 끌어 놓으세요.`:`${nm} ${q}개를 기존 가구로 추가했어요. 미배치 가구 칸에서 도면에 끌어 놓으세요.`); requestAnimationFrame(()=>{ const n=$('#qaName'); if(n) n.focus() }); return }
+    UI.railTab=pid; /* 도면 화면(변경 전/후)은 바꾸지 않음 */ commit(); { const f=$('#qadd'); if(f){ f.reset(); $('#qaName').focus() } } if(UI.view==='space'){ UI.fitted=true; fitAll() } toast(isNew?`신규 구매 ${nm} ${q}개를 추가했어요. 변경 후 화면에서 놓을 자리에 끌어 놓으세요.`:`${nm} ${q}개를 기존 가구로 추가했어요. 미배치 가구 칸에서 도면에 끌어 놓으세요.`); requestAnimationFrame(()=>{ const n=$('#qaName'); if(n) n.focus() }); return }
  if(e.target.id==='formSpace'){ e.preventDefault(); const nm=$('#newSpace').value.trim(); if(!nm){ $('#newSpace').focus(); return } S.places.push({id:uid(),name:nm}); commit(); requestAnimationFrame(()=>$('#newSpace')&&$('#newSpace').focus()) } });
 document.addEventListener('keydown',e=>{
   if(e.target.closest('input,select,textarea,[contenteditable]')||$('dialog[open]')) return;

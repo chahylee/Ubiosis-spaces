@@ -1289,11 +1289,12 @@ function renderPlan(){
   const ls=$('#layerSeg'); ls.hidden=!(UI.view==='space'&&L.length); if(!ls.hidden){ const l=UI.wlayer||'a'; ls.className='layerseg phbadge '+l; ls.innerHTML=`<span class="php ${l}">${PHL[l].t}</span><span class="phs">${PHL[l].s}</span><span class="phc">바꾸기 ▾</span>` }
 }
 function fitAll(){ const L=UI.L; if(!L.length){ updateSbars(); return } UI.scroll={L:0,R:0}; UI.colz={L:1,R:1}; UI.hx=0; ['L','R'].forEach(c=>{ const g=$('#col'+c); if(g) g.setAttribute('transform',colTransform(c)) });
-  const x1=Math.min(...L.map(e=>e.ox)), y1=Math.min(...L.map(e=>e.oy))-80, x2=Math.max(...L.map(e=>e.ox+e.w),UI.view==='space'&&UI.trayBox?UI.trayBox.x2:-Infinity);
+  let x1=Math.min(...L.map(e=>e.ox)), y1=Math.min(...L.map(e=>e.oy))-80, x2=Math.max(...L.map(e=>e.ox+e.w),UI.view==='space'&&UI.trayBox?UI.trayBox.x2:-Infinity);
+  if(UI.view==='plan'){ const m=(x2-x1)*.035+60; x1-=m; x2+=m*.5 } /* 배치판: 왼쪽 끝이 화면에 붙지 않게 여백 */
   const colH=Math.max(...['L','R'].map(c=>{ const x=colExt(c); return x?x.y2-x.y1:0 }));
   { const r=planSvg.getBoundingClientRect(); const asp=r.width>0?r.height/r.width:.6; V.fit(x1,y1,x2-x1,UI.view==='space'?colH+40:Math.min(colH,(x2-x1)*asp),.015) /* 공간 작업은 도면 전체가 한 화면에 */ } { const r=planSvg.getBoundingClientRect(); const upp=r.width?V.w/r.width:1; V.y=y1+80-(UI.view==='space'?90:62)*upp } V.apply(); baseW=V.w; UI.fitY=V.y; applyRestore(); syncZoom(); renderOverlay(); updateSbars(); saveVS() }
 /* ---------- 마지막 화면 기억 (이 브라우저) ---------- */
-const viewKey=()=>[UI.view,UI.focus||'',UI.room?UI.room.mapId+':'+UI.room.roomId:'',UI.view==='space'?UI.wlayer||'a':'',UI.view==='plan'?JSON.stringify(getCols()):''].join('|');
+const viewKey=()=>['v2',UI.view,UI.focus||'',UI.room?UI.room.mapId+':'+UI.room.roomId:'',UI.view==='space'?UI.wlayer||'a':'',UI.view==='plan'?JSON.stringify(getCols()):''].join('|');
 let vsT=null;
 function saveVS(){ if(UI.restore||!(UI.view==='plan'||UI.view==='space')||!baseW) return; clearTimeout(vsT); vsT=setTimeout(()=>{ try{ localStorage.setItem('mb-viewstate',JSON.stringify({view:UI.view,focus:UI.focus||null,room:UI.room||null,wlayer:UI.wlayer||'a',key:viewKey(),z:baseW/V.w,dy:V.y-(UI.fitY||0),scroll:UI.scroll,colz:UI.colz,hx:UI.hx||0})) }catch(e){} },300) }
 function applyRestore(){ const r=UI.restore; if(!r) return; if(r.view!==UI.view||r.key!==viewKey()) return;

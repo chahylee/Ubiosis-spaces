@@ -526,6 +526,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
 .trow2{display:grid;grid-template-columns:1fr 1fr auto;gap:5px}
 .calLayer{display:grid;gap:6px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--raise)}
 .calLayer .seg button[data-l="b"].on{background:#1f5fd0;color:#fff;border-color:#1f5fd0}
+.alpart{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--raise);font-size:13px}.alpart input{margin-top:3px}
 .alsc{display:flex;align-items:center;gap:6px}.alsc input{width:90px}
 #alSvg{width:100%;height:100%;display:block;touch-action:none;background:#fff;cursor:grab}
 #alSvg.dragging{cursor:grabbing}
@@ -686,8 +687,9 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
       <div class="calview"><svg id="alSvg" xmlns="http://www.w3.org/2000/svg"></svg>
         <div class="zoomctl"><button class="ibtn" id="alZout" aria-label="축소">−</button><button class="ibtn" id="alZin" aria-label="확대">+</button><button class="ibtn" id="alFit">전체</button></div></div>
       <aside class="field" style="gap:12px">
-        <p class="hint"><b style="color:#c03a2b">빨간 선</b>은 지금(변경 전) 도면, <b style="color:#1f5fd0">파란 선</b>은 새로 넣는 변경 후 도면이에요. 파란 도면을 <b>끌어서</b> 바뀌지 않은 벽이 겹치도록 맞추세요. 잘 겹친 선은 검게 보여요.</p>
+        <p class="hint"><b style="color:#c03a2b">빨간 선</b>은 지금 도면, <b style="color:#1f5fd0">파란 선</b>은 새로 넣는 도면이에요(파란 점선 네모 = 덮어쓸 범위). 파란 도면을 <b>끌어서</b> 바뀌지 않은 벽이 겹치도록 맞추세요. 잘 겹친 선은 검게 보여요.</p>
         <p class="hint">화살표 키로 조금씩, Shift+화살표로 크게 움직여요. 화면 옮기기는 Ctrl+끌기나 마우스 오른쪽 버튼 끌기, 확대는 휠이에요.</p>
+        <label class="alpart"><input type="checkbox" id="alPart" checked> <span><b>잘라 온 부분만 덮어쓰기</b><br><span class="hint">나머지는 지금 도면 그대로 둬요. 도면 일부만 바뀌었을 때 쓰세요. 끄면 새 그림이 도면 전체를 대신해요.</span></span></label>
         <label class="field">새 도면 진하기<input id="alOp" type="range" min="0" max="100" value="80"></label>
         <div class="field">크기 (같은 축척 = 100%)
           <div class="alsc"><button class="btn small" id="alSm" aria-label="작게">−</button><input id="alSc" type="number" inputmode="decimal" step="0.1" min="10" max="1000" aria-label="크기 %"><span>%</span><button class="btn small" id="alLg" aria-label="크게">+</button></div>
@@ -695,7 +697,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
         <p class="hint">두 PDF가 같은 축척(예: 1/100)으로 그려진 도면이면 크기는 100% 그대로 두고 위치만 맞추면 돼요.</p>
       </aside>
     </div>
-    <div class="df"><span class="note">지금 도면 범위 밖으로 나간 부분은 잘려요.</span><button class="btn" data-close>취소</button><button class="btn primary" id="alApply">변경 후 도면으로 넣기</button></div>
+    <div class="df"><span class="note">도면 범위 밖으로 나간 부분은 잘려요.</span><button class="btn" data-close>취소</button><button class="btn primary" id="alApply">변경 후 도면으로 넣기</button></div>
   </div>
 </dialog>
 
@@ -2197,7 +2199,7 @@ function openAlign(id,cnv,ppuN){ const m=M(id); if(!m) return;
   alSvg.innerHTML=`<defs><filter id="alRed" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 .75  0 0 0 0 .2  0 0 0 0 .15  -.333 -.333 -.333 1 0"/><feComponentTransfer><feFuncA type="linear" slope="1.8" intercept="-.35"/></feComponentTransfer></filter><filter id="alBlue" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 .12  0 0 0 0 .37  0 0 0 0 .82  -.333 -.333 -.333 1 0"/><feComponentTransfer><feFuncA type="linear" slope="1.8" intercept="-.35"/></feComponentTransfer></filter></defs>
     <rect x="0" y="0" width="${m.w}" height="${m.h}" fill="#fff" stroke="#999" stroke-dasharray="8 6" vector-effect="non-scaling-stroke"/>
     <image href="${m.img}" x="0" y="0" width="${m.w}" height="${m.h}" filter="url(#alRed)" preserveAspectRatio="none"/>
-    <g id="alNew" style="mix-blend-mode:multiply"><image href="${AL.url}" x="0" y="0" width="${cnv.width}" height="${cnv.height}" filter="url(#alBlue)" preserveAspectRatio="none"/></g>`;
+    <g id="alNew" style="mix-blend-mode:multiply"><image href="${AL.url}" x="0" y="0" width="${cnv.width}" height="${cnv.height}" filter="url(#alBlue)" preserveAspectRatio="none"/><rect x="0" y="0" width="${cnv.width}" height="${cnv.height}" fill="none" stroke="#1f5fd0" stroke-width="2" stroke-dasharray="10 6" vector-effect="non-scaling-stroke"/></g>`;
   $('#alOp').value=80; $('#dlgAlign').showModal(); alApply(); requestAnimationFrame(()=>AV.fit(0,0,m.w,m.h,.04)) }
 function alApply(){ const g=$('#alNew'); if(!g) return; g.setAttribute('transform',`translate(${AL.x} ${AL.y}) scale(${AL.k})`); g.style.opacity=(+$('#alOp').value)/100;
   const el=$('#alSc'); if(document.activeElement!==el) el.value=(AL.k/AL.k0*100).toFixed(1) }
@@ -2215,10 +2217,15 @@ alSvg.addEventListener('pointerdown',e=>{ const pan=(e.pointerType==='mouse'&&(e
   alSvg.addEventListener('pointermove',mv); alSvg.addEventListener('pointerup',up); alSvg.addEventListener('pointercancel',up) });
 document.addEventListener('keydown',e=>{ if(!$('#dlgAlign').open||e.target.closest('input')) return; const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key]; if(!d) return;
   e.preventDefault(); const r=alSvg.getBoundingClientRect(); const px=AV.w/(r.width||600)*(e.shiftKey?10:1); AL.x+=d[0]*px; AL.y+=d[1]*px; alApply() });
-$('#alApply').onclick=()=>{ const m=M(AL.id); if(!m||!AL.c){ $('#dlgAlign').close(); return }
+$('#alApply').onclick=async()=>{ const m=M(AL.id); if(!m||!AL.c){ $('#dlgAlign').close(); return }
+  const part=$('#alPart').checked, first=!hasB(m);
   const c=document.createElement('canvas'); c.width=m.w; c.height=m.h; const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height);
+  if(part){ try{ g.drawImage(await loadImg(first?m.img:(m.imgB||m.img)),0,0,m.w,m.h) }catch(_){} } // 부분 덮어쓰기: 지금 변경 후 도면(없으면 지금 도면) 위에 잘라 온 조각만 붙임
   g.imageSmoothingQuality='high'; g.drawImage(AL.c,AL.x,AL.y,AL.c.width*AL.k,AL.c.height*AL.k);
-  const first=!hasB(m); m.imgB=c.toDataURL('image/jpeg',.92); m.imgBV=uid(); if(!m.roomsB) m.roomsB=JSON.parse(JSON.stringify(roomsOf(m))); if(!m.masksB) m.masksB=[];
+  const box={x:AL.x,y:AL.y,w:AL.c.width*AL.k,h:AL.c.height*AL.k};
+  m.imgB=c.toDataURL('image/jpeg',.92); m.imgBV=uid(); if(!m.roomsB) m.roomsB=JSON.parse(JSON.stringify(roomsOf(m)));
+  if(part){ const src=first?(m.masks||[]):(m.masksB||[]); m.masksB=JSON.parse(JSON.stringify(src)).flatMap(r=>cutRect(r,box)) } // 덮어쓴 곳 밖의 가리기·벽은 그대로
+  else if(!m.masksB) m.masksB=[];
   AL.c=null; AL.url=''; $('#dlgAlign').close(); UI.fitted=false; commit();
   toast(first?'변경 후 도면을 넣었어요. 방 구분이 바뀌었으면 여기서 고쳐 주세요.':'변경 후 도면을 바꿨어요.'); if(first) openCal(m.id,'b') };
 

@@ -107,6 +107,8 @@ h3{font-size:15px;margin:0}
 .plan.railoff{grid-template-columns:1fr}
 .plan.railoff .rail{display:none}
 .czoom{position:absolute;top:8px;z-index:4;display:flex;align-items:center;gap:3px;background:color-mix(in srgb,var(--raise) 94%,transparent);border:1px solid var(--line);border-radius:8px;padding:3px 6px;font-size:11.5px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.czoom.left,.czoom.right{position:static;box-shadow:none}
+.czrow{flex-basis:100%;display:flex;justify-content:space-between;gap:10px}.czrow:not(:has(.czoom:not([hidden]))){display:none} /* 왼쪽·오른쪽 확대 바: 메뉴 맨 아래 줄 양 끝 */ /* 칸별 확대 바는 위 메뉴 줄 안에 (도면 제목을 가리지 않게) */
 .czoom.left{left:12px} .czoom.right{right:12px}
 .svgwrap.hasphotos .czoom.right{right:372px}
 .czoom button{border:0;background:none;width:20px;height:20px;border-radius:4px;color:var(--ink);font-size:13px;line-height:1}
@@ -114,8 +116,6 @@ h3{font-size:15px;margin:0}
 .czoom input{width:78px;accent-color:var(--accent)}
 .czoom .czp{min-width:36px;text-align:right;color:var(--muted);font-size:11px}
 .czoom .sl{color:var(--muted);margin-right:2px;white-space:nowrap}
-.svgwrap.hascz .railtab{top:46px}
-.svgwrap.hascz .photos-tab{top:46px}
 .layerseg{position:absolute;left:12px;top:8px;z-index:4;display:flex;gap:2px;background:var(--soft);padding:3px;border-radius:9px;border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .layerseg button{border:0;background:none;border-radius:7px;padding:5px 12px;font-size:12.5px;font-weight:500;color:var(--muted)}
 .layerseg button.on[data-wl="a"]{background:var(--ink);color:var(--bg)}
@@ -677,11 +677,10 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
             <button id="btnZin" class="ibtn" aria-label="확대">+</button>
             <button id="btnFit" class="ibtn">전체</button>
           </div>
+          <div class="czrow"><div class="czoom left" id="czL" hidden><span class="sl">왼쪽</span><button data-cz="L:out" aria-label="왼쪽 축소">−</button><input type="range" data-czr="L" min="-2.3" max="3" step="0.01" value="0" aria-label="왼쪽 배율"><button data-cz="L:in" aria-label="왼쪽 확대">+</button><span class="czp mono">100%</span><button data-cz="L:reset" title="100%로">↺</button></div><div class="czoom right" id="czR" hidden><span class="sl">오른쪽</span><button data-cz="R:out" aria-label="오른쪽 축소">−</button><input type="range" data-czr="R" min="-2.3" max="3" step="0.01" value="0" aria-label="오른쪽 배율"><button data-cz="R:in" aria-label="오른쪽 확대">+</button><span class="czp mono">100%</span><button data-cz="R:reset" title="100%로">↺</button></div></div>
         </div>
         <div class="svgwrap" id="svgwrap">
           <button class="layerseg phbadge" id="layerSeg" data-mapdlg hidden title="다른 도면이나 변경 전/후로 바꾸기"></button>
-          <div class="czoom left" id="czL" hidden><span class="sl">왼쪽</span><button data-cz="L:out" aria-label="왼쪽 축소">−</button><input type="range" data-czr="L" min="-2.3" max="3" step="0.01" value="0" aria-label="왼쪽 배율"><button data-cz="L:in" aria-label="왼쪽 확대">+</button><span class="czp mono">100%</span><button data-cz="L:reset" title="100%로">↺</button></div>
-          <div class="czoom right" id="czR" hidden><span class="sl">오른쪽</span><button data-cz="R:out" aria-label="오른쪽 축소">−</button><input type="range" data-czr="R" min="-2.3" max="3" step="0.01" value="0" aria-label="오른쪽 배율"><button data-cz="R:in" aria-label="오른쪽 확대">+</button><span class="czp mono">100%</span><button data-cz="R:reset" title="100%로">↺</button></div>
           <button id="railTab" class="railtab" hidden title="자산 목록 펼치기">▶<span>자산 목록</span></button>
           <svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg>
           <div id="selbar" class="selbar" hidden></div>

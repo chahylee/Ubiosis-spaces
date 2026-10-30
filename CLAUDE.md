@@ -13,7 +13,7 @@
 - `firebase.json`, `.firebaserc` — Firebase CLI 설정(규칙 배포용).
 
 ## 데이터 구조 (Firestore 컬렉션)
-`places`(공간; 오른쪽 창의 확인할 것 `checks:[{id,t,done}]`, `memo`는 예전 공용 메모), `notes/{email}`(내 메모 `memos:{공간id:글}`, `pub:{공간id:true}`; 본인만 읽고 씀), `pubnotes/{email}`(공개로 켠 메모만 `name`·`memos`; 모두 읽고 본인만 씀), `maps`(도면; 이미지는 `blobs`에 90만 자씩 나눠 저장. 변경 후 도면은 `imgBV`·`roomsB`·`masksB`, 그림은 blobs의 owner `{도면id}~b`), `items`(자산: name,w,d,h,qty,kind,isNew,color,placeId), `units`(자산 1개씩: from/to 위치, toPlaceId, chk), `photos`(공간 사진 + `placeId:'@asset'`인 자산 사진), `versions`(시점별 저장, data는 JSON 문자열), `meta/main`, `settings/lock`, `members/{email}`(role: edit|view), `requests/{email}`(권한 신청).
+`places`(공간; 오른쪽 창의 확인할 것 `checks:[{id,t,done}]`, `memo`는 예전 공용 메모), `notes/{email}`(내 전체 메모 `memos['*']`, 공개 여부 `pub['*']`; 예전 공간별 메모는 열 때 '*'로 합침; 본인만 읽고 씀), `pubnotes/{email}`(공개로 켠 메모만 `name`·`memos`; 모두 읽고 본인만 씀), `maps`(도면; 이미지는 `blobs`에 90만 자씩 나눠 저장. 변경 후 도면은 `imgBV`·`roomsB`·`masksB`, 그림은 blobs의 owner `{도면id}~b`), `items`(자산: name,w,d,h,qty,kind,isNew,color,placeId), `units`(자산 1개씩: from/to 위치, toPlaceId, chk), `photos`(공간 사진 + `placeId:'@asset'`인 자산 사진), `versions`(시점별 저장, data는 JSON 문자열), `meta/main`, `settings/lock`, `members/{email}`(role: edit|view), `requests/{email}`(권한 신청).
 
 ## 앱 구조 메모 (index.html 안)
 - 상태 `S`, 화면 상태 `UI`. 저장은 `save()` → 클라우드면 `cloudPush()`(변경분만 batch).

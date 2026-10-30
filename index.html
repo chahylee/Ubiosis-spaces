@@ -108,7 +108,7 @@ h3{font-size:15px;margin:0}
 .plan.railoff .rail{display:none}
 .czoom{position:absolute;top:8px;z-index:4;display:flex;align-items:center;gap:3px;background:color-mix(in srgb,var(--raise) 94%,transparent);border:1px solid var(--line);border-radius:8px;padding:3px 6px;font-size:11.5px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .czoom.left{left:12px} .czoom.right{right:12px}
-.svgwrap.hasphotos .czoom.right{right:244px}
+.svgwrap.hasphotos .czoom.right{right:332px}
 .czoom button{border:0;background:none;width:20px;height:20px;border-radius:4px;color:var(--ink);font-size:13px;line-height:1}
 .czoom button:hover{background:var(--soft)}
 .czoom input{width:78px;accent-color:var(--accent)}
@@ -326,9 +326,9 @@ button.num.zero{opacity:.35}
 .rb.wr{background:var(--warn-soft);color:var(--warn)}
 .selbar em{color:var(--warn);font-style:normal}
 kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:3px;color:var(--muted)}
-.photos{position:absolute;right:0;top:0;bottom:0;width:232px;font-size:12px;display:flex;flex-direction:column;gap:10px;overflow:auto;padding:10px 8px;background:var(--panel);border-left:1px solid var(--line)}
-.svgwrap.hasphotos #plan{width:calc(100% - 232px)}
-.svgwrap.hasphotos .selbar{left:calc(50% - 116px)}
+.photos{position:absolute;right:0;top:0;bottom:0;width:320px;font-size:12px;display:flex;flex-direction:column;gap:10px;overflow:auto;padding:10px 8px;background:var(--panel);border-left:1px solid var(--line)}
+.svgwrap.hasphotos #plan{width:calc(100% - 320px)}
+.svgwrap.hasphotos .selbar{left:calc(50% - 160px)}
 .nt-sec{display:grid;gap:6px}
 #nMemo{width:100%;box-sizing:border-box;resize:vertical;min-height:240px;font:inherit;font-size:12.5px;line-height:1.5;padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:var(--raise);color:var(--ink)}
 .nt-hd{display:flex;align-items:baseline;gap:6px}.nt-cnt{margin-left:auto;font-size:11.5px;color:var(--muted)}
@@ -669,7 +669,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
           <div id="selbar" class="selbar" hidden></div>
           <div class="legend" title="휠: 칸별 위아래 이동 · Shift+휠: 좌우 · Ctrl+휠: 확대·축소 (Ctrl+Alt+휠: 더 세밀하게) · Ctrl+끌기: 화면 위아래·좌우 이동 · 스크롤바: 끌거나 클릭해서 이동 · 빈 곳 끌기: 범위 안 가구 한 번에 고르기 (Shift 같이: 더하기) · Ctrl/Shift+클릭: 하나씩 더 고르기 · 오른쪽 버튼: 장소 옮기기 · Ctrl+방향키: 1cm씩 이동 (Shift 같이: 10cm) · R 또는 Alt+방향키: 90° 회전 (붙어 있는 것은 한 덩어리로) · 공간 이름: 그 공간만"><span><i></i>1칸 = 50cm</span><span>Ctrl+휠 확대·축소 · Ctrl+끌기 이동 · 빈 곳 끌기 범위 선택 · 오른쪽 버튼 장소 옮기기</span></div>
           <div id="planEmpty" class="empty" hidden></div>
-          <button id="photosTab" class="photos-tab" hidden>◀ 메모·체크리스트</button>
+          <button id="photosTab" class="photos-tab" hidden>◀ 메모</button>
           <div class="sbar" id="sbL" hidden><i></i></div><div class="sbar" id="sbR" hidden><i></i></div><div class="hbar" id="sbH" hidden><i></i></div>
           <div id="photos" class="photos" aria-label="공간 메모와 체크리스트"></div>
         </div>
@@ -1432,9 +1432,12 @@ const NOTES={memos:{},pub:{},others:{},started:false,err:false,t:null};
 const myEmail=()=>((Cloud.user&&Cloud.user.email)||'').toLowerCase();
 function myNotesRef(){ return Cloud.on&&Cloud.user&&Cloud.db?Cloud.db.collection('notes').doc(myEmail()):null }
 function startNotes(){ if(NOTES.started) return; if(Cloud.on&&!Cloud.user) return; NOTES.started=true; const r=myNotesRef();
-  if(r){ r.onSnapshot(d=>{ if(d.metadata.hasPendingWrites) return; NOTES.err=false; if(!NOTES.t){ const x=d.exists?d.data():{}; NOTES.memos=Object.assign({},x.memos||{}); NOTES.pub=Object.assign({},x.pub||{}) } renderPhotos() },e=>{ console.error(e); NOTES.err=true; renderPhotos() });
+  if(r){ r.onSnapshot(d=>{ if(d.metadata.hasPendingWrites) return; NOTES.err=false; if(!NOTES.t){ const x=d.exists?d.data():{}; NOTES.memos=Object.assign({},x.memos||{}); NOTES.pub=Object.assign({},x.pub||{}); if(mergeMemos()) saveNotes() } renderPhotos() },e=>{ console.error(e); NOTES.err=true; renderPhotos() });
     Cloud.db.collection('pubnotes').onSnapshot(snap=>{ const o={}; snap.docs.forEach(d=>{ if(d.id!==myEmail()) o[d.id]=d.data() }); NOTES.others=o; renderPhotos() },e=>console.error(e)) } // 공개한 메모: 모두 읽기, 본인만 쓰기
-  else Store.get('mynotes').then(v=>{ if(!NOTES.t){ NOTES.memos=(v&&v.memos)||(v&&!v.memos?v:{})||{} } renderPhotos() }) }
+  else Store.get('mynotes').then(v=>{ if(!NOTES.t){ NOTES.memos=(v&&v.memos)||(v&&!v.memos?v:{})||{}; if(mergeMemos()) saveNotes() } renderPhotos() }) }
+/* 예전에 공간별로 쓴 메모가 있으면 전체 메모 하나로 합침 (공간 이름을 머리말로) */
+function mergeMemos(){ if(Cloud.on&&!Cloud.ready) return false; const ks=Object.keys(NOTES.memos).filter(k=>k!==MK&&NOTES.memos[k]); if(!ks.length) return false; const parts=NOTES.memos[MK]?[NOTES.memos[MK]]:[]; let pub=false;
+  for(const k of ks){ parts.push(`[${P(k)?.name||'공간'}]\n${NOTES.memos[k]}`); if(NOTES.pub[k]) pub=true; delete NOTES.memos[k]; delete NOTES.pub[k] } NOTES.memos[MK]=parts.join('\n\n'); if(pub) NOTES.pub[MK]=true; return true }
 function setMyMemo(pid,v){ if(v) NOTES.memos[pid]=v; else delete NOTES.memos[pid]; clearTimeout(NOTES.t); NOTES.t=setTimeout(saveNotes,700) }
 async function saveNotes(){ clearTimeout(NOTES.t); NOTES.t=null; const r=myNotesRef();
   try{ if(r){ const pubM={}; for(const k of Object.keys(NOTES.pub)) if(NOTES.pub[k]&&NOTES.memos[k]) pubM[k]=NOTES.memos[k];
@@ -1442,41 +1445,42 @@ async function saveNotes(){ clearTimeout(NOTES.t); NOTES.t=null; const r=myNotes
       await Cloud.db.collection('pubnotes').doc(myEmail()).set({name:(Cloud.user.displayName||myEmail().split('@')[0]),memos:pubM,at:Date.now()}) }
     else await Store.set('mynotes',{memos:NOTES.memos}); NOTES.err=false }catch(e){ console.error(e); NOTES.err=true }
   const el=$('#nMemoErr'); if(el){ el.hidden=!NOTES.err; el.textContent='메모를 저장하지 못했어요. 관리자에게 Firebase 규칙 업데이트를 부탁하세요.' } }
-function renderPhotos(){ // 공간 작업 오른쪽 창: 내 메모(나만) + 확인할 것(체크리스트, 공간 문서의 checks로 모두에게 공유)
-  startNotes();
-  const box=$('#photos'); const pid0=UI.focus&&UI.L.length?UI.focus:null; const pid=pid0&&!UI.photosOff&&P(pid0)?pid0:null;
-  $('#photosTab').hidden=!(pid0&&UI.photosOff);
-  $('#svgwrap').classList.toggle('hasphotos',!!pid); box.hidden=!pid; if(!pid){ box.innerHTML=''; box.dataset.pid=''; return }
-  const p=P(pid), ro=Cloud.on&&!canEdit(), cks=p.checks||[], done=cks.filter(c=>c.done).length;
-  if(box.dataset.pid!==pid||!$('#nMemo')){ box.dataset.pid=pid;
-    box.innerHTML=`<div class="ph-head"><b class="ph-title nt-place"></b><button id="photosOff" title="접기">접기 ▶</button></div>
-      <div class="nt-sec"><div class="nt-hd"><b class="ph-title">내 메모</b><label class="nt-pub" id="nPubL" title="켜면 다른 사람도 이 메모를 볼 수 있어요 (고치는 건 나만)"><input type="checkbox" id="nPub"> <span id="nPubT">🔒 나만</span></label></div><textarea id="nMemo" rows="12" aria-label="내 메모"></textarea><span id="nMemoErr" class="hint nt-err" hidden></span></div><div id="nOthers" class="nt-others" hidden></div><div id="nOld" class="nt-old" hidden></div>
-      <div class="nt-sec"><div class="nt-hd"><b class="ph-title">확인할 것</b><span id="nCnt" class="nt-cnt"></span></div><div id="nList" class="nt-list"></div>
+const MK='*'; // 메모는 공간과 상관없는 '전체 메모' 하나 (사람마다)
+function renderPhotos(){ // 배치판·공간 작업 오른쪽 창: 내 전체 메모(나만/공개) + 공간 작업에서는 그 공간의 확인할 것(모두 공유)
+  startNotes(); if(!NOTES.t&&mergeMemos()) saveNotes();
+  const box=$('#photos'); const can=UI.view==='plan'||UI.view==='space'; const show=can&&!UI.photosOff;
+  $('#photosTab').hidden=!(can&&UI.photosOff);
+  $('#svgwrap').classList.toggle('hasphotos',show); box.hidden=!show; if(!show){ box.innerHTML=''; box.dataset.pid=''; box.dataset.k=''; return }
+  const pid=UI.view==='space'&&UI.focus&&P(UI.focus)?UI.focus:''; const p=pid?P(pid):null, ro=Cloud.on&&!canEdit(), cks=(p&&p.checks)||[], done=cks.filter(c=>c.done).length;
+  if(!$('#nMemo')){ box.innerHTML=`<div class="ph-head"><b class="ph-title">내 메모</b><label class="nt-pub" id="nPubL" title="켜면 다른 사람도 이 메모를 볼 수 있어요 (고치는 건 나만)"><input type="checkbox" id="nPub"> <span id="nPubT">🔒 나만</span></label><button id="photosOff" title="접기">접기 ▶</button></div>
+      <div class="nt-sec"><textarea id="nMemo" rows="12" aria-label="내 메모"></textarea><span id="nMemoErr" class="hint nt-err" hidden></span></div><div id="nOthers" class="nt-others" hidden></div><div id="nOld" class="nt-old" hidden></div>
+      <div class="nt-sec" id="nChk"><div class="nt-hd"><b class="ph-title">확인할 것 · <span class="nt-place"></span></b><span id="nCnt" class="nt-cnt"></span></div><div id="nList" class="nt-list"></div>
       <form id="nAddF" class="nt-add" autocomplete="off"><input id="nAdd" placeholder="예: 콘센트 위치 확인" aria-label="확인할 것 추가"><button class="btn small">추가</button></form></div>` }
-  box.querySelector('.nt-place').textContent=p.name;
-  const ta=$('#nMemo'); if(document.activeElement!==ta) ta.value=NOTES.memos[pid]||''; const pub=!!NOTES.pub[pid];
+  box.dataset.pid=pid;
+  const ta=$('#nMemo'); if(document.activeElement!==ta) ta.value=NOTES.memos[MK]||''; const pub=!!NOTES.pub[MK];
   $('#nPubL').hidden=!Cloud.on; $('#nPub').checked=pub; $('#nPubT').textContent=pub?'👥 공개':'🔒 나만'; $('#nPubL').classList.toggle('on',pub);
-  ta.placeholder=pub?'이 메모는 다른 사람도 볼 수 있어요.':'이 공간에 대한 메모를 적어 두세요. 나만 보여요.';
-  const oth=Object.values(NOTES.others).filter(o=>o&&o.memos&&o.memos[pid]); const ob=$('#nOthers'); ob.hidden=!oth.length;
-  if(oth.length) ob.innerHTML=`<b class="ph-title">다른 사람이 공개한 메모</b>`+oth.map(o=>`<div class="nt-o"><span class="nt-on">${esc(o.name||'')}</span><div class="nt-ot">${esc(o.memos[pid])}</div></div>`).join(''); const me=$('#nMemoErr'); me.hidden=!NOTES.err; if(NOTES.err) me.textContent='메모를 불러오거나 저장하지 못했어요. 관리자에게 Firebase 규칙 업데이트를 부탁하세요.';
-  const old=$('#nOld'); old.hidden=!p.memo; if(p.memo) old.innerHTML=`<b class="ph-title">예전 공용 메모 (모두에게 보임)</b><div class="nt-oldt">${esc(p.memo)}</div><button class="btn small" data-nold>내 메모로 옮기기</button>`;
+  ta.placeholder=pub?'이 메모는 다른 사람도 볼 수 있어요. 어느 화면에서나 같은 메모예요.':'메모를 적어 두세요. 어느 화면에서나 같은 메모예요. 나만 보여요.';
+  const oth=Object.values(NOTES.others).filter(o=>o&&o.memos&&o.memos[MK]); const ob=$('#nOthers'); ob.hidden=!oth.length;
+  if(oth.length) ob.innerHTML=`<b class="ph-title">다른 사람이 공개한 메모</b>`+oth.map(o=>`<div class="nt-o"><span class="nt-on">${esc(o.name||'')}</span><div class="nt-ot">${esc(o.memos[MK])}</div></div>`).join(''); const me=$('#nMemoErr'); me.hidden=!NOTES.err; if(NOTES.err) me.textContent='메모를 불러오거나 저장하지 못했어요. 관리자에게 Firebase 규칙 업데이트를 부탁하세요.';
+  const old=$('#nOld'); old.hidden=!(p&&p.memo); if(p&&p.memo) old.innerHTML=`<b class="ph-title">예전 공용 메모 (모두에게 보임)</b><div class="nt-oldt">${esc(p.memo)}</div><button class="btn small" data-nold>내 메모로 옮기기</button>`;
+  $('#nChk').hidden=!p; if(!p) return; box.querySelector('.nt-place').textContent=p.name;
   $('#nAddF').hidden=ro; $('#nCnt').textContent=cks.length?`${done}/${cks.length} 완료`:'';
   const ae=document.activeElement; if(ae&&ae.classList.contains('nt-t')&&$('#nList').contains(ae)) return; // 항목 글자 고치는 중에는 다시 그리지 않음
   $('#nList').innerHTML=cks.length?cks.map(c=>`<div class="nt-item${c.done?' done':''}"><input type="checkbox" data-nck="${c.id}" ${c.done?'checked':''} ${ro?'disabled':''} aria-label="${esc(c.t)} 확인"><textarea class="nt-t" rows="1" data-nedit="${c.id}" ${ro?'readonly':''} aria-label="확인할 것">${esc(c.t)}</textarea>${ro?'<span></span>':`<button class="nt-x" data-ndel="${c.id}" title="지우기" aria-label="${esc(c.t)} 지우기">×</button>`}</div>`).join('')
     :'<p class="hint nt-empty">아직 없어요. 아래에 적고 Enter를 누르세요.</p>'; ntFit() }
 function ntFit(){ const f=()=>$$('#nList .nt-t').forEach(t=>{ if(!t.offsetWidth) return; t.style.height='0px'; t.style.height=t.scrollHeight+'px' }); f(); requestAnimationFrame(f) }
 const notePlace=()=>P($('#photos').dataset.pid||'');
-$('#photos').addEventListener('input',e=>{ if(e.target.classList.contains('nt-t')){ ntFit(); return } if(e.target.id!=='nMemo') return; const p=notePlace(); if(!p) return; setMyMemo(p.id,e.target.value) });
+$('#photos').addEventListener('input',e=>{ if(e.target.classList.contains('nt-t')){ ntFit(); return } if(e.target.id!=='nMemo') return; setMyMemo(MK,e.target.value) });
 $('#photos').addEventListener('focusout',e=>{ if(e.target.id==='nMemo'&&NOTES.t) saveNotes() });
 $('#photos').addEventListener('submit',e=>{ if(e.target.id!=='nAddF') return; e.preventDefault(); const p=notePlace(), inp=$('#nAdd'), t=inp.value.trim(); if(!p||!t) return;
   (p.checks||(p.checks=[])).push({id:uid(),t,done:false}); inp.value=''; save(); renderPhotos(); inp.focus() });
 $('#photos').addEventListener('change',e=>{ const p=notePlace(); if(!p) return; const d=e.target.dataset;
-  if(e.target.id==='nPub'){ if(e.target.checked) NOTES.pub[p.id]=true; else delete NOTES.pub[p.id]; saveNotes(); renderPhotos(); toast(e.target.checked?'이 메모를 공개했어요. 다른 사람도 볼 수 있어요.':'이 메모를 나만 보게 바꿨어요.'); return }
+  if(e.target.id==='nPub'){ if(e.target.checked) NOTES.pub[MK]=true; else delete NOTES.pub[MK]; saveNotes(); renderPhotos(); toast(e.target.checked?'이 메모를 공개했어요. 다른 사람도 볼 수 있어요.':'이 메모를 나만 보게 바꿨어요.'); return }
   if(d.nck){ const c=(p.checks||[]).find(c=>c.id===d.nck); if(c){ c.done=e.target.checked; save(); renderPhotos() } }
   else if(d.nedit){ const c=(p.checks||[]).find(c=>c.id===d.nedit); if(!c) return; const t=e.target.value.trim(); if(t) c.t=t; else p.checks=p.checks.filter(x=>x!==c); save(); e.target.blur(); renderPhotos() } });
 $('#photos').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.classList.contains('nt-t')){ e.preventDefault(); e.target.blur() } });
 $('#photos').addEventListener('focusout',e=>{ if(e.target.classList&&e.target.classList.contains('nt-t')) setTimeout(renderPhotos,0) });
-$('#photos').addEventListener('click',e=>{ if(e.target.closest('[data-nold]')){ const p=notePlace(); if(!p||!p.memo) return; const cur=NOTES.memos[p.id]||''; setMyMemo(p.id,(cur?cur+'\n':'')+p.memo); saveNotes(); if(!(Cloud.on&&!canEdit())){ delete p.memo; save() } renderPhotos(); return }
+$('#photos').addEventListener('click',e=>{ if(e.target.closest('[data-nold]')){ const p=notePlace(); if(!p||!p.memo) return; const cur=NOTES.memos[MK]||''; setMyMemo(MK,(cur?cur+'\n':'')+p.memo); saveNotes(); if(!(Cloud.on&&!canEdit())){ delete p.memo; save() } renderPhotos(); return }
   const b=e.target.closest('[data-ndel]'); if(!b) return; const p=notePlace(); if(!p) return; p.checks=(p.checks||[]).filter(c=>c.id!==b.dataset.ndel); save(); renderPhotos() });
 async function addPhotos(pid,files,dir,ph){
   let n=0; const asset=pid==='@asset'; ph=ph==='after'?'after':'before'; const same=p=>p.placeId===pid&&p.dir===dir&&(asset||phOf(p)===ph);

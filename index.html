@@ -324,6 +324,8 @@ button.num.zero{opacity:.35}
 .rb.in{background:var(--ok-soft);color:var(--ok)}
 .rb.same{background:var(--accent-soft);color:var(--accent)}
 .rb.wr{background:var(--warn-soft);color:var(--warn)}
+.rb.go{background:#1f5fd0;color:#fff;font-weight:600}
+.gosel{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)}.gosel select{font-size:12.5px;max-width:170px}
 .selbar em{color:var(--warn);font-style:normal}
 kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:3px;color:var(--muted)}
 .photos{position:absolute;right:0;top:0;bottom:0;width:360px;font-size:12px;display:flex;flex-direction:column;gap:10px;overflow:auto;padding:10px 8px;background:var(--panel);border-left:1px solid var(--line)}
@@ -430,6 +432,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .unit .ud{opacity:.85}
 .unit .ufrom{font-weight:600;fill:#0f5d3a;paint-order:stroke;stroke:#fff;stroke-width:3px}
 .unit .ugo{font-weight:600;fill:var(--c);paint-order:stroke;stroke:#fff;stroke-width:3px}
+.ugo.unset{fill:var(--warn)}
 .unit.top .ub{fill-opacity:.38;stroke-dasharray:4 3;stroke-width:1}
 .unit.top .un{font-weight:500}
 .toptag{font-size:9.5px;border:1px dashed var(--muted);border-radius:4px;padding:0 4px;color:var(--muted)}
@@ -1215,6 +1218,7 @@ function unitSVG(u,slot,e,flags){
   const op=UI.view==='plan'&&u.first?(u.first.n?null:u.first.p):(it.isNew?null:it.placeId);
   if(slot==='to'&&op&&op!==e.m.placeId){ const on='← '+(P(op)?.name||''); const f2=clamp(Math.min(fs*.72,w*.95/Math.max(2,on.length*.95)),4,16); s+=`<text class="ufrom" x="${w/2}" y="${d+f2*.9}" font-size="${f2.toFixed(1)}">${esc(on)}</text>` }
   if(slot==='cur'&&u.first&&!u.first.n&&u.first.p!==e.m.placeId){ const on='← '+(P(u.first.p)?.name||''); const f2=clamp(Math.min(fs*.72,w*.95/Math.max(2,on.length*.95)),4,16); s+=`<text class="ufrom" x="${w/2}" y="${d+f2*.9}" font-size="${f2.toFixed(1)}">${esc(on)}</text>` }
+  if(!flags.ghost&&(slot==='from'||slot==='first')&&!it.isNew){ const dl=destLabel(u); const on=isStay(u)?(flags.sel?'그대로 둠':''):dl?'→ '+dl:(flags.sel?'→ 도착지 미정':''); if(on){ const f2=clamp(Math.min(fs*.72,w*1.1/Math.max(2,on.length*.95)),4,16); s+=`<text class="ugo${dl||isStay(u)?'':' unset'}" x="${w/2}" y="${d+f2*.9}" font-size="${f2.toFixed(1)}">${esc(on)}</text>` } }
   if(flags.ghost){ const on='→ '+lastLabel(u); const f2=clamp(Math.min(fs*.72,w*1.1/Math.max(2,on.length*.95)),4,16); s+=`<text class="ugo" x="${w/2}" y="${d+f2*.9}" font-size="${f2.toFixed(1)}">${esc(on)}</text>` }
   return s+'</g>';
 }
@@ -1404,6 +1408,9 @@ $('#pchips').addEventListener('toggle',e=>{ const d=e.target; if(!d.classList||!
 function putSlot(i,k){ const other=1-i; if(k&&UI.slots[other]===k) UI.slots[other]=UI.slots[i]; UI.slots[i]=k;
   if(k&&!UI.slots[other]){ const q=parseKey(k); UI.slots[other]=`${q.id}:${q.room}:${q.layer==='a'?'b':'a'}`; if(q.layer==='b'&&i===0){ UI.slots=[UI.slots[1],UI.slots[0]] } if(q.layer==='a'&&i===1){ UI.slots=[UI.slots[1],UI.slots[0]] } }
   savePanels(); UI.fitted=true; renderPlan(); fitAll(); requestAnimationFrame(fitAll) }
+function goBadge(u){ const it=I(u.itemId), dp=destPlace(u); const st=isStay(u);
+  const head=st?'<span class="rb same">그대로 둠</span>':dp?`<span class="rb go">→ ${esc(destLabel(u))}</span>`:'<span class="rb wr">도착지 미정</span>';
+  return `${head}<label class="gosel"><span>어디로</span><select data-dest="${u.id}" aria-label="${esc(lbl(u))} 도착지">${destOptions(u)}</select></label>` }
 function routeBadge(u){ const it=I(u.itemId), dp=destPlace(u), op=it.placeId; const on=P(op)?.name||'', dn=dp?P(dp)?.name||'':'';
   if(it.isNew) return `<span class="rb new">신규 구매</span><span class="route">${dp?'→ '+esc(destLabel(u)):'놓을 곳 미정'}</span>`;
   if(!dp) return `<span class="rb wr">남음</span><span class="route">${esc(on)} 가구 · 도착지 미정</span>`;
@@ -1423,7 +1430,7 @@ function renderSelbar(){
   const u=U(sel.id); if(sel.slot==='tray'&&u){ const it=I(u.itemId); b.innerHTML=`<span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b>${esc(lbl(u))}</b><input class="pin" data-person="${u.id}" data-pl="${((UI.wlayer||'a')==='a'?'a':'b')}" value="${esc(personOf(u,((UI.wlayer||'a')==='a'?'a':'b'))||'')}" placeholder="${((UI.wlayer||'a')==='a'?'a':'b')==='a'?'지금 앉은 사람':'옮긴 뒤 앉을 사람'}" aria-label="${esc(lbl(u))} 앉는 사람" autocomplete="off">${dimInputs(it)}${assetPhotoBtn(it,'mini')}${it.isNew?'<span class="rb new">신규 구매</span>':''}`; b.hidden=false; return }
   if(!u||!slotPos(u,sel.slot)){UI.sel=null;b.hidden=true;return}
   const it=I(u.itemId); const dp=destPlace(u);
-  b.innerHTML=`<span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b>${esc(lbl(u))}</b><input class="pin" data-person="${u.id}" data-pl="${(sel.slot==='from'||sel.slot==='first'?'a':'b')}" value="${esc(personOf(u,(sel.slot==='from'||sel.slot==='first'?'a':'b'))||'')}" placeholder="${(sel.slot==='from'||sel.slot==='first'?'a':'b')==='a'?'지금 앉은 사람':'옮긴 뒤 앉을 사람'}" aria-label="${esc(lbl(u))} 앉는 사람" autocomplete="off">${dimInputs(it)}${assetPhotoBtn(it,'mini')}${routeBadge(u)}<button class="btn small" data-act="rot" title="R">↻ 90°</button><button class="btn small" data-act="rm" title="Delete 키">↩ 미배치 가구로</button>`;
+  b.innerHTML=`<span class="sw swc" data-swc="${it.id}" style="--c:${it.color}" title="눌러서 색 바꾸기"></span><b>${esc(lbl(u))}</b><input class="pin" data-person="${u.id}" data-pl="${(sel.slot==='from'||sel.slot==='first'?'a':'b')}" value="${esc(personOf(u,(sel.slot==='from'||sel.slot==='first'?'a':'b'))||'')}" placeholder="${(sel.slot==='from'||sel.slot==='first'?'a':'b')==='a'?'지금 앉은 사람':'옮긴 뒤 앉을 사람'}" aria-label="${esc(lbl(u))} 앉는 사람" autocomplete="off">${dimInputs(it)}${assetPhotoBtn(it,'mini')}${sel.slot==='from'||sel.slot==='first'?goBadge(u):routeBadge(u)}<button class="btn small" data-act="rot" title="R">↻ 90°</button><button class="btn small" data-act="rm" title="Delete 키">↩ 미배치 가구로</button>`;
   b.hidden=false;
 }
 

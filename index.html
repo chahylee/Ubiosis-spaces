@@ -108,7 +108,7 @@ h3{font-size:15px;margin:0}
 .plan.railoff .rail{display:none}
 .czoom{position:absolute;top:8px;z-index:4;display:flex;align-items:center;gap:3px;background:color-mix(in srgb,var(--raise) 94%,transparent);border:1px solid var(--line);border-radius:8px;padding:3px 6px;font-size:11.5px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .czoom.left{left:12px} .czoom.right{right:12px}
-.svgwrap.hasphotos .czoom.right{right:332px}
+.svgwrap.hasphotos .czoom.right{right:372px}
 .czoom button{border:0;background:none;width:20px;height:20px;border-radius:4px;color:var(--ink);font-size:13px;line-height:1}
 .czoom button:hover{background:var(--soft)}
 .czoom input{width:78px;accent-color:var(--accent)}
@@ -326,9 +326,9 @@ button.num.zero{opacity:.35}
 .rb.wr{background:var(--warn-soft);color:var(--warn)}
 .selbar em{color:var(--warn);font-style:normal}
 kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:3px;color:var(--muted)}
-.photos{position:absolute;right:0;top:0;bottom:0;width:320px;font-size:12px;display:flex;flex-direction:column;gap:10px;overflow:auto;padding:10px 8px;background:var(--panel);border-left:1px solid var(--line)}
-.svgwrap.hasphotos #plan{width:calc(100% - 320px)}
-.svgwrap.hasphotos .selbar{left:calc(50% - 160px)}
+.photos{position:absolute;right:0;top:0;bottom:0;width:360px;font-size:12px;display:flex;flex-direction:column;gap:10px;overflow:auto;padding:10px 8px;background:var(--panel);border-left:1px solid var(--line)}
+.svgwrap.hasphotos #plan{width:calc(100% - 360px)}
+.svgwrap.hasphotos .selbar{left:calc(50% - 180px)}
 .nt-sec{display:grid;gap:6px}
 #nMemo{width:100%;box-sizing:border-box;resize:vertical;min-height:240px;font:inherit;font-size:12.5px;line-height:1.5;padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:var(--raise);color:var(--ink)}
 .nt-hd{display:flex;align-items:baseline;gap:6px}.nt-cnt{margin-left:auto;font-size:11.5px;color:var(--muted)}
@@ -343,6 +343,17 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 @media (hover:none){.nt-x{opacity:.6}}
 .nt-add{display:grid;grid-template-columns:1fr auto;gap:4px}.nt-add input{min-width:0;font-size:12.5px}
 .nt-empty{margin:0;font-size:11.5px}
+.nt-bar{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px;border:1px solid var(--line);border-radius:8px;background:var(--raise);position:sticky;top:-10px;z-index:2}
+.nt-bar>button{border:1px solid transparent;background:none;border-radius:6px;padding:3px 8px;font-size:12.5px;color:var(--ink);cursor:pointer}
+.nt-bar>button:hover{border-color:var(--line);background:var(--bg)}
+.nt-sw{display:inline-flex;gap:3px;padding:0 4px;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.nt-sw button{width:18px;height:18px;border-radius:50%;border:2px solid var(--bg);outline:1px solid var(--line);background:var(--sw);padding:0;cursor:pointer}
+.nt-sw button:hover{outline:2px solid var(--ink)}
+.nt-ed-wrap{flex:1 1 auto;display:flex;min-height:300px}
+.nt-ed{flex:1;overflow:auto;font-size:13px;line-height:1.6;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--raise);color:var(--ink);outline:none;white-space:pre-wrap;word-break:break-word}
+.nt-ed:focus{border-color:var(--ink)}
+.nt-ed:empty::before{content:attr(data-ph);color:var(--muted)}
+.nt-ot{word-break:break-word}
 .nt-pub{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);border:1px solid var(--line);border-radius:12px;padding:1px 8px 1px 5px;cursor:pointer;background:var(--raise)}.nt-pub input{margin:0;width:13px;height:13px}.nt-pub.on{color:var(--accent);border-color:var(--accent)}
 .nt-others{display:grid;gap:6px}.nt-o{border-left:3px solid var(--line);padding:2px 0 2px 8px}.nt-on{font-size:11.5px;font-weight:600}.nt-ot{white-space:pre-wrap;font-size:12px;color:var(--ink);margin-top:2px}.nt-err{color:#c0392b;font-size:11.5px}
 .nt-old{display:grid;gap:5px;padding:8px;border:1px dashed var(--line);border-radius:7px}.nt-oldt{white-space:pre-wrap;font-size:12px;color:var(--muted)}
@@ -1436,52 +1447,58 @@ function startNotes(){ if(NOTES.started) return; if(Cloud.on&&!Cloud.user) retur
     Cloud.db.collection('pubnotes').onSnapshot(snap=>{ const o={}; snap.docs.forEach(d=>{ if(d.id!==myEmail()) o[d.id]=d.data() }); NOTES.others=o; renderPhotos() },e=>console.error(e)) } // 공개한 메모: 모두 읽기, 본인만 쓰기
   else Store.get('mynotes').then(v=>{ if(!NOTES.t){ NOTES.memos=(v&&v.memos)||(v&&!v.memos?v:{})||{}; if(mergeMemos()) saveNotes() } renderPhotos() }) }
 /* 예전에 공간별로 쓴 메모가 있으면 전체 메모 하나로 합침 (공간 이름을 머리말로) */
-function mergeMemos(){ if(Cloud.on&&!Cloud.ready) return false; const ks=Object.keys(NOTES.memos).filter(k=>k!==MK&&NOTES.memos[k]); if(!ks.length) return false; const parts=NOTES.memos[MK]?[NOTES.memos[MK]]:[]; let pub=false;
-  for(const k of ks){ parts.push(`[${P(k)?.name||'공간'}]\n${NOTES.memos[k]}`); if(NOTES.pub[k]) pub=true; delete NOTES.memos[k]; delete NOTES.pub[k] } NOTES.memos[MK]=parts.join('\n\n'); if(pub) NOTES.pub[MK]=true; return true }
+function mergeMemos(){ if(Cloud.on&&!Cloud.ready) return false; const ks=Object.keys(NOTES.memos).filter(k=>k!==MK&&k!==MH&&NOTES.memos[k]); if(!ks.length) return false; const add=[]; let pub=false;
+  for(const k of ks){ add.push(`[${P(k)?.name||'공간'}]\n${NOTES.memos[k]}`); if(NOTES.pub[k]) pub=true; delete NOTES.memos[k]; delete NOTES.pub[k] }
+  const t=add.join('\n\n'); if(NOTES.memos[MH]!=null) NOTES.memos[MH]+=(NOTES.memos[MH]?'<br><br>':'')+txt2html(t); NOTES.memos[MK]=(NOTES.memos[MK]?NOTES.memos[MK]+'\n\n':'')+t; if(pub) NOTES.pub[MK]=true; return true }
 function setMyMemo(pid,v){ if(v) NOTES.memos[pid]=v; else delete NOTES.memos[pid]; clearTimeout(NOTES.t); NOTES.t=setTimeout(saveNotes,700) }
 async function saveNotes(){ clearTimeout(NOTES.t); NOTES.t=null; const r=myNotesRef();
-  try{ if(r){ const pubM={}; for(const k of Object.keys(NOTES.pub)) if(NOTES.pub[k]&&NOTES.memos[k]) pubM[k]=NOTES.memos[k];
+  try{ if(r){ const pubM={}; if(NOTES.pub[MK]){ pubM[MH]=memoHtml(); }
       await r.set({memos:NOTES.memos,pub:NOTES.pub,at:Date.now()});
       await Cloud.db.collection('pubnotes').doc(myEmail()).set({name:(Cloud.user.displayName||myEmail().split('@')[0]),memos:pubM,at:Date.now()}) }
     else await Store.set('mynotes',{memos:NOTES.memos}); NOTES.err=false }catch(e){ console.error(e); NOTES.err=true }
   const el=$('#nMemoErr'); if(el){ el.hidden=!NOTES.err; el.textContent='메모를 저장하지 못했어요. 관리자에게 Firebase 규칙 업데이트를 부탁하세요.' } }
-const MK='*'; // 메모는 공간과 상관없는 '전체 메모' 하나 (사람마다)
-function renderPhotos(){ // 배치판·공간 작업 오른쪽 창: 내 전체 메모(나만/공개) + 공간 작업에서는 그 공간의 확인할 것(모두 공유)
+const MK='*', MH='*h'; // 메모는 공간과 상관없는 '전체 메모' 하나(사람마다). MH = 글자색·가로줄이 들어간 서식 메모(HTML), MK = 예전 글자만 메모
+const txt2html=t=>esc(t||'').replace(/\n/g,'<br>');
+function memoHtml(){ return NOTES.memos[MH]!=null?NOTES.memos[MH]:txt2html(NOTES.memos[MK]) }
+/* 서식 메모 정리: 글자색·가로줄·굵게만 남기고 나머지 태그·속성은 버림 (다른 사람이 공개한 메모도 이걸 거쳐서 보여 줌) */
+function cleanMemo(html){ const t=document.createElement('template'); t.innerHTML=String(html||''); const OK=new Set(['DIV','P','BR','SPAN','FONT','S','STRIKE','DEL','B','STRONG','I','EM','U']);
+  const walk=n=>{ for(const c of [...n.childNodes]){ if(c.nodeType===3) continue; if(c.nodeType!==1||!OK.has(c.tagName)){ if(c.nodeType===1&&!['SCRIPT','STYLE','IFRAME','OBJECT'].includes(c.tagName)){ walk(c); c.replaceWith(...c.childNodes) } else c.remove(); continue }
+      const col=c.getAttribute('color'), st=c.style; const keep={color:st.color||'',dec:(st.textDecorationLine||st.textDecoration||'').includes('line-through'),bold:/bold|[6-9]00/.test(st.fontWeight||'')};
+      for(const a of [...c.attributes]) c.removeAttribute(a.name); if(c.tagName==='FONT'&&col&&/^#?[0-9a-z]+$/i.test(col)) c.setAttribute('color',col);
+      if(keep.color&&/^(rgb|#)[0-9a-z(),.\s]*\)?$/i.test(keep.color)) c.style.color=keep.color; if(keep.dec) c.style.textDecoration='line-through'; if(keep.bold) c.style.fontWeight='700'; walk(c) } };
+  walk(t.content); return t.innerHTML }
+const MCOL=[['#1a1a1a','검정'],['#dc2626','빨강'],['#ea580c','주황'],['#15803d','초록'],['#1f5fd0','파랑'],['#7c3aed','보라'],['#9ca3af','회색']];
+function renderPhotos(){ // 배치판·공간 작업 오른쪽 창: 내 전체 메모(글자색·가로줄 편집, 나만/공개) + 다른 사람이 공개한 메모
   startNotes(); if(!NOTES.t&&mergeMemos()) saveNotes();
   const box=$('#photos'); const can=UI.view==='plan'||UI.view==='space'; const show=can&&!UI.photosOff;
   $('#photosTab').hidden=!(can&&UI.photosOff);
-  $('#svgwrap').classList.toggle('hasphotos',show); box.hidden=!show; if(!show){ box.innerHTML=''; box.dataset.pid=''; box.dataset.k=''; return }
-  const pid=UI.view==='space'&&UI.focus&&P(UI.focus)?UI.focus:''; const p=pid?P(pid):null, ro=Cloud.on&&!canEdit(), cks=(p&&p.checks)||[], done=cks.filter(c=>c.done).length;
+  $('#svgwrap').classList.toggle('hasphotos',show); box.hidden=!show; if(!show){ box.innerHTML=''; box.dataset.pid=''; return }
+  const pid=UI.view==='space'&&UI.focus&&P(UI.focus)?UI.focus:''; const p=pid?P(pid):null;
   if(!$('#nMemo')){ box.innerHTML=`<div class="ph-head"><b class="ph-title">내 메모</b><label class="nt-pub" id="nPubL" title="켜면 다른 사람도 이 메모를 볼 수 있어요 (고치는 건 나만)"><input type="checkbox" id="nPub"> <span id="nPubT">🔒 나만</span></label><button id="photosOff" title="접기">접기 ▶</button></div>
-      <div class="nt-sec"><textarea id="nMemo" rows="12" aria-label="내 메모"></textarea><span id="nMemoErr" class="hint nt-err" hidden></span></div><div id="nOthers" class="nt-others" hidden></div><div id="nOld" class="nt-old" hidden></div>
-      <div class="nt-sec" id="nChk"><div class="nt-hd"><b class="ph-title">확인할 것 · <span class="nt-place"></span></b><span id="nCnt" class="nt-cnt"></span></div><div id="nList" class="nt-list"></div>
-      <form id="nAddF" class="nt-add" autocomplete="off"><input id="nAdd" placeholder="예: 콘센트 위치 확인" aria-label="확인할 것 추가"><button class="btn small">추가</button></form></div>` }
+      <div class="nt-bar" role="toolbar" aria-label="메모 꾸미기"><button data-mcmd="strikeThrough" title="가로줄 긋기 (글자를 고르거나, 줄에 커서를 두고 누르면 그 줄 전체) · Ctrl+D"><s>가로줄</s></button><button data-mcmd="bold" title="굵게 · Ctrl+B"><b>B</b></button><span class="nt-sw">${MCOL.map(([c,n])=>`<button data-mcol="${c}" title="글자색 ${n}" aria-label="글자색 ${n}" style="--sw:${c}"></button>`).join('')}</span><button data-mcmd="removeFormat" title="고른 글자의 색·가로줄 지우기">지우기</button></div>
+      <div class="nt-ed-wrap"><div id="nMemo" class="nt-ed" contenteditable="true" role="textbox" aria-multiline="true" aria-label="내 메모"></div></div><span id="nMemoErr" class="hint nt-err" hidden></span><div id="nOthers" class="nt-others" hidden></div><div id="nOld" class="nt-old" hidden></div>` }
   box.dataset.pid=pid;
-  const ta=$('#nMemo'); if(document.activeElement!==ta) ta.value=NOTES.memos[MK]||''; const pub=!!NOTES.pub[MK];
+  const ed=$('#nMemo'); if(document.activeElement!==ed&&!NOTES.t){ const h=cleanMemo(memoHtml()); if(ed.innerHTML!==h) ed.innerHTML=h } const pub=!!NOTES.pub[MK];
   $('#nPubL').hidden=!Cloud.on; $('#nPub').checked=pub; $('#nPubT').textContent=pub?'👥 공개':'🔒 나만'; $('#nPubL').classList.toggle('on',pub);
-  ta.placeholder=pub?'이 메모는 다른 사람도 볼 수 있어요. 어느 화면에서나 같은 메모예요.':'메모를 적어 두세요. 어느 화면에서나 같은 메모예요. 나만 보여요.';
-  const oth=Object.values(NOTES.others).filter(o=>o&&o.memos&&o.memos[MK]); const ob=$('#nOthers'); ob.hidden=!oth.length;
-  if(oth.length) ob.innerHTML=`<b class="ph-title">다른 사람이 공개한 메모</b>`+oth.map(o=>`<div class="nt-o"><span class="nt-on">${esc(o.name||'')}</span><div class="nt-ot">${esc(o.memos[MK])}</div></div>`).join(''); const me=$('#nMemoErr'); me.hidden=!NOTES.err; if(NOTES.err) me.textContent='메모를 불러오거나 저장하지 못했어요. 관리자에게 Firebase 규칙 업데이트를 부탁하세요.';
-  const old=$('#nOld'); old.hidden=!(p&&p.memo); if(p&&p.memo) old.innerHTML=`<b class="ph-title">예전 공용 메모 (모두에게 보임)</b><div class="nt-oldt">${esc(p.memo)}</div><button class="btn small" data-nold>내 메모로 옮기기</button>`;
-  $('#nChk').hidden=!p; if(!p) return; box.querySelector('.nt-place').textContent=p.name;
-  $('#nAddF').hidden=ro; $('#nCnt').textContent=cks.length?`${done}/${cks.length} 완료`:'';
-  const ae=document.activeElement; if(ae&&ae.classList.contains('nt-t')&&$('#nList').contains(ae)) return; // 항목 글자 고치는 중에는 다시 그리지 않음
-  $('#nList').innerHTML=cks.length?cks.map(c=>`<div class="nt-item${c.done?' done':''}"><input type="checkbox" data-nck="${c.id}" ${c.done?'checked':''} ${ro?'disabled':''} aria-label="${esc(c.t)} 확인"><textarea class="nt-t" rows="1" data-nedit="${c.id}" ${ro?'readonly':''} aria-label="확인할 것">${esc(c.t)}</textarea>${ro?'<span></span>':`<button class="nt-x" data-ndel="${c.id}" title="지우기" aria-label="${esc(c.t)} 지우기">×</button>`}</div>`).join('')
-    :'<p class="hint nt-empty">아직 없어요. 아래에 적고 Enter를 누르세요.</p>'; ntFit() }
-function ntFit(){ const f=()=>$$('#nList .nt-t').forEach(t=>{ if(!t.offsetWidth) return; t.style.height='0px'; t.style.height=t.scrollHeight+'px' }); f(); requestAnimationFrame(f) }
+  ed.dataset.ph=pub?'이 메모는 다른 사람도 볼 수 있어요. 어느 화면에서나 같은 메모예요.':'메모를 적어 두세요. 어느 화면에서나 같은 메모예요. 나만 보여요.';
+  const oth=Object.values(NOTES.others).filter(o=>o&&o.memos&&(o.memos[MH]||o.memos[MK])); const ob=$('#nOthers'); ob.hidden=!oth.length;
+  if(oth.length) ob.innerHTML=`<b class="ph-title">다른 사람이 공개한 메모</b>`+oth.map(o=>`<div class="nt-o"><span class="nt-on">${esc(o.name||'')}</span><div class="nt-ot">${o.memos[MH]!=null?cleanMemo(o.memos[MH]):txt2html(o.memos[MK])}</div></div>`).join('');
+  const me=$('#nMemoErr'); me.hidden=!NOTES.err; if(NOTES.err) me.textContent='메모를 불러오거나 저장하지 못했어요. 관리자에게 Firebase 규칙 업데이트를 부탁하세요.';
+  const old=$('#nOld'); old.hidden=!(p&&p.memo); if(p&&p.memo) old.innerHTML=`<b class="ph-title">예전 공용 메모 (모두에게 보임)</b><div class="nt-oldt">${esc(p.memo)}</div><button class="btn small" data-nold>내 메모로 옮기기</button>` }
 const notePlace=()=>P($('#photos').dataset.pid||'');
-$('#photos').addEventListener('input',e=>{ if(e.target.classList.contains('nt-t')){ ntFit(); return } if(e.target.id!=='nMemo') return; setMyMemo(MK,e.target.value) });
+function memoChanged(){ const ed=$('#nMemo'); if(!ed) return; NOTES.memos[MH]=ed.textContent.trim()?ed.innerHTML:''; NOTES.memos[MK]=ed.innerText.replace(/\n$/,''); clearTimeout(NOTES.t); NOTES.t=setTimeout(saveNotes,700) }
+function memoCmd(cmd,val){ const ed=$('#nMemo'); if(!ed) return; const sel=getSelection(); if(!sel.rangeCount||!ed.contains(sel.anchorNode)){ ed.focus(); const r=document.createRange(); r.selectNodeContents(ed); r.collapse(false); sel.removeAllRanges(); sel.addRange(r) }
+  if(sel.isCollapsed&&cmd!=='removeFormat'&&sel.modify){ sel.modify('move','backward','lineboundary'); sel.modify('extend','forward','lineboundary') } // 아무것도 안 골랐으면 그 줄 전체
+  try{ document.execCommand('styleWithCSS',false,true) }catch(_){} document.execCommand(cmd,false,val); memoChanged() }
+$('#photos').addEventListener('mousedown',e=>{ if(e.target.closest('.nt-bar button')) e.preventDefault() }); // 버튼을 눌러도 고른 글자가 풀리지 않게
+$('#photos').addEventListener('input',e=>{ if(e.target.id==='nMemo') memoChanged() });
+$('#photos').addEventListener('paste',e=>{ if(!e.target.closest('#nMemo')) return; e.preventDefault(); const t=(e.clipboardData||window.clipboardData).getData('text/plain'); document.execCommand('insertText',false,t) }); // 붙여 넣기는 글자만
+$('#photos').addEventListener('keydown',e=>{ if(!e.target.closest('#nMemo')) return; if((e.ctrlKey||e.metaKey)&&!e.altKey&&e.key.toLowerCase()==='d'){ e.preventDefault(); memoCmd('strikeThrough') } });
 $('#photos').addEventListener('focusout',e=>{ if(e.target.id==='nMemo'&&NOTES.t) saveNotes() });
-$('#photos').addEventListener('submit',e=>{ if(e.target.id!=='nAddF') return; e.preventDefault(); const p=notePlace(), inp=$('#nAdd'), t=inp.value.trim(); if(!p||!t) return;
-  (p.checks||(p.checks=[])).push({id:uid(),t,done:false}); inp.value=''; save(); renderPhotos(); inp.focus() });
-$('#photos').addEventListener('change',e=>{ const p=notePlace(); if(!p) return; const d=e.target.dataset;
-  if(e.target.id==='nPub'){ if(e.target.checked) NOTES.pub[MK]=true; else delete NOTES.pub[MK]; saveNotes(); renderPhotos(); toast(e.target.checked?'이 메모를 공개했어요. 다른 사람도 볼 수 있어요.':'이 메모를 나만 보게 바꿨어요.'); return }
-  if(d.nck){ const c=(p.checks||[]).find(c=>c.id===d.nck); if(c){ c.done=e.target.checked; save(); renderPhotos() } }
-  else if(d.nedit){ const c=(p.checks||[]).find(c=>c.id===d.nedit); if(!c) return; const t=e.target.value.trim(); if(t) c.t=t; else p.checks=p.checks.filter(x=>x!==c); save(); e.target.blur(); renderPhotos() } });
-$('#photos').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.classList.contains('nt-t')){ e.preventDefault(); e.target.blur() } });
-$('#photos').addEventListener('focusout',e=>{ if(e.target.classList&&e.target.classList.contains('nt-t')) setTimeout(renderPhotos,0) });
-$('#photos').addEventListener('click',e=>{ if(e.target.closest('[data-nold]')){ const p=notePlace(); if(!p||!p.memo) return; const cur=NOTES.memos[MK]||''; setMyMemo(MK,(cur?cur+'\n':'')+p.memo); saveNotes(); if(!(Cloud.on&&!canEdit())){ delete p.memo; save() } renderPhotos(); return }
-  const b=e.target.closest('[data-ndel]'); if(!b) return; const p=notePlace(); if(!p) return; p.checks=(p.checks||[]).filter(c=>c.id!==b.dataset.ndel); save(); renderPhotos() });
+$('#photos').addEventListener('change',e=>{
+  if(e.target.id==='nPub'){ if(e.target.checked) NOTES.pub[MK]=true; else delete NOTES.pub[MK]; saveNotes(); renderPhotos(); toast(e.target.checked?'이 메모를 공개했어요. 다른 사람도 볼 수 있어요.':'이 메모를 나만 보게 바꿨어요.') } });
+$('#photos').addEventListener('click',e=>{ const b=e.target.closest('.nt-bar button'); if(b){ if(b.dataset.mcol) memoCmd('foreColor',b.dataset.mcol); else memoCmd(b.dataset.mcmd); return }
+  if(e.target.closest('[data-nold]')){ const p=notePlace(); if(!p||!p.memo) return; NOTES.memos[MH]=memoHtml()+(memoHtml()?'<br>':'')+txt2html(p.memo); NOTES.memos[MK]=(NOTES.memos[MK]?NOTES.memos[MK]+'\n':'')+p.memo; const ed=$('#nMemo'); if(ed) ed.innerHTML=cleanMemo(NOTES.memos[MH]); saveNotes(); if(!(Cloud.on&&!canEdit())){ delete p.memo; save() } renderPhotos() } });
 async function addPhotos(pid,files,dir,ph){
   let n=0; const asset=pid==='@asset'; ph=ph==='after'?'after':'before'; const same=p=>p.placeId===pid&&p.dir===dir&&(asset||phOf(p)===ph);
   for(const f of files.slice(0,1)){ try{ const url=URL.createObjectURL(f); const img=new Image(); await new Promise((r,j)=>{img.onload=r;img.onerror=j;img.src=url}); const k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight)); const c=document.createElement('canvas'); c.width=Math.round(img.naturalWidth*k); c.height=Math.round(img.naturalHeight*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url); S.photos=S.photos.filter(p=>!same(p)); const o={id:uid(),placeId:pid,dir,img:c.toDataURL('image/jpeg',.82),name:f.name}; if(!asset) o.ph=ph; S.photos.push(o); n++ }catch(e){} }
@@ -2185,7 +2202,7 @@ document.addEventListener('submit',e=>{ if(e.target.id==='qadd'){ e.preventDefau
     UI.railTab=pid; /* 도면 화면(변경 전/후)은 바꾸지 않음 */ commit(); if(UI.view==='space'){ UI.fitted=true; fitAll() } toast(isNew?`신규 구매 ${nm} ${q}개를 추가했어요. 변경 후 화면에서 놓을 자리에 끌어 놓으세요.`:`${nm} ${q}개를 기존 가구로 추가했어요. 미배치 가구 칸에서 도면에 끌어 놓으세요.`); requestAnimationFrame(()=>{ const n=$('#qaName'); if(n) n.focus() }); return }
  if(e.target.id==='formSpace'){ e.preventDefault(); const nm=$('#newSpace').value.trim(); if(!nm){ $('#newSpace').focus(); return } S.places.push({id:uid(),name:nm}); commit(); requestAnimationFrame(()=>$('#newSpace')&&$('#newSpace').focus()) } });
 document.addEventListener('keydown',e=>{
-  if(e.target.closest('input,select,textarea')||$('dialog[open]')) return;
+  if(e.target.closest('input,select,textarea,[contenteditable]')||$('dialog[open]')) return;
   if(UI.view!=='plan'&&UI.view!=='space') return;
   if((e.ctrlKey||e.metaKey)&&!e.altKey&&UI.sel&&UI.sel.slot!=='tray'&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){ e.preventDefault(); const st=e.shiftKey?10:1; const d={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,-st],ArrowDown:[0,st]}[e.key]; nudgeSel(d[0],d[1]) }
   else if(e.altKey&&UI.sel&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){ e.preventDefault(); rotateSel(e.key==='ArrowLeft'||e.key==='ArrowDown'?-1:1) }
@@ -2210,7 +2227,7 @@ function measureSVG(k){ const m=UI.measure; const P=m.pts.map(q=>({...toW(q.c,q.
   return s }
 planSvg.addEventListener('pointermove',e=>{ const m=UI.measure; if(!m||m.done||!m.pts.length||V.pinching) return; m.hover=V.pt(e); m.shift=e.shiftKey; renderOverlay() });
 planSvg.addEventListener('dblclick',e=>{ const m=UI.measure; if(!m||!m.pts.length) return; e.preventDefault(); m.done=true; m.hover=null; renderOverlay() });
-document.addEventListener('keydown',e=>{ const m=UI.measure; if(!m) return; if(e.key==='Shift'){ m.shift=true; renderOverlay() } if(e.key==='Enter'&&!e.target.closest('input,select,textarea')){ m.done=true; m.hover=null; renderOverlay() } if(e.key==='Backspace'&&!e.target.closest('input,select,textarea')&&!m.done&&m.pts.length){ e.preventDefault(); e.stopImmediatePropagation(); m.pts.pop(); renderOverlay() } },true);
+document.addEventListener('keydown',e=>{ const m=UI.measure; if(!m) return; if(e.key==='Shift'){ m.shift=true; renderOverlay() } if(e.key==='Enter'&&!e.target.closest('input,select,textarea,[contenteditable]')){ m.done=true; m.hover=null; renderOverlay() } if(e.key==='Backspace'&&!e.target.closest('input,select,textarea,[contenteditable]')&&!m.done&&m.pts.length){ e.preventDefault(); e.stopImmediatePropagation(); m.pts.pop(); renderOverlay() } },true);
 document.addEventListener('keyup',e=>{ if(e.key==='Shift'&&UI.measure){ UI.measure.shift=false; renderOverlay() } });
 $('#btnMeasure').onclick=toggleMeasure;
 try{ UI.railOff=localStorage.getItem('mb-railoff')==='1'; UI.photosOff=false; localStorage.removeItem('mb-photosoff') }catch(e){} // 메모 창은 들어올 때마다 열려 있게
@@ -2443,7 +2460,7 @@ calSvg.addEventListener('pointerdown',e=>{ if(!(Cal.mode==='scale'||Cal.mode==='
   const mv=ev=>{ const p=CV.pt(ev,inv); let q={x:clamp(q0.x+p.x-p0.x,0,Cal.m.w),y:clamp(q0.y+p.y-p0.y,0,Cal.m.h)}; if(Cal.pts.length===2){ q=snapAxis(Cal.pts[1-hit],q) } Cal.pts[hit]=q; loupeEv={x:ev.clientX,y:ev.clientY,t:ev.pointerType==='touch'}; ptsChanged() };
   const up=()=>{ calSvg.removeEventListener('pointermove',mv); calSvg.removeEventListener('pointerup',up); calSvg.removeEventListener('pointercancel',up) };
   calSvg.addEventListener('pointermove',mv); calSvg.addEventListener('pointerup',up); calSvg.addEventListener('pointercancel',up) });
-document.addEventListener('keydown',e=>{ if(!$('#dlgCal').open||Cal.selPt==null||!Cal.pts[Cal.selPt]) return; if(e.target.closest('input,select,textarea')) return; const st=e.shiftKey?10:1; const d={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,-st],ArrowDown:[0,st]}[e.key]; if(!d) return; e.preventDefault(); const q=Cal.pts[Cal.selPt]; Cal.pts[Cal.selPt]={x:clamp(q.x+d[0],0,Cal.m.w),y:clamp(q.y+d[1],0,Cal.m.h)}; ptsChanged() });
+document.addEventListener('keydown',e=>{ if(!$('#dlgCal').open||Cal.selPt==null||!Cal.pts[Cal.selPt]) return; if(e.target.closest('input,select,textarea,[contenteditable]')) return; const st=e.shiftKey?10:1; const d={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,-st],ArrowDown:[0,st]}[e.key]; if(!d) return; e.preventDefault(); const q=Cal.pts[Cal.selPt]; Cal.pts[Cal.selPt]={x:clamp(q.x+d[0],0,Cal.m.w),y:clamp(q.y+d[1],0,Cal.m.h)}; ptsChanged() });
 let calRaf=0; /* */ calSvg.addEventListener('pointermove',e=>{ if(!Cal.m||Cal.pts.length!==1||!(Cal.mode==='scale'||Cal.mode==='check')) return; const p=CV.pt(e); Cal.hover={x:clamp(p.x,0,Cal.m.w),y:clamp(p.y,0,Cal.m.h)}; if(!calRaf) calRaf=requestAnimationFrame(()=>{ calRaf=0; calOverlay() }) });
 calSvg.addEventListener('pointerleave',()=>{ Cal.hover=null; calOverlay() });
 function calStatus(){ const m=Cal.m; const same=S.maps.filter(o=>o!==m&&cal(o)&&o.src===m.src);

@@ -1103,7 +1103,7 @@ function centerX(){ const L=UI.L||[]; if(!L.length) return null; if(UI.view==='s
   if(a.length&&b.length) return (Math.max(...a.map(e=>e.ox+e.w))+Math.min(...b.map(e=>e.ox)))/2;
   return (Math.min(...L.map(e=>e.ox))+Math.max(...L.map(e=>e.ox+e.w)))/2 }
 function hExt(){ const es=['L','R'].map(colExt).filter(Boolean); if(!es.length) return null; const pad=40; return {x1:Math.min(...es.map(e=>e.x1))-pad, x2:Math.max(...es.map(e=>e.x2))+pad} }
-{ const baseApply=V.apply; V.apply=()=>{ const cx=centerX(); if(cx!=null){ const base=cx-V.w/2; let x=base+(UI.hx||0); const h=hExt(); if(h&&h.x2-h.x1>V.w*1.01){ x=clamp(x,Math.min(h.x1,base),Math.max(h.x2-V.w,base)) } else x=base; UI.hx=x-base; V.x=x } baseApply() } }
+{ const baseApply=V.apply; V.apply=()=>{ const cx=centerX(); if(cx!=null){ const base=cx-V.w/2; let x=base+(UI.hx||0); const h0=hExt(); const pad=UI.view==='plan'&&h0?V.w/((planSvg.getBoundingClientRect().width)||1000)*48:0; /* 배치판: 확대해도 양쪽 끝까지 밀면 약 48px 여백이 남게 */ const h=h0&&{x1:h0.x1-pad,x2:h0.x2+pad}; if(h&&h.x2-h.x1>V.w*1.01){ x=clamp(x,Math.min(h.x1,base),Math.max(h.x2-V.w,base)) } else x=base; UI.hx=x-base; V.x=x } baseApply() } }
 function setHx(v){ UI.hx=v; saveVS(); V.apply(); renderOverlay(); updateSbars() }
 const GAP=70; const gapFor=w=>Math.max(220,Math.round(w*.16));
 const off=e=>(UI.scroll&&UI.scroll[e.col])||0;

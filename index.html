@@ -330,7 +330,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .svgwrap.hasphotos #plan{width:calc(100% - 232px)}
 .svgwrap.hasphotos .selbar{left:calc(50% - 116px)}
 .nt-sec{display:grid;gap:6px}
-#nMemo{width:100%;box-sizing:border-box;resize:vertical;min-height:110px;font:inherit;font-size:12.5px;line-height:1.5;padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:var(--raise);color:var(--ink)}
+#nMemo{width:100%;box-sizing:border-box;resize:vertical;min-height:240px;font:inherit;font-size:12.5px;line-height:1.5;padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:var(--raise);color:var(--ink)}
 .nt-hd{display:flex;align-items:baseline;gap:6px}.nt-cnt{margin-left:auto;font-size:11.5px;color:var(--muted)}
 .nt-list{display:grid;gap:2px}
 .nt-item{display:grid;grid-template-columns:18px 1fr 18px;gap:5px;align-items:start;padding:3px 2px;border-radius:6px}
@@ -1450,7 +1450,7 @@ function renderPhotos(){ // 공간 작업 오른쪽 창: 내 메모(나만) + �
   const p=P(pid), ro=Cloud.on&&!canEdit(), cks=p.checks||[], done=cks.filter(c=>c.done).length;
   if(box.dataset.pid!==pid||!$('#nMemo')){ box.dataset.pid=pid;
     box.innerHTML=`<div class="ph-head"><b class="ph-title nt-place"></b><button id="photosOff" title="접기">접기 ▶</button></div>
-      <div class="nt-sec"><div class="nt-hd"><b class="ph-title">내 메모</b><label class="nt-pub" id="nPubL" title="켜면 다른 사람도 이 메모를 볼 수 있어요 (고치는 건 나만)"><input type="checkbox" id="nPub"> <span id="nPubT">🔒 나만</span></label></div><textarea id="nMemo" rows="6" aria-label="내 메모"></textarea><span id="nMemoErr" class="hint nt-err" hidden></span></div><div id="nOthers" class="nt-others" hidden></div><div id="nOld" class="nt-old" hidden></div>
+      <div class="nt-sec"><div class="nt-hd"><b class="ph-title">내 메모</b><label class="nt-pub" id="nPubL" title="켜면 다른 사람도 이 메모를 볼 수 있어요 (고치는 건 나만)"><input type="checkbox" id="nPub"> <span id="nPubT">🔒 나만</span></label></div><textarea id="nMemo" rows="12" aria-label="내 메모"></textarea><span id="nMemoErr" class="hint nt-err" hidden></span></div><div id="nOthers" class="nt-others" hidden></div><div id="nOld" class="nt-old" hidden></div>
       <div class="nt-sec"><div class="nt-hd"><b class="ph-title">확인할 것</b><span id="nCnt" class="nt-cnt"></span></div><div id="nList" class="nt-list"></div>
       <form id="nAddF" class="nt-add" autocomplete="off"><input id="nAdd" placeholder="예: 콘센트 위치 확인" aria-label="확인할 것 추가"><button class="btn small">추가</button></form></div>` }
   box.querySelector('.nt-place').textContent=p.name;

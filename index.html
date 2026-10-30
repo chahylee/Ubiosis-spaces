@@ -120,6 +120,34 @@ h3{font-size:15px;margin:0}
 .layerseg button{border:0;background:none;border-radius:7px;padding:5px 12px;font-size:12.5px;font-weight:500;color:var(--muted)}
 .layerseg button.on[data-wl="a"]{background:var(--ink);color:var(--bg)}
 .layerseg button.on[data-wl="b"]{background:var(--accent);color:var(--accent-ink)}
+.php{display:inline-block;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap}
+.php.a{background:var(--ink);color:var(--bg)}.php.b{background:var(--accent);color:var(--accent-ink)}
+.phbadge{align-items:center;gap:8px;padding:4px 10px 4px 4px;font-size:12.5px;color:var(--ink);cursor:pointer}
+.phbadge .phs{color:var(--muted)}.phbadge .phc{color:var(--muted);font-size:11.5px;margin-left:4px}
+.phbadge:hover .phc{color:var(--ink)}
+.mappick{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--raise);border-radius:9px;padding:4px 10px 4px 4px;font-size:13px;color:var(--ink);max-width:420px}
+.mappick .mpn{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mappick .mpc{color:var(--muted);font-size:12px;white-space:nowrap}.mappick:hover{border-color:var(--ink)}
+.mappick.b{border-color:var(--accent)}
+#dlgMap{width:min(940px,calc(100vw - 24px))}
+#dlgMap .dbody{padding:14px 18px 18px}
+#mapDlgBody{display:grid;gap:18px}
+.mgroup h3{margin:0 0 8px;font-size:15px}
+.mcards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:640px){.mcards{grid-template-columns:1fr}}
+.mcard{border:2px solid var(--line);border-radius:10px;padding:8px;display:grid;gap:8px;background:var(--raise)}
+.mcard.on{border-color:var(--ink)}.mcard.b.on{border-color:var(--accent)}
+.mthumb{position:relative;border:0;padding:0;background:#fff;border-radius:7px;overflow:hidden;display:block;width:100%;cursor:pointer}
+.mthumb img{width:100%;height:150px;object-fit:contain;display:block}
+.mthumb .mtag{position:absolute;left:6px;top:6px;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.92);padding:3px 8px 3px 3px;border-radius:8px;font-size:12px;color:#333;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.mthumb .mnew{position:absolute;right:6px;top:6px;background:#1f5fd0;color:#fff;font-size:11px;padding:2px 7px;border-radius:6px}
+.mthumb:hover img{opacity:.85}
+.mrooms{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.mchip{border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:3px 10px;font-size:12.5px;color:var(--ink)}
+.mchip:hover{border-color:var(--ink)}.mchip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.mcard.b .mchip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.mcm{font-size:11.5px;color:var(--muted);margin-left:4px}
+.mnone{display:flex;flex-wrap:wrap;gap:6px}
 .traybg{fill:color-mix(in srgb,var(--panel) 85%,transparent);stroke:var(--line);stroke-width:1.5;stroke-dasharray:8 6;vector-effect:non-scaling-stroke}
 .trayhdr{fill:var(--muted);font:600 22px var(--sans)}
 .trayhdr.new{fill:#b0125b}
@@ -627,7 +655,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
           </div>
         </div>
         <div class="svgwrap" id="svgwrap">
-          <div class="layerseg" id="layerSeg" hidden><button data-wl="a">변경 전 (기존)</button><button data-wl="b">변경 후</button></div>
+          <button class="layerseg phbadge" id="layerSeg" data-mapdlg hidden title="다른 도면이나 변경 전/후로 바꾸기"></button>
           <div class="czoom left" id="czL" hidden><span class="sl">왼쪽</span><button data-cz="L:out" aria-label="왼쪽 축소">−</button><input type="range" data-czr="L" min="-2.3" max="3" step="0.01" value="0" aria-label="왼쪽 배율"><button data-cz="L:in" aria-label="왼쪽 확대">+</button><span class="czp mono">100%</span><button data-cz="L:reset" title="100%로">↺</button></div>
           <div class="czoom right" id="czR" hidden><span class="sl">오른쪽</span><button data-cz="R:out" aria-label="오른쪽 축소">−</button><input type="range" data-czr="R" min="-2.3" max="3" step="0.01" value="0" aria-label="오른쪽 배율"><button data-cz="R:in" aria-label="오른쪽 확대">+</button><span class="czp mono">100%</span><button data-cz="R:reset" title="100%로">↺</button></div>
           <button id="railTab" class="railtab" hidden title="자산 목록 펼치기">▶<span>자산 목록</span></button>
@@ -677,6 +705,13 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
       </aside>
     </div>
     <div class="df"><span class="note">다음 단계: 잘라낸 도면마다 축척을 맞춰요.</span><button class="btn primary" id="cropDone">완료</button></div>
+  </div>
+</dialog>
+
+<dialog id="dlgMap" aria-labelledby="mapDlgTitle">
+  <div class="dlg">
+    <div class="dh"><h2 id="mapDlgTitle">작업할 도면 고르기</h2><button class="btn small x" data-close>닫기</button></div>
+    <div class="dbody"><p class="hint" style="margin:0 0 12px"><b>변경 전</b>은 지금 가구가 있는 모습, <b>변경 후</b>는 옮긴 뒤 배치예요. 그림을 누르면 공간 전체, 아래 이름을 누르면 그 방만 열려요.</p><div id="mapDlgBody"></div></div>
   </div>
 </dialog>
 
@@ -1225,7 +1260,7 @@ function renderPlan(){
   planSvg.classList.toggle('measuring',!!UI.measure);
   if(L.length&&!UI.fitted){ UI.fitted=true; requestAnimationFrame(fitAll) }
   renderOverlay(); renderStagebar(); renderSelbar(); renderPhotos(); updateSbars(); syncColZoom();
-  const ls=$('#layerSeg'); ls.hidden=!(UI.view==='space'&&L.length); $$('#layerSeg button').forEach(b=>b.classList.toggle('on',b.dataset.wl===(UI.wlayer||'a')));
+  const ls=$('#layerSeg'); ls.hidden=!(UI.view==='space'&&L.length); if(!ls.hidden){ const l=UI.wlayer||'a'; ls.className='layerseg phbadge '+l; ls.innerHTML=`<span class="php ${l}">${PHL[l].t}</span><span class="phs">${PHL[l].s}</span><span class="phc">바꾸기 ▾</span>` }
 }
 function fitAll(){ const L=UI.L; if(!L.length){ updateSbars(); return } UI.scroll={L:0,R:0}; UI.colz={L:1,R:1}; UI.hx=0; ['L','R'].forEach(c=>{ const g=$('#col'+c); if(g) g.setAttribute('transform',colTransform(c)) });
   const x1=Math.min(...L.map(e=>e.ox)), y1=Math.min(...L.map(e=>e.oy))-80, x2=Math.max(...L.map(e=>e.ox+e.w),UI.view==='space'&&UI.trayBox?UI.trayBox.x2:-Infinity);
@@ -1302,13 +1337,30 @@ function renderOverlay(){ fixLabels();
   if(UI.measure) s+=measureSVG(k);
   g.innerHTML=s;
 }
+const PHL={a:{t:'변경 전',s:'지금 가구가 있는 모습'},b:{t:'변경 후',s:'옮긴 뒤 배치'}};
+function workLabel(){ if(UI.room){ const m=M(UI.room.mapId), r=m&&roomsAll(m).find(r=>r.id===UI.room.roomId); return m?`${P(m.placeId)?.name||''} › ${mapNm(m)?mapNm(m)+' › ':''}${r?r.name:''}`:'' } return UI.focus&&P(UI.focus)?`${P(UI.focus).name} 전체`:'도면을 고르세요' }
+function mapPickBtn(){ const l=UI.wlayer||'a'; return `<button class="mappick ${l}" data-mapdlg title="작업할 공간·도면과 변경 전/후를 골라요"><span class="php ${l}">${PHL[l].t}</span><span class="mpn">${esc(workLabel())}</span><span class="mpc">도면 바꾸기 ▾</span></button>` }
+function openMapDlg(){ renderMapDlg(); $('#dlgMap').showModal(); const on=$('#dlgMap .mcard.on'); if(on) on.scrollIntoView({block:'nearest'}) }
+function renderMapDlg(){ const cur=UI.wlayer||'a'; let h='', none='';
+  for(const p of S.places){ const ms=S.maps.filter(m=>m.placeId===p.id&&cal(m)); if(!ms.length){ none+=`<button class="btn small" data-pick="p:${p.id}:${cur}">${esc(p.name)}</button>`; continue }
+    h+=`<section class="mgroup"><h3>${esc(p.name)}</h3><div class="mcards">`;
+    for(const l of ['a','b']){ const m0=ms[0], th=l==='b'&&hasB(m0)&&m0.imgB?m0.imgB:m0.img; const whole=UI.focus===p.id&&!UI.room&&cur===l;
+      let chips=''; for(const m of ms){ const v=viewOf(m,l); const rs=roomsOf(v); if(!rs.length) continue; chips+=(ms.length>1?`<span class="mcm">${esc(m.name)}</span>`:'')+rs.map(r=>`<button class="mchip${UI.room&&UI.room.mapId===m.id&&UI.room.roomId===r.id&&cur===l?' on':''}" data-pick="r:${m.id}:${r.id}:${l}">${esc(r.name)}</button>`).join('') }
+      h+=`<div class="mcard ${l}${whole||(UI.room&&ms.some(m=>m.id===UI.room.mapId)&&cur===l)?' on':''}"><button class="mthumb" data-pick="p:${p.id}:${l}"><img src="${th}" alt=""><span class="mtag"><span class="php ${l}">${PHL[l].t}</span>${PHL[l].s}</span>${l==='b'&&ms.some(hasB)?'<span class="mnew">새 도면</span>':''}</button>
+        <div class="mrooms"><button class="mchip${whole?' on':''}" data-pick="p:${p.id}:${l}">전체</button>${chips}</div></div>` }
+    h+='</div></section>' }
+  if(none) h+=`<section class="mgroup"><h3>도면 없는 공간</h3><div class="mnone">${none}</div></section>`;
+  $('#mapDlgBody').innerHTML=h||'<p class="hint">아직 축척을 맞춘 도면이 없어요. 공간·도면에서 도면을 추가하세요.</p>' }
+function pickWork(v){ const q=v.split(':'); const l=q[q.length-1]==='b'?'b':'a'; UI.wlayer=l; $('#dlgMap').close();
+  if(q[0]==='p') setFocus(q[1]); else setRoom(q[1]+':'+q[2]);
+  if(UI.view==='space'){ UI.fitted=true; renderAll(); fitAll(); requestAnimationFrame(fitAll) } }
 function renderStagebar(){
   let h='';
   if(UI.view==='space'){
     let o=''; for(const p of S.places){ const ms=S.maps.filter(m=>m.placeId===p.id&&cal(m)); if(!ms.length){ o+=`<option value="p:${p.id}" ${UI.focus===p.id?'selected':''}>${esc(p.name)} (도면 없음)</option>`; continue } o+=`<option value="p:${p.id}" ${UI.focus===p.id&&!UI.room?'selected':''}>${esc(p.name)} 전체</option>`;
       for(const m of ms) for(const r of roomsAll(m)) o+=`<option value="r:${m.id}:${r.id}" ${UI.room&&UI.room.roomId===r.id?'selected':''}>　└ ${mapNm(m)?esc(mapNm(m))+' › ':''}${esc(r.name)}</option>` }
     const unc=S.maps.filter(m=>!cal(m)).map(m=>`<button class="tchip need" data-cal="${m.id}"><b>${esc(P(m.placeId)?.name)}</b><span class="cm">${esc(m.name)}</span>축척 맞추기</button>`).join('');
-    h=o?`<div class="slots"><label class="slotsel"><span class="sl">작업할 공간</span><select id="wsel" data-wsel>${o}</select></label>${UI.room?`<button class="btn small" data-rename="room:${UI.room.mapId}:${UI.room.roomId}">방 이름 바꾸기</button>`:(UI.focus?`<button class="btn small" data-rename="place:${UI.focus}">공간 이름 바꾸기</button>`:'')}<button class="btn small" data-pptx title="지금 보이는 도면(변경 전/후)을 1/100 축척 PPT로">📄 PPT로 받기</button><button class="btn small${UI.selMode?' primary':''}" data-selmode title="켜면 가구를 톡 눌러 하나씩 더하고, 빈 곳을 끌어 범위로 고를 수 있어요 (태블릿용). 화면 이동은 두 손가락">${UI.selMode?'☑ 여러 개 선택 중':'☐ 여러 개 선택'}</button><button class="btn small" data-rot="-1" title="고른 가구를 왼쪽으로 90° (붙어 있는 것은 한 덩어리로)">↺ 왼쪽 90°</button><button class="btn small" data-rot="1" title="고른 가구를 오른쪽으로 90° (붙어 있는 것은 한 덩어리로) · 단축키 R">↻ 오른쪽 90°</button>${unc}</div>`:`<div class="slots"><span class="hint">축척을 맞춘 도면이 있는 공간이 없어요.</span>${unc}</div>`;
+    h=o?`<div class="slots">${mapPickBtn()}${UI.room?`<button class="btn small" data-rename="room:${UI.room.mapId}:${UI.room.roomId}">방 이름 바꾸기</button>`:(UI.focus?`<button class="btn small" data-rename="place:${UI.focus}">공간 이름 바꾸기</button>`:'')}<button class="btn small" data-pptx title="지금 보이는 도면(변경 전/후)을 1/100 축척 PPT로">📄 PPT로 받기</button><button class="btn small${UI.selMode?' primary':''}" data-selmode title="켜면 가구를 톡 눌러 하나씩 더하고, 빈 곳을 끌어 범위로 고를 수 있어요 (태블릿용). 화면 이동은 두 손가락">${UI.selMode?'☑ 여러 개 선택 중':'☐ 여러 개 선택'}</button><button class="btn small" data-rot="-1" title="고른 가구를 왼쪽으로 90° (붙어 있는 것은 한 덩어리로)">↺ 왼쪽 90°</button><button class="btn small" data-rot="1" title="고른 가구를 오른쪽으로 90° (붙어 있는 것은 한 덩어리로) · 단축키 R">↻ 오른쪽 90°</button>${unc}</div>`:`<div class="slots"><span class="hint">축척을 맞춘 도면이 있는 공간이 없어요.</span>${unc}</div>`;
   }
   else if(UI.room){ const m=M(UI.room.mapId), r=roomsAll(m).find(r=>r.id===UI.room.roomId); h=`<div class="slots"><button class="btn small" data-focus="">← 모든 공간</button><button class="btn small" data-focus="${m.placeId}">← ${esc(P(m.placeId)?.name)} 전체</button><span class="crumb">${esc(P(m.placeId)?.name)} › ${mapNm(m)?esc(mapNm(m))+' › ':''}<b>${esc(r?r.name:'')}</b></span></div>` }
   else if(UI.focus){ h=`<div class="slots"><button class="btn small" data-focus="">← 모든 공간</button><span class="crumb"><b>${esc(P(UI.focus)?.name)}</b> 전체 · 방 이름을 누르면 그 방만 보여요</span></div>` }
@@ -2033,6 +2085,8 @@ document.addEventListener('click',e=>{
   if(d.wl){ UI.wlayer=d.wl; UI.sel=null; UI.fitted=true; renderPlan(); fitAll(); return }
   if(d.rename){ const[k,...rest]=d.rename.split(':'); openRename(k,rest.join(':')); return }
   if(d.blank){ openBlank(d.blank,d.blankmap||null); return }
+  if(d.mapdlg!==undefined){ openMapDlg(); return }
+  if(d.pick){ pickWork(d.pick); return }
   if(d.cal){ openCal(d.cal); return }
   if(d.calb){ openCal(d.calb,'b'); return }
   if(d.aftmap){ const m=M(d.aftmap); if(!m) return; UI.mapTarget=m.placeId; UI.replaceMap=null; UI.afterMap=m.id; $('#fileMap').value=''; $('#fileMap').click(); return }

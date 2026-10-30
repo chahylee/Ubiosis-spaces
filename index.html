@@ -152,9 +152,9 @@ h3{font-size:15px;margin:0}
 .trayhdr{fill:var(--muted);font:600 22px var(--sans)}
 .trayhdr.new{fill:#b0125b}
 .ptag.tr.trn{fill:#7a6a55}
-.newtag rect{fill:#b0125b}
+.newtag rect{fill:#dc2626}
 .newtag text{fill:#fff;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--sans)}
-.newtagh{display:inline-block;font-size:10px;font-weight:600;color:#fff;background:#b0125b;border-radius:4px;padding:0 5px;line-height:1.5}
+.newtagh{display:inline-block;font-size:10px;font-weight:600;color:#fff;background:#dc2626;border-radius:4px;padding:0 5px;line-height:1.5}
 .qnew{display:flex;align-items:center;gap:5px;font-size:11.5px;white-space:nowrap} .qnew .hint{font-size:10.5px}
 .newtg{border:1px solid var(--line);background:none;color:var(--muted);border-radius:999px;font-size:10px;padding:0 6px;line-height:16px;cursor:pointer;flex:none} .newtg.on{background:#b0125b;border-color:#b0125b;color:#fff}
 .trayhdr.warn{fill:var(--warn);font-size:19px}
@@ -216,7 +216,7 @@ button.num.zero{opacity:.35}
 .ritem{padding:6px 2px 4px;border-bottom:1px dashed var(--line)}
 .ritem.selrow,.trow.selrow{background:var(--accent-soft)!important;box-shadow:inset 3px 0 0 var(--accent)} .ritem.rcomp{display:flex;align-items:center;gap:6px;padding:7px 4px;cursor:pointer;border-radius:6px} .ritem.rcomp:hover{background:var(--soft)}
 .rcomp b{flex:1;min-width:3em;word-break:keep-all;overflow-wrap:anywhere;line-height:1.25} .rcomp .rsz{font-size:11px;color:var(--muted)} .rcomp .rcnt{font-size:12px;font-weight:600;white-space:nowrap;min-width:2.6em;text-align:right} .rcomp .rsz{white-space:nowrap} .rcomp .noh{font-family:var(--sans);opacity:.7} .rcomp .rgo{color:var(--muted);font-size:15px}
-.newtag2{font-size:10.5px;padding:0 5px;border:1px solid var(--line);border-radius:999px;color:var(--muted);white-space:nowrap} .newtag2.on{color:#b0125b;border-color:currentColor}
+.newtag2{font-size:10.5px;padding:0 5px;border:1px solid var(--line);border-radius:999px;color:var(--muted);white-space:nowrap} .newtag2.on{color:#dc2626;border-color:currentColor}
 #dlgItem .ritem{border:0} #dlgItem .runits{max-height:55vh;overflow:auto}
 .rih{display:flex;align-items:center;gap:6px;padding:0 3px 3px}
 .rih .mono{font-size:10.5px;color:var(--muted)}
@@ -243,7 +243,8 @@ button.num.zero{opacity:.35}
 #ctxMenu{position:fixed;z-index:1000;min-width:180px;max-height:70vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:5px;display:grid;font-size:13px}
 #ctxMenu .cform{display:flex;gap:4px;padding:4px 6px} #ctxMenu .cform input{flex:1;min-width:0;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font:inherit;background:var(--raise);color:var(--ink)} #ctxMenu .cform button{all:unset;padding:4px 9px;border-radius:6px;background:var(--accent);color:var(--accent-ink);cursor:pointer;white-space:nowrap;font-size:12.5px}
 #ctxMenu .ch{padding:5px 9px 6px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line);margin-bottom:3px}
-#ctxMenu button{all:unset;padding:6px 9px;border-radius:6px;cursor:pointer;white-space:nowrap} #ctxMenu button:hover,#ctxMenu button:focus{background:var(--soft)} #ctxMenu button.cur{font-weight:600} #ctxMenu hr{border:0;border-top:1px solid var(--line);margin:3px 0}
+#ctxMenu button{all:unset;padding:6px 9px;border-radius:6px;cursor:pointer;white-space:nowrap} #ctxMenu button:hover,#ctxMenu button:focus{background:var(--soft)} #ctxMenu button.cur{font-weight:600}
+#ctxMenu button.cnew{color:#dc2626;font-weight:600} #ctxMenu hr{border:0;border-top:1px solid var(--line);margin:3px 0}
 .runits select{font-size:11px;padding:1px 3px;border:1px solid var(--line);border-radius:6px;background:var(--raise);min-width:0;width:100%}
 .railempty{padding:20px 12px;color:var(--muted);font-size:13px;display:grid;gap:10px}
 .raildrop{position:absolute;inset:0;border:2px dashed var(--warn);border-radius:8px;pointer-events:none}
@@ -426,6 +427,8 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 .unit.first,.unit.cur{cursor:context-menu}
 .boxsel{position:fixed;z-index:50;pointer-events:none;border:1.5px dashed var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:3px}
 .unit.ghost .ub{fill-opacity:.1;stroke-dasharray:5 4}
+.unit.isnew .ub{fill:#f8b4b4;fill-opacity:.75;stroke:#dc2626;stroke-width:3;stroke-dasharray:none} /* 새 가구: 옅은 빨강 + 굵은 빨간 테두리 */
+.unit.isnew .un{fill:#7f1d1d}
 .unit.ghost .un,.unit.ghost .ud{opacity:.45}
 .unit.clash .ub{stroke:var(--bad);stroke-width:3}
 .unit.sel .ub{stroke:var(--paper-ink);stroke-width:3}
@@ -1363,7 +1366,7 @@ function renderStagebar(){
     let o=''; for(const p of S.places){ const ms=S.maps.filter(m=>m.placeId===p.id&&cal(m)); if(!ms.length){ o+=`<option value="p:${p.id}" ${UI.focus===p.id?'selected':''}>${esc(p.name)} (도면 없음)</option>`; continue } o+=`<option value="p:${p.id}" ${UI.focus===p.id&&!UI.room?'selected':''}>${esc(p.name)} 전체</option>`;
       for(const m of ms) for(const r of roomsAll(m)) o+=`<option value="r:${m.id}:${r.id}" ${UI.room&&UI.room.roomId===r.id?'selected':''}>　└ ${mapNm(m)?esc(mapNm(m))+' › ':''}${esc(r.name)}</option>` }
     const unc=S.maps.filter(m=>!cal(m)).map(m=>`<button class="tchip need" data-cal="${m.id}"><b>${esc(P(m.placeId)?.name)}</b><span class="cm">${esc(m.name)}</span>축척 맞추기</button>`).join('');
-    h=o?`<div class="slots">${mapPickBtn()}${UI.room?`<button class="btn small" data-rename="room:${UI.room.mapId}:${UI.room.roomId}">방 이름 바꾸기</button>`:(UI.focus?`<button class="btn small" data-rename="place:${UI.focus}">공간 이름 바꾸기</button>`:'')}<button class="btn small" data-pptx title="지금 보이는 도면(변경 전/후)을 1/100 축척 PPT로">📄 PPT로 받기</button><button class="btn small${UI.selMode?' primary':''}" data-selmode title="켜면 가구를 톡 눌러 하나씩 더하고, 빈 곳을 끌어 범위로 고를 수 있어요 (태블릿용). 화면 이동은 두 손가락">${UI.selMode?'☑ 여러 개 선택 중':'☐ 여러 개 선택'}</button><button class="btn small" data-rot="-1" title="고른 가구를 왼쪽으로 90° (붙어 있는 것은 한 덩어리로)">↺ 왼쪽 90°</button><button class="btn small" data-rot="1" title="고른 가구를 오른쪽으로 90° (붙어 있는 것은 한 덩어리로) · 단축키 R">↻ 오른쪽 90°</button>${unc}</div>`:`<div class="slots"><span class="hint">축척을 맞춘 도면이 있는 공간이 없어요.</span>${unc}</div>`;
+    h=o?`<div class="slots">${mapPickBtn()}${UI.room?`<button class="btn small" data-rename="room:${UI.room.mapId}:${UI.room.roomId}">방 이름 바꾸기</button>`:(UI.focus?`<button class="btn small" data-rename="place:${UI.focus}">공간 이름 바꾸기</button>`:'')}${UI.wlayer==='b'&&UI.focus?`<button class="btn small" data-toexall title="이 공간 가구를 변경 후 화면에 놓은 자리 그대로 기존(변경 전) 배치로도 정해요. 변경 전에 할 작업을 변경 후에서 했을 때 써요.">📌 이 배치를 기존 배치로</button>`:''}<button class="btn small" data-pptx title="지금 보이는 도면(변경 전/후)을 1/100 축척 PPT로">📄 PPT로 받기</button><button class="btn small${UI.selMode?' primary':''}" data-selmode title="켜면 가구를 톡 눌러 하나씩 더하고, 빈 곳을 끌어 범위로 고를 수 있어요 (태블릿용). 화면 이동은 두 손가락">${UI.selMode?'☑ 여러 개 선택 중':'☐ 여러 개 선택'}</button><button class="btn small" data-rot="-1" title="고른 가구를 왼쪽으로 90° (붙어 있는 것은 한 덩어리로)">↺ 왼쪽 90°</button><button class="btn small" data-rot="1" title="고른 가구를 오른쪽으로 90° (붙어 있는 것은 한 덩어리로) · 단축키 R">↻ 오른쪽 90°</button>${unc}</div>`:`<div class="slots"><span class="hint">축척을 맞춘 도면이 있는 공간이 없어요.</span>${unc}</div>`;
   }
   else if(UI.room){ const m=M(UI.room.mapId), r=roomsAll(m).find(r=>r.id===UI.room.roomId); h=`<div class="slots"><button class="btn small" data-focus="">← 모든 공간</button><button class="btn small" data-focus="${m.placeId}">← ${esc(P(m.placeId)?.name)} 전체</button><span class="crumb">${esc(P(m.placeId)?.name)} › ${mapNm(m)?esc(mapNm(m))+' › ':''}<b>${esc(r?r.name:'')}</b></span></div>` }
   else if(UI.focus){ h=`<div class="slots"><button class="btn small" data-focus="">← 모든 공간</button><span class="crumb"><b>${esc(P(UI.focus)?.name)}</b> 전체 · 방 이름을 누르면 그 방만 보여요</span></div>` }
@@ -1508,11 +1511,12 @@ function closeCtx(){ const m=$('#ctxMenu'); if(m) m.remove() }
 const KINDS=[['furn','가구'],['chair','의자(겹쳐 놓기)'],['item','올리는 물품']];
 function openItemCtx(items,x,y){ items=items.filter(Boolean); if(!items.length) return; if(Cloud.on&&!canEdit()){ toast('지금은 보기만 할 수 있어요.'); return }
   const it=items[0], kind=it.kind||'furn'; closeCtx(); CTX.at=Date.now(); const m=document.createElement('div'); m.id='ctxMenu'; m.setAttribute('role','menu');
-  m.innerHTML=`<div class="ch">${esc((it.name||'').trim()||'가구')} ${it.w}×${it.d}${items.length>1?` · ${items.length}곳`:''} 고치기</div><form class="cform"><input id="ctxName" value="${esc(it.name||'')}" aria-label="가구 이름" autocomplete="off"><button class="btn small primary">이름 바꾸기</button></form><hr><div class="ch">종류</div>${KINDS.map(([k,t])=>`<button role="menuitem" data-ckind="${k}" class="${kind===k?'cur':''}">${kind===k?'✓ ':''}${t}</button>`).join('')}<hr><button role="menuitem" data-ccolor>🎨 색 바꾸기</button>`;
+  m.innerHTML=`<div class="ch">${esc((it.name||'').trim()||'가구')} ${it.w}×${it.d}${items.length>1?` · ${items.length}곳`:''} 고치기</div><form class="cform"><input id="ctxName" value="${esc(it.name||'')}" aria-label="가구 이름" autocomplete="off"><button class="btn small primary">이름 바꾸기</button></form><hr><div class="ch">종류</div>${KINDS.map(([k,t])=>`<button role="menuitem" data-ckind="${k}" class="${kind===k?'cur':''}">${kind===k?'✓ ':''}${t}</button>`).join('')}<hr><button role="menuitem" data-ccolor>🎨 색 바꾸기</button>${newMenuBtn(items.flatMap(unitsOf),items.length>1)}`;
   document.body.appendChild(m); const r=m.getBoundingClientRect(); m.style.left=Math.max(4,Math.min(x,innerWidth-r.width-4))+'px'; m.style.top=Math.max(4,Math.min(y,innerHeight-r.height-4))+'px';
   const ids=items.map(i=>i.id);
   m.querySelector('form').addEventListener('submit',e=>{ e.preventDefault(); const nm=$('#ctxName').value.trim(); closeCtx(); if(!nm) return; for(const i of ids.map(I).filter(Boolean)){ i.name=nm; i.kind=autoKind(nm,i.kind||'furn'); const c=sameNameColor(i); if(c) i.color=c } commit(); toast(`이름을 '${nm}'(으)로 바꿨어요. (Ctrl+Z로 되돌리기)`) });
-  m.addEventListener('click',e=>{ const b=e.target.closest('button[data-ckind],button[data-ccolor]'); if(!b) return; e.stopPropagation(); closeCtx();
+  m.addEventListener('click',e=>{ const b=e.target.closest('button[data-ckind],button[data-ccolor],button[data-cnew]'); if(!b) return; e.stopPropagation(); closeCtx();
+    if(b.dataset.cnew!==undefined){ setNewUnits(ids.map(I).filter(Boolean).flatMap(unitsOf).map(u=>u.id),b.dataset.cnew==='1'); return }
     if(b.dataset.ckind){ for(const i of ids.map(I).filter(Boolean)) i.kind=b.dataset.ckind; commit(); toast(`종류를 '${KINDS.find(k=>k[0]===b.dataset.ckind)[1]}'(으)로 바꿨어요.`); return }
     pickColor(ids,{left:x,bottom:y}) });
   const inp=$('#ctxName'); inp.focus(); inp.select() }
@@ -1525,11 +1529,13 @@ function openCtx(el,x,y){
   CTX.ids=many?selUnitIds():[id]; CTX.x=x; CTX.y=y; CTX.slots=g?(many?getMulti().filter(x=>x.slot==='from'||x.slot==='to'):(slot==='from'||slot==='to'?[{id,slot}]:[])):[]; CTX.at=Date.now();
   const dp=CTX.ids.length===1?destPlace(u):null;
   closeCtx(); const m=document.createElement('div'); m.id='ctxMenu'; m.setAttribute('role','menu');
-  m.innerHTML=`<div class="ch">${CTX.ids.length>1?`${CTX.ids.length}개 선택됨 · 장소 옮기기`:`${esc(lbl(u))} · 장소 옮기기`}</div>${S.places.map(p=>`<button role="menuitem" data-cdest="${p.id}" class="${dp===p.id?'cur':''}">→ ${esc(p.name)}${dp===p.id?' ✓':''}</button>`).join('')}<button role="menuitem" data-cdest="">도착지 미정</button><hr><button role="menuitem" data-ccolor>🎨 색 바꾸기${CTX.ids.length>1?` (${CTX.ids.length}개)`:''}</button><button role="menuitem" data-cedit>✏️ 이름·종류 고치기</button><hr><div class="ch">소속(처음) 공간 바꾸기</div>${S.places.map(p=>`<button role="menuitem" data-cown="${p.id}">⇢ ${esc(p.name)} 가구로</button>`).join('')}${CTX.slots.length?`<hr><button role="menuitem" data-cunplace>↩ 미배치 가구로 돌려놓기</button>`:''}`;
+  m.innerHTML=`<div class="ch">${CTX.ids.length>1?`${CTX.ids.length}개 선택됨 · 장소 옮기기`:`${esc(lbl(u))} · 장소 옮기기`}</div>${S.places.map(p=>`<button role="menuitem" data-cdest="${p.id}" class="${dp===p.id?'cur':''}">→ ${esc(p.name)}${dp===p.id?' ✓':''}</button>`).join('')}<button role="menuitem" data-cdest="">도착지 미정</button><hr><button role="menuitem" data-ccolor>🎨 색 바꾸기${CTX.ids.length>1?` (${CTX.ids.length}개)`:''}</button><button role="menuitem" data-cedit>✏️ 이름·종류 고치기</button>${newMenuBtn(CTX.ids.map(U).filter(Boolean))}<hr><div class="ch">소속(처음) 공간 바꾸기</div>${S.places.map(p=>`<button role="menuitem" data-cown="${p.id}">⇢ ${esc(p.name)} 가구로</button>`).join('')}${CTX.slots.some(x=>x.slot==='to')?`<hr><button role="menuitem" data-ctoex title="변경 후에 놓은 자리를 변경 전(기존) 자리로도 똑같이 정해요">📌 이 자리를 기존 배치로 (변경 전도 같게)${CTX.slots.filter(x=>x.slot==='to').length>1?` (${CTX.slots.filter(x=>x.slot==='to').length}개)`:''}</button>`:''}${CTX.slots.length?`<hr><button role="menuitem" data-cunplace>↩ 미배치 가구로 돌려놓기</button>`:''}`;
   document.body.appendChild(m); const r=m.getBoundingClientRect(); m.style.left=Math.max(4,Math.min(x,innerWidth-r.width-4))+'px'; m.style.top=Math.max(4,Math.min(y,innerHeight-r.height-4))+'px';
   m.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; e.stopPropagation(); closeCtx();
     if(b.dataset.cdest!==undefined){ moveUnitsTo(CTX.ids,b.dataset.cdest); return }
     if(b.dataset.cown){ setOwner(CTX.ids.map(U).filter(Boolean),b.dataset.cown); return }
+    if(b.dataset.cnew!==undefined){ setNewUnits(CTX.ids,b.dataset.cnew==='1'); return }
+    if(b.dataset.ctoex!==undefined){ toExisting(CTX.slots.filter(x=>x.slot==='to').map(x=>x.id)); return }
     if(b.dataset.cedit!==undefined){ openItemCtx([...new Set(CTX.ids.map(U).filter(Boolean).map(u=>u.itemId))].map(I),CTX.x,CTX.y); return }
     if(b.dataset.ccolor!==undefined){ pickColor(CTX.ids.map(U).filter(Boolean).map(u=>u.itemId),{left:CTX.x||innerWidth/2,bottom:CTX.y||innerHeight/2}); return }
     if(b.dataset.cunplace!==undefined){ for(const s of CTX.slots){ const uu=U(s.id); if(uu) unplace(uu,s.slot) } UI.multi=null; UI.sel=null; toast(CTX.slots.length>1?`${CTX.slots.length}개를 미배치 가구로 돌려놓았어요.`:`${lbl(U(CTX.slots[0].id))}을(를) 미배치 가구로 돌려놓았어요.`); commit() } });
@@ -1796,6 +1802,28 @@ const curSlot=()=>UI.view==='space'?((UI.wlayer||'a')==='b'?'to':'from'):'to';
 function setQty(it,v){ const q=Math.max(1,Math.round(+v||1)); if(q===it.qty) return; UI.lastQtyPlacedRm=0; it.qty=q; syncUnits(it); commit();
   toast(UI.lastQtyPlacedRm?`${it.name} 수량을 ${q}개로 바꿨어요. 도면에 놓여 있던 ${UI.lastQtyPlacedRm}개(번호 큰 것)도 함께 지웠어요.`:`${it.name} 수량을 ${q}개로 바꿨어요.`) }
 document.addEventListener('click',e=>{ const t=e.target.closest('[data-newtg]'); if(!t) return; const it=I(t.dataset.newtg); if(!it) return; setNew(it,!it.isNew) });
+function newMenuBtn(us,all){ if(!us.length) return ''; const allNew=us.every(isNewU); const n=us.length>1?` (${us.length}개)`:'';
+  return allNew?`<button role="menuitem" data-cnew="0">↩ 기존 가구로 되돌리기${n}</button>`:`<button role="menuitem" data-cnew="1" class="cnew">🆕 새 가구로 바꾸기${n}</button>` }
+/* 고른 가구만 새 가구(신규 구매)/기존 가구로. 같은 종류 중 일부만 고르면 그 개수만큼 따로 떼어 냄 */
+function setNewUnits(ids,v){ const us=[...new Set(ids)].map(U).filter(Boolean).filter(u=>isNewU(u)!==v); if(!us.length) return; let cleared=0;
+  const byItem=new Map(); for(const u of us){ if(!byItem.has(u.itemId)) byItem.set(u.itemId,[]); byItem.get(u.itemId).push(u) }
+  for(const [iid,list] of byItem){ const it=I(iid); if(!it) continue; const base={...it,isNew:v};
+    let tgt=S.items.find(o=>o!==it&&o.placeId===it.placeId&&gkey(o)===gkey(base)); if(!tgt){ tgt={...base,id:uid(),qty:0}; S.items.push(tgt) }
+    for(const u of list){ if(v&&u.from){ u.from=null; cleared++ } u.itemId=tgt.id }
+    for(const x of [it,tgt]){ const xs=unitsOf(x); xs.forEach((u,i)=>u.idx=i+1); x.qty=xs.length }
+    if(!it.qty) S.items=S.items.filter(x=>x!==it) }
+  UI.sel=null; UI.multi=null; commit();
+  const nm=lbl(us[0]); toast(v?`${us.length>1?us.length+'개를':nm+'을(를)'} 새 가구로 바꿨어요. 빨간 테두리로 보여요.${cleared?` 변경 전 위치 ${cleared}개는 지웠어요(새로 사는 거라).`:''}`:`${us.length>1?us.length+'개를':nm+'을(를)'} 기존 가구로 되돌렸어요. 변경 전 화면에서 지금 위치를 정할 수 있어요.`) }
+/* 변경 후에 놓은 자리를 기존(변경 전) 배치로: from=그 자리, 변경 후에는 '그대로 남김'. 다른 공간 소속이면 이 공간 가구로 바꿈. 새 가구는 기존 자리가 없어서 뺌 */
+function toExisting(ids){ if(Cloud.on&&!canEdit()){ toast('지금은 보기만 할 수 있어요.'); return } const us=[...new Set(ids)].map(U).filter(u=>u&&u.to); let n=0,skipNew=0,owned=0;
+  for(const u of us){ const it=I(u.itemId); if(!it) continue; if(it.isNew){ skipNew++; continue } const m=M(u.to.mapId); if(!m) continue;
+    if(it.placeId!==m.placeId){ const moveAll=unitsOf(it).every(x=>us.includes(x)); let tgt=S.items.find(x=>x!==it&&x.placeId===m.placeId&&gkey(x)===gkey(it));
+      if(!tgt){ if(moveAll){ it.placeId=m.placeId; tgt=it } else { tgt={...it,id:uid(),placeId:m.placeId,qty:0}; S.items.push(tgt) } }
+      if(tgt!==it){ u.itemId=tgt.id; for(const x of [it,tgt]){ const xs=unitsOf(x); xs.forEach((q,i)=>q.idx=i+1); x.qty=xs.length } if(!it.qty) S.items=S.items.filter(x=>x!==it) } if(u.first) delete u.first; owned++ }
+    u.from={...u.to}; u.to=null; u.toPlaceId=null; n++ }
+  if(!n){ toast(skipNew?'새 가구는 기존 자리가 없어서 기존 배치로 바꿀 수 없어요.':'바꿀 가구가 없어요.'); return }
+  UI.sel=null; UI.multi=null; commit();
+  toast(`${n}개를 기존 배치로 정했어요. 변경 전에도 같은 자리에 있고, 변경 후에는 그대로 남아요.${owned?` (${owned}개는 이 공간 가구로 바꿈)`:''}${skipNew?` 새 가구 ${skipNew}개는 뺐어요.`:''}`) }
 function setNew(it,v){ it.isNew=!!v; let cleared=0; if(it.isNew) for(const u of unitsOf(it)) if(u.from){ u.from=null; cleared++ }
   const same=S.items.find(o=>o!==it&&o.placeId===it.placeId&&gkey(o)===gkey(it)); if(same){ for(const u of unitsOf(it)) u.itemId=same.id; same.qty=unitsOf(same).length; unitsOf(same).forEach((u,i)=>u.idx=i+1); S.items=S.items.filter(x=>x!==it) } else { const c=S.items.find(o=>o!==it&&gkey(o)===gkey(it)); if(c) it.color=c.color }
   commit(); toast(it.isNew?`${it.name}을(를) 신규 구매로 바꿨어요.${cleared?` 변경 전 위치 ${cleared}개는 지웠어요.`:''}`:`${it.name}을(를) 기존 가구로 바꿨어요. 변경 전 화면에서 지금 위치를 정할 수 있어요.`) }
@@ -2111,6 +2139,10 @@ document.addEventListener('click',e=>{
   if(d.rename){ const[k,...rest]=d.rename.split(':'); openRename(k,rest.join(':')); return }
   if(d.blank){ openBlank(d.blank,d.blankmap||null); return }
   if(d.mapdlg!==undefined){ openMapDlg(); return }
+  if(d.toexall!==undefined){ const pid=UI.focus; const us=S.units.filter(u=>u.to&&M(u.to.mapId)?.placeId===pid&&I(u.itemId)?.placeId===pid&&!isNewU(u)&&(!UI.room||u.to.mapId===UI.room.mapId&&posRoom(u,u.to,'b')?.id===UI.room.roomId));
+    if(!us.length){ toast('변경 후에 놓은 이 공간 가구가 없어요. (다른 공간에서 옮겨 온 가구와 새 가구는 빼고 봐요)'); return }
+    if(!t.dataset.arm2){ t.dataset.arm2='1'; const tx=t.textContent; t.textContent=`한 번 더 누르면 ${us.length}개 기존 배치로`; t.classList.add('primary'); setTimeout(()=>{ if(t.isConnected){ delete t.dataset.arm2; t.textContent=tx; t.classList.remove('primary') } },3500); return }
+    toExisting(us.map(u=>u.id)); return }
   if(d.pick){ pickWork(d.pick); return }
   if(d.cal){ openCal(d.cal); return }
   if(d.calb){ openCal(d.calb,'b'); return }

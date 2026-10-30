@@ -13,11 +13,12 @@
 - `firebase.json`, `.firebaserc` — Firebase CLI 설정(규칙 배포용).
 
 ## 데이터 구조 (Firestore 컬렉션)
-`places`, `maps`(도면; 이미지는 `blobs`에 90만 자씩 나눠 저장), `items`(자산: name,w,d,h,qty,kind,isNew,color,placeId), `units`(자산 1개씩: from/to 위치, toPlaceId, chk), `photos`(공간 사진 + `placeId:'@asset'`인 자산 사진), `versions`(시점별 저장, data는 JSON 문자열), `meta/main`, `settings/lock`, `members/{email}`(role: edit|view), `requests/{email}`(권한 신청).
+`places`(공간; 오른쪽 창의 메모 `memo`, 확인할 것 `checks:[{id,t,done}]`), `maps`(도면; 이미지는 `blobs`에 90만 자씩 나눠 저장. 변경 후 도면은 `imgBV`·`roomsB`·`masksB`, 그림은 blobs의 owner `{도면id}~b`), `items`(자산: name,w,d,h,qty,kind,isNew,color,placeId), `units`(자산 1개씩: from/to 위치, toPlaceId, chk), `photos`(공간 사진 + `placeId:'@asset'`인 자산 사진), `versions`(시점별 저장, data는 JSON 문자열), `meta/main`, `settings/lock`, `members/{email}`(role: edit|view), `requests/{email}`(권한 신청).
 
 ## 앱 구조 메모 (index.html 안)
 - 상태 `S`, 화면 상태 `UI`. 저장은 `save()` → 클라우드면 `cloudPush()`(변경분만 batch).
 - 보기: plan(배치판: 왼쪽=기존, 오른쪽=변경), space(공간 작업: 변경 전/후 전환), items(자산 목록), routes, check, spaces.
 - 로그인/권한: `cloudStart()` → `showGate()` → 관리자면 `#btnAdmin`(권한 신청 승인, 멤버, 수정 잠금).
+- 변경 후 도면: `openAlign()`에서 새 그림을 기존 도면 위에 맞춘 뒤 기존 도면과 같은 픽셀 틀로 다시 그려 `imgB`로 저장(축척·모눈·가구 cm 위치는 공유). `viewOf(m,'b')`가 img·rooms·masks만 변경 후 것으로 바꿔 주는 대리 객체라, 변경(b) 화면·내보내기·축척 창은 이것을 통해 그린다.
 - 화면 설정은 브라우저 localStorage(`mb-prefs`, `mb-viewstate`, `mb-cols`)에 저장.
 - 고친 뒤에는 `node --check`로 `<script>` 문법을 확인하고, 가능하면 Playwright로 주요 화면(배치판·공간 작업·자산 목록)을 열어 오류가 없는지 본다.

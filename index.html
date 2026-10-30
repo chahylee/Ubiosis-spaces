@@ -108,7 +108,7 @@ h3{font-size:15px;margin:0}
 .plan.railoff .rail{display:none}
 .czoom{position:absolute;top:8px;z-index:4;display:flex;align-items:center;gap:3px;background:color-mix(in srgb,var(--raise) 94%,transparent);border:1px solid var(--line);border-radius:8px;padding:3px 6px;font-size:11.5px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .czoom.left{left:12px} .czoom.right{right:12px}
-.svgwrap.hasphotos .czoom.right{right:158px}
+.svgwrap.hasphotos .czoom.right{right:244px}
 .czoom button{border:0;background:none;width:20px;height:20px;border-radius:4px;color:var(--ink);font-size:13px;line-height:1}
 .czoom button:hover{background:var(--soft)}
 .czoom input{width:78px;accent-color:var(--accent)}
@@ -297,9 +297,23 @@ button.num.zero{opacity:.35}
 .rb.wr{background:var(--warn-soft);color:var(--warn)}
 .selbar em{color:var(--warn);font-style:normal}
 kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:3px;color:var(--muted)}
-.photos{position:absolute;right:0;top:0;bottom:0;width:146px;font-size:12px;display:flex;flex-direction:column;gap:10px;overflow:auto;padding:10px 8px;background:var(--panel);border-left:1px solid var(--line)}
-.svgwrap.hasphotos #plan{width:calc(100% - 146px)}
-.svgwrap.hasphotos .selbar{left:calc(50% - 73px)}
+.photos{position:absolute;right:0;top:0;bottom:0;width:232px;font-size:12px;display:flex;flex-direction:column;gap:10px;overflow:auto;padding:10px 8px;background:var(--panel);border-left:1px solid var(--line)}
+.svgwrap.hasphotos #plan{width:calc(100% - 232px)}
+.svgwrap.hasphotos .selbar{left:calc(50% - 116px)}
+.nt-sec{display:grid;gap:6px}
+#nMemo{width:100%;box-sizing:border-box;resize:vertical;min-height:110px;font:inherit;font-size:12.5px;line-height:1.5;padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:var(--raise);color:var(--ink)}
+.nt-hd{display:flex;align-items:baseline;gap:6px}.nt-cnt{margin-left:auto;font-size:11.5px;color:var(--muted)}
+.nt-list{display:grid;gap:2px}
+.nt-item{display:grid;grid-template-columns:18px 1fr 18px;gap:5px;align-items:start;padding:3px 2px;border-radius:6px}
+.nt-item:hover{background:var(--raise)}
+.nt-item input[type=checkbox]{margin:4px 0 0;width:15px;height:15px}
+.nt-item .nt-t{border:0;background:none;font:inherit;font-size:12.5px;line-height:1.45;color:var(--ink);padding:2px 3px;min-width:0;width:100%;box-sizing:border-box;border-radius:4px;resize:none;overflow:hidden;display:block}
+.nt-item .nt-t:focus{background:var(--raise);outline:1px solid var(--line)}
+.nt-item.done .nt-t{text-decoration:line-through;color:var(--muted)}
+.nt-x{border:0;background:none;color:var(--muted);font-size:15px;line-height:1;padding:0;opacity:0}.nt-item:hover .nt-x,.nt-x:focus{opacity:1}.nt-x:hover{color:var(--ink)}
+@media (hover:none){.nt-x{opacity:.6}}
+.nt-add{display:grid;grid-template-columns:1fr auto;gap:4px}.nt-add input{min-width:0;font-size:12.5px}
+.nt-empty{margin:0;font-size:11.5px}
 .inc{display:grid;gap:6px;padding-bottom:10px;border-bottom:1px solid var(--line)}
 .incg{display:grid;gap:2px}
 .incf{font-size:11.5px;color:var(--ok);font-weight:500}
@@ -510,6 +524,13 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
 .testerbox{display:grid;gap:7px;border-top:1px solid var(--line);padding-top:12px}
 .testerbox>b{font-size:13px}
 .trow2{display:grid;grid-template-columns:1fr 1fr auto;gap:5px}
+.calLayer{display:grid;gap:6px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--raise)}
+.calLayer .seg button[data-l="b"].on{background:#1f5fd0;color:#fff;border-color:#1f5fd0}
+.alsc{display:flex;align-items:center;gap:6px}.alsc input{width:90px}
+#alSvg{width:100%;height:100%;display:block;touch-action:none;background:#fff;cursor:grab}
+#alSvg.dragging{cursor:grabbing}
+.mrow .bthumb{position:relative}.mrow .bthumb .btag{position:absolute;left:3px;bottom:3px;font-size:10px;padding:1px 5px;border-radius:4px;background:#1f5fd0;color:#fff}
+.mstat.aft{color:#1f5fd0}
 .trow2 input{border:1px solid var(--line);border-radius:6px;padding:5px 7px;background:var(--raise);min-width:0;font-size:12.5px}
 .tlist{display:grid;gap:4px}
 .trow3{display:grid;grid-template-columns:12px 1fr auto auto;gap:6px;align-items:center;font-size:12.5px}
@@ -613,9 +634,9 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
           <div id="selbar" class="selbar" hidden></div>
           <div class="legend" title="휠: 칸별 위아래 이동 · Shift+휠: 좌우 · Ctrl+휠: 확대·축소 (Ctrl+Alt+휠: 더 세밀하게) · Ctrl+끌기: 화면 위아래·좌우 이동 · 스크롤바: 끌거나 클릭해서 이동 · 빈 곳 끌기: 범위 안 가구 한 번에 고르기 (Shift 같이: 더하기) · Ctrl/Shift+클릭: 하나씩 더 고르기 · 오른쪽 버튼: 장소 옮기기 · Ctrl+방향키: 1cm씩 이동 (Shift 같이: 10cm) · R 또는 Alt+방향키: 90° 회전 (붙어 있는 것은 한 덩어리로) · 공간 이름: 그 공간만"><span><i></i>1칸 = 50cm</span><span>Ctrl+휠 확대·축소 · Ctrl+끌기 이동 · 빈 곳 끌기 범위 선택 · 오른쪽 버튼 장소 옮기기</span></div>
           <div id="planEmpty" class="empty" hidden></div>
-          <button id="photosTab" class="photos-tab" hidden>◀ 사진·들어온 가구</button>
+          <button id="photosTab" class="photos-tab" hidden>◀ 메모·체크리스트</button>
           <div class="sbar" id="sbL" hidden><i></i></div><div class="sbar" id="sbR" hidden><i></i></div><div class="hbar" id="sbH" hidden><i></i></div>
-          <div id="photos" class="photos" aria-label="공간 사진"></div>
+          <div id="photos" class="photos" aria-label="공간 메모와 체크리스트"></div>
         </div>
       </div>
     </section>
@@ -658,6 +679,26 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
   </div>
 </dialog>
 
+<dialog id="dlgAlign" aria-labelledby="alTitle">
+  <div class="dlg">
+    <div class="dh"><h2 id="alTitle">변경 후 도면 위치 맞추기</h2><button class="btn small x" data-close>닫기</button></div>
+    <div class="dbody split">
+      <div class="calview"><svg id="alSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="zoomctl"><button class="ibtn" id="alZout" aria-label="축소">−</button><button class="ibtn" id="alZin" aria-label="확대">+</button><button class="ibtn" id="alFit">전체</button></div></div>
+      <aside class="field" style="gap:12px">
+        <p class="hint"><b style="color:#c03a2b">빨간 선</b>은 지금(변경 전) 도면, <b style="color:#1f5fd0">파란 선</b>은 새로 넣는 변경 후 도면이에요. 파란 도면을 <b>끌어서</b> 바뀌지 않은 벽이 겹치도록 맞추세요. 잘 겹친 선은 검게 보여요.</p>
+        <p class="hint">화살표 키로 조금씩, Shift+화살표로 크게 움직여요. 화면 옮기기는 Ctrl+끌기나 마우스 오른쪽 버튼 끌기, 확대는 휠이에요.</p>
+        <label class="field">새 도면 진하기<input id="alOp" type="range" min="0" max="100" value="80"></label>
+        <div class="field">크기 (같은 축척 = 100%)
+          <div class="alsc"><button class="btn small" id="alSm" aria-label="작게">−</button><input id="alSc" type="number" inputmode="decimal" step="0.1" min="10" max="1000" aria-label="크기 %"><span>%</span><button class="btn small" id="alLg" aria-label="크게">+</button></div>
+          <button class="btn small" id="alSc0">100%로 되돌리기</button></div>
+        <p class="hint">두 PDF가 같은 축척(예: 1/100)으로 그려진 도면이면 크기는 100% 그대로 두고 위치만 맞추면 돼요.</p>
+      </aside>
+    </div>
+    <div class="df"><span class="note">지금 도면 범위 밖으로 나간 부분은 잘려요.</span><button class="btn" data-close>취소</button><button class="btn primary" id="alApply">변경 후 도면으로 넣기</button></div>
+  </div>
+</dialog>
+
 <dialog id="dlgCal" aria-labelledby="calTitle">
   <div class="dlg">
     <div class="dh"><h2 id="calTitle">축척 맞추기</h2><button class="btn small x" data-close>닫기</button></div>
@@ -669,6 +710,7 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
         <div class="zoomctl"><button class="ibtn" id="calZout" aria-label="축소">−</button><button class="ibtn" id="calZin" aria-label="확대">+</button><button class="ibtn" id="calFit">전체</button></div>
       </div>
       <aside>
+        <div id="calLayer" class="calLayer" hidden><span class="smeta">작업할 도면</span><div class="seg"><button data-l="a" class="on">변경 전 도면</button><button data-l="b">변경 후 도면</button></div><p class="hint">축척·모눈은 둘이 같이 써요. 방 나누기와 가리기·벽은 도면마다 따로예요.</p></div>
         <div class="seg" id="calMode"><button data-m="scale" class="on">① 축척</button><button data-m="origin">② 모눈 기준점</button><button data-m="check">③ 길이 확인</button><button data-m="rooms">④ 방 나누기</button><button data-m="mask">⑤ 가리기·벽</button></div>
         <div data-pane="scale" class="field" style="gap:12px">
           <p class="hint">도면에 치수가 적힌 벽의 양 끝을 차례로 클릭하세요. 휠로 확대하면 정확히 찍을 수 있어요.</p>
@@ -811,7 +853,7 @@ const COLLS=['places','maps','items','units','photos','versions'];
 const Cloud={locked:false,hidden:false,readErr:false,user:null,on:false,db:null,ready:false,docs:{},meta:{},last:{},lastMeta:'',dirty:false,pushing:false,again:false,pendingApply:false};
 function setSave(t){ const el=$('#saveState'); if(el) el.textContent=t }
 function stable(v){ if(Array.isArray(v)) return '['+v.map(stable).join(',')+']'; if(v&&typeof v==='object'){ return '{'+Object.keys(v).filter(k=>v[k]!==undefined).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}' } return JSON.stringify(v===undefined?null:v) }
-function docOf(coll,o,i){ const d=JSON.parse(JSON.stringify(o)); if(coll==='maps'||coll==='photos'){ delete d.img; d.imgV=o.imgV||null } if(coll==='places') d.order=i; delete d.id; return d }
+function docOf(coll,o,i){ const d=JSON.parse(JSON.stringify(o)); if(coll==='maps'||coll==='photos'){ delete d.img; d.imgV=o.imgV||null } if(coll==='maps'){ delete d.imgB; if(!o.imgBV) delete d.imgBV } if(coll==='places') d.order=i; delete d.id; return d }
 const CHUNK=900000;
 async function uploadBlob(owner,v,data){ const n=Math.ceil(data.length/CHUNK)||1; for(let i=0;i<n;i++){ await Cloud.db.collection('blobs').doc(`${owner}_${v}_${i}`).set({owner,v,i,n,data:data.slice(i*CHUNK,(i+1)*CHUNK)}) } await Store.set('blob:'+v,data) }
 async function getBlob(owner,v){ if(!v) return null; const c=await Store.get('blob:'+v); if(c) return c; try{ const snap=await Cloud.db.collection('blobs').where('owner','==',owner).where('v','==',v).get(); const parts=snap.docs.map(d=>d.data()).sort((a,b)=>a.i-b.i); if(!parts.length) return null; const data=parts.map(p=>p.data).join(''); await Store.set('blob:'+v,data); return data }catch(e){ console.error(e); return null } }
@@ -824,8 +866,9 @@ async function cloudPush(){
       for(let i=0;i<arr.length;i++){ const o=arr[i]; if((coll==='maps'||coll==='photos')&&o.img&&!o.imgV) o.imgV=uid(); const d=docOf(coll,o,i); const js=stable(d); seen.add(o.id);
         const prev=last.get(o.id); if(prev===js) continue;
         if((coll==='maps'||coll==='photos')&&o.img){ const pv=prev?JSON.parse(prev).imgV:null; if(pv!==o.imgV){ await uploadBlob(o.id,o.imgV,o.img); if(pv) blobDel.push([o.id,o.imgV]) } }
+        if(coll==='maps'){ const pb=prev?JSON.parse(prev).imgBV||null:null, nb=o.imgBV||null; if(pb!==nb){ if(nb&&o.imgB) await uploadBlob(o.id+'~b',nb,o.imgB); if(pb) blobDel.push([o.id+'~b',nb]) } } /* 변경 후 도면 그림 */
         ops.push(['set',coll,o.id,d]); last.set(o.id,js) }
-      for(const id of [...last.keys()]) if(!seen.has(id)){ ops.push(['del',coll,id]); last.delete(id); if(coll==='maps'||coll==='photos') blobDel.push([id,null]) } }
+      for(const id of [...last.keys()]) if(!seen.has(id)){ ops.push(['del',coll,id]); last.delete(id); if(coll==='maps'||coll==='photos') blobDel.push([id,null]); if(coll==='maps') blobDel.push([id+'~b',null]) } }
     const m=stable(S.meta||{}); if(Cloud.lastMeta!==m){ ops.push(['set','meta','main',JSON.parse(JSON.stringify(S.meta||{}))]); Cloud.lastMeta=m }
     for(let i=0;i<ops.length;i+=400){ const b=Cloud.db.batch(); for(const op of ops.slice(i,i+400)){ const ref=Cloud.db.collection(op[1]).doc(op[2]); op[0]==='set'?b.set(ref,op[3]):b.delete(ref) } await b.commit() }
     for(const [owner,keep] of blobDel) deleteBlobs(owner,keep);
@@ -837,13 +880,14 @@ async function applyCloud(){
   if(Cloud.ready&&(Cloud.dirty||Cloud.pushing||UI.dragging||UI.viewVer)){ Cloud.pendingApply=true; return } Cloud.pendingApply=false;
   const S2=empty(); S2.meta=Cloud.meta||{};
   for(const coll of COLLS){ const arr=[...(Cloud.docs[coll]||new Map()).entries()].map(([id,d])=>({...d,id})); if(coll==='places') arr.sort((a,b)=>(a.order??0)-(b.order??0)); arr.forEach(o=>{ if(coll==='places') delete o.order }); S2[coll]=arr }
-  for(const coll of ['maps','photos']) for(const o of S2[coll]){ const prev=(S[coll]||[]).find(x=>x.id===o.id&&x.imgV===o.imgV&&x.img); o.img=prev?prev.img:await getBlob(o.id,o.imgV); if(!o.img&&coll==='maps') o.img=blankDataURL() }
+  for(const coll of ['maps','photos']) for(const o of S2[coll]){ const prev=(S[coll]||[]).find(x=>x.id===o.id&&x.imgV===o.imgV&&x.img); o.img=prev?prev.img:await getBlob(o.id,o.imgV); if(!o.img&&coll==='maps') o.img=blankDataURL()
+    if(coll==='maps'&&o.imgBV){ const pb=(S.maps||[]).find(x=>x.id===o.id&&x.imgBV===o.imgBV&&x.imgB); o.imgB=pb?pb.imgB:await getBlob(o.id+'~b',o.imgBV) } }
   if(Cloud.ready&&(Cloud.dirty||Cloud.pushing||UI.dragging)){ Cloud.pendingApply=true; return }
   for(const coll of COLLS) Cloud.last[coll]=new Map(S2[coll].map((o,i)=>[o.id,stable(docOf(coll,o,i))]));
   Cloud.lastMeta=stable(S2.meta);
   const merge=(oldArr,newArr)=>{ const om=new Map((oldArr||[]).map(o=>[o.id,o])); return newArr.map(n=>{ const o=om.get(n.id); if(!o) return n; for(const k of Object.keys(o)) if(!(k in n)) delete o[k]; return Object.assign(o,n) }) };
   for(const coll of COLLS) S[coll]=merge(S[coll],S2[coll]); S.meta=Object.assign(S.meta||{},S2.meta); if(!UI.viewVer) UNDO.snap=snapNow();
-  if(Cal.m&&!S.maps.includes(Cal.m)&&$('#dlgCal').open){ $('#dlgCal').close(); toast('다른 사람이 이 도면을 지워서 축척 창을 닫았어요.') }
+  if(Cal.m&&!S.maps.includes(baseOf(Cal.m))&&$('#dlgCal').open){ $('#dlgCal').close(); toast('다른 사람이 이 도면을 지워서 축척 창을 닫았어요.') }
   const first=!Cloud.ready; Cloud.ready=true; if(first){ migrateFirst(); migrateChair(); migrateColor(); migratePerson() } renderAll(); if(first){ UI.fitted=false; renderAll(); bootView(); setSave('저장됨 · 모두에게 공유 중'); if(!S.places.length) toast('아직 내용이 없어요. 공간을 등록하거나, 데이터 → 파일 불러오기로 기존 작업을 올리세요.') }
 }
 function cloudStart(){
@@ -902,8 +946,8 @@ let saveT;
 /* ---------- 되돌리기 (Ctrl+Z) / 다시 하기 (Ctrl+Y) ----------
    저장할 때마다 바로 전 상태와 비교해 '내가 바꾼 것'만 기록. 다른 사람이 바꾼 것(클라우드)은 기록하지 않음 */
 const UNDO={past:[],future:[],snap:null,busy:false}; const UCOLLS=['places','maps','items','units','photos'];
-const noImg=(k,v)=>k==='img'?undefined:v;
-function snapNow(){ const o={meta:JSON.stringify(S.meta||{})}; for(const c of UCOLLS){ const m=new Map(); (S[c]||[]).forEach((x,i)=>m.set(x.id,{j:JSON.stringify(x,noImg),img:x.img,i})); o[c]=m } return o }
+const noImg=(k,v)=>k==='img'||k==='imgB'?undefined:v;
+function snapNow(){ const o={meta:JSON.stringify(S.meta||{})}; for(const c of UCOLLS){ const m=new Map(); (S[c]||[]).forEach((x,i)=>m.set(x.id,{j:JSON.stringify(x,noImg),img:x.img,imgB:x.imgB,i})); o[c]=m } return o }
 function snapDiff(a,b){ const d=[]; for(const c of UCOLLS){ const A=a[c],B=b[c]; for(const [id,x] of B) if(!A.has(id)||A.get(id).j!==x.j) d.push({c,id,before:A.get(id)||null,after:x}); for(const [id,x] of A) if(!B.has(id)) d.push({c,id,before:x,after:null}) }
   if(a.meta!==b.meta) d.push({c:'meta',before:a.meta,after:b.meta}); return d }
 function trackUndo(){ const cur=snapNow(); if(UNDO.snap&&!UNDO.busy){ const d=snapDiff(UNDO.snap,cur); if(d.length){ UNDO.past.push(d); if(UNDO.past.length>60) UNDO.past.shift(); UNDO.future=[] } } UNDO.snap=cur; undoBtns() }
@@ -912,10 +956,10 @@ function undoStep(redo){ if(UI.viewVer) return; if(Cloud.on&&!canEdit()){ toast(
   const st=redo?UNDO.future:UNDO.past; const d=st.pop(); if(!d){ toast(redo?'다시 할 것이 없어요.':'되돌릴 것이 없어요.'); return }
   for(const ch of d){ const t=redo?ch.after:ch.before; if(ch.c==='meta'){ S.meta=JSON.parse(t); continue }
     const arr=S[ch.c]||(S[ch.c]=[]); const i=arr.findIndex(x=>x.id===ch.id);
-    if(!t){ if(i>=0) arr.splice(i,1); continue } const o=JSON.parse(t.j); if(t.img) o.img=t.img;
-    if(i>=0){ const cur=arr[i]; for(const k of Object.keys(cur)) if(!(k in o)&&k!=='img') delete cur[k]; Object.assign(cur,o) } else arr.splice(Math.min(t.i,arr.length),0,o) }
+    if(!t){ if(i>=0) arr.splice(i,1); continue } const o=JSON.parse(t.j); if(t.img) o.img=t.img; if(t.imgB&&o.imgBV) o.imgB=t.imgB;
+    if(i>=0){ const cur=arr[i]; for(const k of Object.keys(cur)) if(!(k in o)&&k!=='img'&&!(k==='imgB'&&o.imgBV)) delete cur[k]; Object.assign(cur,o) } else arr.splice(Math.min(t.i,arr.length),0,o) }
   (redo?UNDO.past:UNDO.future).push(d); UI.sel=null; UI.multi=null; UI.hl=null; UI.rsel=null;
-  UNDO.busy=true; try{ commit() } finally{ UNDO.busy=false } UNDO.snap=snapNow(); undoBtns(); if($('#dlgCal').open&&Cal.m){ Cal.m=M(Cal.m.id)||Cal.m; calOverlay(); if(Cal.mode==='rooms') calRooms(); if(Cal.mode==='mask') maskInfo() }
+  UNDO.busy=true; try{ commit() } finally{ UNDO.busy=false } UNDO.snap=snapNow(); undoBtns(); if($('#dlgCal').open&&Cal.m){ Cal.m=viewOf(M(Cal.m.id)||baseOf(Cal.m),Cal.l); calOverlay(); if(Cal.mode==='rooms') calRooms(); if(Cal.mode==='mask') maskInfo() }
   toast(redo?'다시 했어요. (Ctrl+Y)':`되돌렸어요.${UNDO.past.length?` ${UNDO.past.length}번 더 되돌릴 수 있어요.`:''}`) }
 document.addEventListener('keydown',e=>{ if(!(e.ctrlKey||e.metaKey)||e.altKey) return; const k=e.key.toLowerCase(); if(k!=='z'&&k!=='y') return;
   if(e.target.closest&&e.target.closest('input,textarea,select,[contenteditable]')) return; e.preventDefault(); undoStep(k==='y'||(k==='z'&&e.shiftKey)) });
@@ -1013,24 +1057,32 @@ function computeAnchors(L){ const A={}; const a=L.filter(e=>e.col==='L'), b=L.fi
   else for(const [c,ps] of [['L',a],['R',b]]) if(ps.length) A[c]={ax:(Math.min(...ps.map(e=>e.ox))+Math.max(...ps.map(e=>e.ox+e.w)))/2,y0};
   UI.anchor=A }
 const roomsOf=m=>(m&&m.rooms)||[];
+/* 변경 후 도면: 같은 도면 틀(픽셀·축척·모눈)에 맞춰 넣은 두 번째 그림(imgB). 변경 후 화면은 이 그림과 따로 그린 방(roomsB)·가리기(masksB)를 씀.
+   viewOf(m,'b')는 img·rooms·masks만 변경 후 것으로 바꿔 보여 주는 대리 객체(나머지 값은 원래 도면 그대로) */
+const BKEY=new Map([['img','imgB'],['rooms','roomsB'],['masks','masksB']]); const BVIEW=new WeakMap();
+const baseOf=m=>(m&&m.__base)||m;
+const hasB=m=>!!(m&&baseOf(m).imgBV);
+function viewOf(m,l){ m=baseOf(m); if(l!=='b'||!hasB(m)) return m; let v=BVIEW.get(m);
+  if(!v){ v=new Proxy(m,{get:(t,k)=>k==='__base'?t:k==='__layer'?'b':k==='img'?(t.imgB||t.img):BKEY.has(k)?t[BKEY.get(k)]:t[k], set:(t,k,val)=>{ t[BKEY.has(k)?BKEY.get(k):k]=val; return true }}); BVIEW.set(m,v) } return v }
+function roomsAll(m){ m=baseOf(m); const out=[...roomsOf(m)]; if(hasB(m)) for(const r of (m.roomsB||[])) if(!out.some(x=>x.id===r.id)) out.push(r); return out }
 const mapNm=m=>m&&S.maps.filter(x=>x.placeId===m.placeId).length>1?m.name:''; // 도면이 하나뿐인 공간은 도면 이름(층 1 등)을 숨김
 /* 방은 네모(x,y,w,h) 또는 꺾인 모양(pts: 도면 픽셀 점들). x,y,w,h는 항상 감싸는 네모 */
 const roomPts=r=>r.pts&&r.pts.length>=3?r.pts:[{x:r.x,y:r.y},{x:r.x+r.w,y:r.y},{x:r.x+r.w,y:r.y+r.h},{x:r.x,y:r.y+r.h}];
 function inPoly(pts,x,y){ let c=false; for(let i=0,j=pts.length-1;i<pts.length;j=i++){ const a=pts[i],b=pts[j]; if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x) c=!c } return c }
 function roomAt(m,x,y){ return roomsOf(m).find(r=>{ if(!(x>=r.x/m.sx&&x<=(r.x+r.w)/m.sx&&y>=r.y/m.sy&&y<=(r.y+r.h)/m.sy)) return false; return !r.pts||inPoly(r.pts,x*m.sx,y*m.sy) })||null }
-function unitRoom(u,slot){ return posRoom(u,u[slot]) }
-function posRoom(u,pos){ if(!pos) return null; const m=M(pos.mapId); if(!cal(m)) return null; const[w,d]=dims(I(u.itemId),pos.rot||0); return roomAt(m,pos.x+w/2,pos.y+d/2) }
-function destLabel(u){ const dp=destPlace(u); if(!dp) return ''; let s=P(dp)?.name||''; const tp=u.to||(isStay(u)?u.from:null); if(tp){ const m=M(tp.mapId); const r=u.to?unitRoom(u,'to'):unitRoom(u,'from'); if(m&&(r||S.maps.filter(x=>x.placeId===m.placeId).length>1)) s+=' › '+(r?r.name:m.name) } return s }
+function unitRoom(u,slot){ return posRoom(u,u[slot],slot==='to'?'b':'a') }
+function posRoom(u,pos,l='a'){ if(!pos) return null; const m=viewOf(M(pos.mapId),l); if(!cal(m)) return null; const[w,d]=dims(I(u.itemId),pos.rot||0); return roomAt(m,pos.x+w/2,pos.y+d/2) }
+function destLabel(u){ const dp=destPlace(u); if(!dp) return ''; let s=P(dp)?.name||''; const tp=u.to||(isStay(u)?u.from:null); if(tp){ const m=M(tp.mapId); const r=u.to?unitRoom(u,'to'):posRoom(u,u.from,'b'); if(m&&(r||S.maps.filter(x=>x.placeId===m.placeId).length>1)) s+=' › '+(r?r.name:m.name) } return s }
 function parseKey(k){ const p=String(k).split(':'); return p.length===2?{id:p[0],room:'*',layer:p[1]}:{id:p[0],room:p[1],layer:p[2]} }
-function ensurePanels(){ if(!UI.slots) UI.slots=loadPanels(); UI.slots=UI.slots.map(k=>{ if(!k) return null; const q=parseKey(k); const m=M(q.id); if(!cal(m)) return null; if(q.room!=='*'&&!roomsOf(m).some(r=>r.id===q.room)) return null; return `${q.id}:${q.room}:${q.layer}` }) }
-function makePanel(m,roomId,layer,ox,oy){ const c=cmOf(m); let cx=0,cy=0,w=c.w,h=c.h,room=null;
+function ensurePanels(){ if(!UI.slots) UI.slots=loadPanels(); UI.slots=UI.slots.map(k=>{ if(!k) return null; const q=parseKey(k); const m=M(q.id); if(!cal(m)) return null; if(q.room!=='*'&&!roomsOf(viewOf(m,q.layer)).some(r=>r.id===q.room)) return null; return `${q.id}:${q.room}:${q.layer}` }) }
+function makePanel(m,roomId,layer,ox,oy){ m=viewOf(m,layer); const c=cmOf(m); let cx=0,cy=0,w=c.w,h=c.h,room=null;
   if(roomId&&roomId!=='*'){ room=roomsOf(m).find(r=>r.id===roomId); if(!room) return null; cx=room.x/m.sx; cy=room.y/m.sy; w=room.w/m.sx; h=room.h/m.sy }
   return {key:`${m.id}:${room?room.id:'*'}:${layer}`,m,room,layer,ox,oy,w,h,cx,cy,mx:ox-cx,my:oy-cy,gx:c.gx,gy:c.gy} }
-function rowsLayout(rows,layers=['a','b']){ const L=[]; if(!layers.length) return L; const firsts=rows.map(r=>makePanel(r.m,r.roomId,'a',0,0)).filter(Boolean); if(!firsts.length) return L; const wA=Math.max(...firsts.map(p=>p.w)); let y=0;
-  for(const r of rows){ const pa=makePanel(r.m,r.roomId,'a',0,y); if(!pa) continue; for(const l of layers){ const pn=makePanel(r.m,r.roomId,l,layers.length===2&&l==='b'?wA+gapFor(wA):(layers.length===2?wA-pa.w:0),y); pn.col=layers.length===2&&l==='b'?'R':'L'; L.push(pn) } y+=pa.h+380 } return L }
+function rowsLayout(rows,layers=['a','b']){ const L=[]; if(!layers.length) return L; const first=r=>makePanel(r.m,r.roomId,'a',0,0)||makePanel(r.m,r.roomId,'b',0,0); const firsts=rows.map(first).filter(Boolean); if(!firsts.length) return L; const wA=Math.max(...firsts.map(p=>p.w)); let y=0;
+  for(const r of rows){ const pa=first(r); if(!pa) continue; let hh=0; for(const l of layers){ const p0=makePanel(r.m,r.roomId,l,0,0); if(!p0) continue; const pn=makePanel(r.m,r.roomId,l,layers.length===2&&l==='b'?wA+gapFor(wA):(layers.length===2?wA-p0.w:0),y); pn.col=layers.length===2&&l==='b'?'R':'L'; L.push(pn); hh=Math.max(hh,pn.h) } y+=(hh||pa.h)+380 } return L }
 const VIS={hidden:new Set(),a:true,b:true};
 try{ const v=JSON.parse(localStorage.getItem('mb-vis')||'null'); if(v){ VIS.hidden=new Set(v.hidden||[]); VIS.a=v.a!==false; VIS.b=v.b!==false } }catch(e){}
-function allKeys(){ const out=[]; for(const p of S.places) for(const m of S.maps.filter(m=>m.placeId===p.id&&cal(m))){ for(const l of ['a','b']) out.push(`${m.id}:*:${l}`); for(const r of roomsOf(m)) for(const l of ['a','b']) out.push(`${m.id}:${r.id}:${l}`) } return out }
+function allKeys(){ const out=[]; for(const p of S.places) for(const m of S.maps.filter(m=>m.placeId===p.id&&cal(m))){ for(const l of ['a','b']){ out.push(`${m.id}:*:${l}`); for(const r of roomsOf(viewOf(m,l))) out.push(`${m.id}:${r.id}:${l}`) } } return out }
 function defaultCols(){ const fl=S.maps.filter(cal); return {L:fl.map(m=>`${m.id}:*:a`),R:fl.map(m=>`${m.id}:*:b`)} }
 function getCols(){ if(!UI.cols){ try{ const v=JSON.parse(localStorage.getItem('mb-cols')||'null'); if(v&&Array.isArray(v.L)&&Array.isArray(v.R)) UI.cols={L:v.L.filter(k=>k.endsWith(':a')),R:v.R.filter(k=>k.endsWith(':b'))} }catch(e){} if(!UI.cols) UI.cols=defaultCols() }
   const ok=new Set(allKeys()); if(!ok.size) return UI.cols; // 도면을 아직 불러오기 전에는 저장된 선택을 지우지 않음
@@ -1040,7 +1092,7 @@ function saveVis(){ try{localStorage.setItem('mb-vis',JSON.stringify({hidden:[..
 function layout(){ const L=layoutRaw(); computeAnchors(L); return L }
 function layoutRaw(){
   if(UI.focus&&!P(UI.focus)) UI.focus=null;
-  if(UI.room){ const m=M(UI.room.mapId); if(!cal(m)||!roomsOf(m).some(r=>r.id===UI.room.roomId)) UI.room=null }
+  if(UI.room){ const m=M(UI.room.mapId); if(!cal(m)||!roomsAll(m).some(r=>r.id===UI.room.roomId)) UI.room=null }
   const WL=UI.view==='space'?[UI.wlayer||'a']:['a','b'];
   if(UI.room) return rowsLayout([{m:M(UI.room.mapId),roomId:UI.room.roomId}],WL);
   if(UI.focus) return rowsLayout(S.maps.filter(m=>m.placeId===UI.focus&&cal(m)).map(m=>({m,roomId:'*'})),WL);
@@ -1252,22 +1304,22 @@ function renderStagebar(){
   let h='';
   if(UI.view==='space'){
     let o=''; for(const p of S.places){ const ms=S.maps.filter(m=>m.placeId===p.id&&cal(m)); if(!ms.length){ o+=`<option value="p:${p.id}" ${UI.focus===p.id?'selected':''}>${esc(p.name)} (도면 없음)</option>`; continue } o+=`<option value="p:${p.id}" ${UI.focus===p.id&&!UI.room?'selected':''}>${esc(p.name)} 전체</option>`;
-      for(const m of ms) for(const r of roomsOf(m)) o+=`<option value="r:${m.id}:${r.id}" ${UI.room&&UI.room.roomId===r.id?'selected':''}>　└ ${mapNm(m)?esc(mapNm(m))+' › ':''}${esc(r.name)}</option>` }
+      for(const m of ms) for(const r of roomsAll(m)) o+=`<option value="r:${m.id}:${r.id}" ${UI.room&&UI.room.roomId===r.id?'selected':''}>　└ ${mapNm(m)?esc(mapNm(m))+' › ':''}${esc(r.name)}</option>` }
     const unc=S.maps.filter(m=>!cal(m)).map(m=>`<button class="tchip need" data-cal="${m.id}"><b>${esc(P(m.placeId)?.name)}</b><span class="cm">${esc(m.name)}</span>축척 맞추기</button>`).join('');
     h=o?`<div class="slots"><label class="slotsel"><span class="sl">작업할 공간</span><select id="wsel" data-wsel>${o}</select></label>${UI.room?`<button class="btn small" data-rename="room:${UI.room.mapId}:${UI.room.roomId}">방 이름 바꾸기</button>`:(UI.focus?`<button class="btn small" data-rename="place:${UI.focus}">공간 이름 바꾸기</button>`:'')}<button class="btn small" data-pptx title="지금 보이는 도면(변경 전/후)을 1/100 축척 PPT로">📄 PPT로 받기</button><button class="btn small${UI.selMode?' primary':''}" data-selmode title="켜면 가구를 톡 눌러 하나씩 더하고, 빈 곳을 끌어 범위로 고를 수 있어요 (태블릿용). 화면 이동은 두 손가락">${UI.selMode?'☑ 여러 개 선택 중':'☐ 여러 개 선택'}</button><button class="btn small" data-rot="-1" title="고른 가구를 왼쪽으로 90° (붙어 있는 것은 한 덩어리로)">↺ 왼쪽 90°</button><button class="btn small" data-rot="1" title="고른 가구를 오른쪽으로 90° (붙어 있는 것은 한 덩어리로) · 단축키 R">↻ 오른쪽 90°</button>${unc}</div>`:`<div class="slots"><span class="hint">축척을 맞춘 도면이 있는 공간이 없어요.</span>${unc}</div>`;
   }
-  else if(UI.room){ const m=M(UI.room.mapId), r=roomsOf(m).find(r=>r.id===UI.room.roomId); h=`<div class="slots"><button class="btn small" data-focus="">← 모든 공간</button><button class="btn small" data-focus="${m.placeId}">← ${esc(P(m.placeId)?.name)} 전체</button><span class="crumb">${esc(P(m.placeId)?.name)} › ${mapNm(m)?esc(mapNm(m))+' › ':''}<b>${esc(r?r.name:'')}</b></span></div>` }
+  else if(UI.room){ const m=M(UI.room.mapId), r=roomsAll(m).find(r=>r.id===UI.room.roomId); h=`<div class="slots"><button class="btn small" data-focus="">← 모든 공간</button><button class="btn small" data-focus="${m.placeId}">← ${esc(P(m.placeId)?.name)} 전체</button><span class="crumb">${esc(P(m.placeId)?.name)} › ${mapNm(m)?esc(mapNm(m))+' › ':''}<b>${esc(r?r.name:'')}</b></span></div>` }
   else if(UI.focus){ h=`<div class="slots"><button class="btn small" data-focus="">← 모든 공간</button><span class="crumb"><b>${esc(P(UI.focus)?.name)}</b> 전체 · 방 이름을 누르면 그 방만 보여요</span></div>` }
   else if(!S.maps.length){ h='<span class="hint">도면을 추가하면 여기에서 볼 화면을 고를 수 있어요.</span>' }
   else {
     const cols=getCols();
-    const label=k=>{ const q=parseKey(k); const m=M(q.id); const r=q.room!=='*'?roomsOf(m).find(r=>r.id===q.room):null; const mn=mapNm(m); return `${P(m.placeId)?.name||''}${mn?' '+mn:''}${r?' '+r.name:''}` };
+    const label=k=>{ const q=parseKey(k); const m=M(q.id); const r=q.room!=='*'?roomsOf(viewOf(m,q.layer)).find(r=>r.id===q.room):null; const mn=mapNm(m); return `${P(m.placeId)?.name||''}${mn?' '+mn:''}${r?' '+r.name:''}` };
     const menu=side=>{ const sel=new Set(cols[side]); const n=sel.size;
       let x=`<details class="msel" data-msel="${side}" ${UI.openMsel===side?'open':''}><summary><span class="sl">${side==='L'?'왼쪽 · 기존':'오른쪽 · 변경'}</span><span class="msum">${n?(n===1?esc(label(cols[side][0])):`${esc(label(cols[side][0]))} 외 ${n-1}개`):'선택 안 함'}</span><span class="caret">▾</span></summary><div class="mpanel">`;
       const LY=side==='L'?'a':'b'; x+=`<div class="mquick"><button class="btn small" data-mq="${side}:${LY}">전체 모두</button><button class="btn small" data-mq="${side}:none">모두 해제</button></div>`;
       for(const p of S.places){ const ms=S.maps.filter(m=>m.placeId===p.id&&cal(m)); if(!ms.length) continue; x+=`<div class="mgrp"><b>${esc(p.name)}</b>`;
         const row=(k0,txt,sub)=>`<div class="mline ${sub?'sub':''}"><span>${txt}</span>${[LY].map(l=>{ const k=k0+':'+l; return `<label class="vchk"><input type="checkbox" data-col="${side}" data-key="${k}" ${sel.has(k)?'checked':''}> 보기</label>` }).join('')}</div>`;
-        for(const m of ms){ x+=row(`${m.id}:*`,`${mapNm(m)?esc(mapNm(m))+' ':''}전체`,false); for(const r of roomsOf(m)) x+=row(`${m.id}:${r.id}`,`└ ${esc(r.name)}`,true) }
+        for(const m of ms){ x+=row(`${m.id}:*`,`${mapNm(m)?esc(mapNm(m))+' ':''}전체`,false); for(const r of roomsOf(viewOf(m,side==='L'?'a':'b'))) x+=row(`${m.id}:${r.id}`,`└ ${esc(r.name)}`,true) }
         x+='</div>' }
       return x+'</div></details>' };
     h+=`<div class="slots">${menu('L')}${menu('R')}<button class="btn small" data-colsreset>기본으로</button><button class="btn small" data-pptx title="오른쪽(변경)에 체크한 도면을 한 장씩, 1/100 축척 PPT 한 파일로">📄 PPT로 받기</button><button class="btn small${UI.selMode?' primary':''}" data-selmode title="켜면 가구를 톡 눌러 하나씩 더하고, 빈 곳을 끌어 범위로 고를 수 있어요 (태블릿용). 화면 이동은 두 손가락">${UI.selMode?'☑ 여러 개 선택 중':'☐ 여러 개 선택'}</button><button class="btn small" data-rot="-1" title="고른 가구를 왼쪽으로 90° (붙어 있는 것은 한 덩어리로)">↺ 왼쪽 90°</button><button class="btn small" data-rot="1" title="고른 가구를 오른쪽으로 90° (붙어 있는 것은 한 덩어리로) · 단축키 R">↻ 오른쪽 90°</button>`;
@@ -1315,14 +1367,35 @@ const spPhoto=(pid,dir,ph)=>S.photos.find(p=>p.placeId===pid&&p.dir===dir&&phOf(
 function photoSlots(pid,ph='before'){ return `<div class="pslots">${DIRS.map(dir=>{ const x=spPhoto(pid,dir,ph); return x?`<button class="pslot d${DIRS.indexOf(dir)}" data-photo="${x.id}" aria-label="${DIRN[dir]} 사진 크게 보기" title="${DIRN[dir]}"><img src="${x.img}" alt=""><span>${DIRA[dir]}</span></button>`:`<button class="pslot add d${DIRS.indexOf(dir)}" data-addphoto="${pid}" data-dir="${dir}" data-ph="${ph}" aria-label="${DIRN[dir]} 사진 올리기" title="${DIRN[dir]} 사진 올리기"><span>${DIRA[dir]}</span></button>` }).join('')}</div>` }
 function setRoom(k){ const[mid,rid]=k.split(':'); const m=M(mid); if(!m) return; UI.room={mapId:mid,roomId:rid}; UI.focus=UI.lastFocus=m.placeId; UI.railTab=itemsOf(m.placeId).length?m.placeId:''; UI.sel=null; if(UI.view!=='space') switchView('space'); else { UI.fitted=true; renderRail(); renderPlan(); fitAll(); requestAnimationFrame(fitAll) } }
 function setFocus(pid){ UI.room=null; UI.sel=null; if(!pid){ switchView('plan'); return } UI.focus=UI.lastFocus=pid; UI.railTab=itemsOf(pid).length?pid:''; if(UI.view!=='space') switchView('space'); else { UI.fitted=true; renderRail(); renderPlan(); fitAll(); requestAnimationFrame(fitAll) } }
-function renderPhotos(){
-  const box=$('#photos'); const pid0=UI.focus&&UI.L.length?UI.focus:null; const pid=pid0&&!UI.photosOff?pid0:null;
+function renderPhotos(){ // 공간 작업 오른쪽 창: 공간별 메모·확인할 것(체크리스트). 공간(places) 문서에 memo·checks로 저장돼 모두에게 실시간 공유
+  const box=$('#photos'); const pid0=UI.focus&&UI.L.length?UI.focus:null; const pid=pid0&&!UI.photosOff&&P(pid0)?pid0:null;
   $('#photosTab').hidden=!(pid0&&UI.photosOff);
-  $('#svgwrap').classList.toggle('hasphotos',!!pid); box.hidden=!pid; if(!pid){ box.innerHTML=''; return }
-  const order=['전체','북','동','남','서']; const ph=curPh();
-  box.innerHTML=`<div class="ph-head"><b class="ph-title">${esc(P(pid)?.name)}</b><button id="photosOff" title="접기">접기 ▶</button></div><b class="ph-title">사진 · <span class="phtag ${ph}">${PHN[ph]}</span></b>`+order.map(dir=>{ const x=spPhoto(pid,dir,ph);
-    return `<div class="prow"><span class="parrow ${dir==='전체'?'all':''}" title="${DIRN[dir]}">${DIRA[dir]}</span>${x?`<button class="pcard" data-photo="${x.id}" aria-label="${PHN[ph]} ${DIRN[dir]} 사진 크게 보기"><img src="${x.img}" alt=""></button>`:`<button class="pcard add" data-addphoto="${pid}" data-dir="${dir}" data-ph="${ph}" aria-label="${DIRN[dir]} 사진 올리기"><span class="pplus">+</span></button>`}</div>` }).join('');
-}
+  $('#svgwrap').classList.toggle('hasphotos',!!pid); box.hidden=!pid; if(!pid){ box.innerHTML=''; box.dataset.pid=''; return }
+  const p=P(pid), ro=Cloud.on&&!canEdit(), cks=p.checks||[], done=cks.filter(c=>c.done).length;
+  if(box.dataset.pid!==pid||!$('#nMemo')){ box.dataset.pid=pid;
+    box.innerHTML=`<div class="ph-head"><b class="ph-title nt-place"></b><button id="photosOff" title="접기">접기 ▶</button></div>
+      <label class="nt-sec"><b class="ph-title">메모</b><textarea id="nMemo" rows="6" placeholder="이 공간에 대한 메모를 적어 두세요. 모두에게 같이 보여요."></textarea></label>
+      <div class="nt-sec"><div class="nt-hd"><b class="ph-title">확인할 것</b><span id="nCnt" class="nt-cnt"></span></div><div id="nList" class="nt-list"></div>
+      <form id="nAddF" class="nt-add" autocomplete="off"><input id="nAdd" placeholder="예: 콘센트 위치 확인" aria-label="확인할 것 추가"><button class="btn small">추가</button></form></div>` }
+  box.querySelector('.nt-place').textContent=p.name;
+  const ta=$('#nMemo'); ta.readOnly=ro; if(document.activeElement!==ta) ta.value=p.memo||'';
+  $('#nAddF').hidden=ro; $('#nCnt').textContent=cks.length?`${done}/${cks.length} 완료`:'';
+  const ae=document.activeElement; if(ae&&ae.classList.contains('nt-t')&&$('#nList').contains(ae)) return; // 항목 글자 고치는 중에는 다시 그리지 않음
+  $('#nList').innerHTML=cks.length?cks.map(c=>`<div class="nt-item${c.done?' done':''}"><input type="checkbox" data-nck="${c.id}" ${c.done?'checked':''} ${ro?'disabled':''} aria-label="${esc(c.t)} 확인"><textarea class="nt-t" rows="1" data-nedit="${c.id}" ${ro?'readonly':''} aria-label="확인할 것">${esc(c.t)}</textarea>${ro?'<span></span>':`<button class="nt-x" data-ndel="${c.id}" title="지우기" aria-label="${esc(c.t)} 지우기">×</button>`}</div>`).join('')
+    :'<p class="hint nt-empty">아직 없어요. 아래에 적고 Enter를 누르세요.</p>'; ntFit() }
+function ntFit(){ const f=()=>$$('#nList .nt-t').forEach(t=>{ if(!t.offsetWidth) return; t.style.height='0px'; t.style.height=t.scrollHeight+'px' }); f(); requestAnimationFrame(f) }
+const notePlace=()=>P($('#photos').dataset.pid||'');
+let memoT=null;
+$('#photos').addEventListener('input',e=>{ if(e.target.classList.contains('nt-t')){ ntFit(); return } if(e.target.id!=='nMemo') return; const p=notePlace(); if(!p) return; p.memo=e.target.value; clearTimeout(memoT); memoT=setTimeout(save,700) });
+$('#photos').addEventListener('focusout',e=>{ if(e.target.id==='nMemo'&&memoT){ clearTimeout(memoT); memoT=null; save() } });
+$('#photos').addEventListener('submit',e=>{ if(e.target.id!=='nAddF') return; e.preventDefault(); const p=notePlace(), inp=$('#nAdd'), t=inp.value.trim(); if(!p||!t) return;
+  (p.checks||(p.checks=[])).push({id:uid(),t,done:false}); inp.value=''; save(); renderPhotos(); inp.focus() });
+$('#photos').addEventListener('change',e=>{ const p=notePlace(); if(!p) return; const d=e.target.dataset;
+  if(d.nck){ const c=(p.checks||[]).find(c=>c.id===d.nck); if(c){ c.done=e.target.checked; save(); renderPhotos() } }
+  else if(d.nedit){ const c=(p.checks||[]).find(c=>c.id===d.nedit); if(!c) return; const t=e.target.value.trim(); if(t) c.t=t; else p.checks=p.checks.filter(x=>x!==c); save(); e.target.blur(); renderPhotos() } });
+$('#photos').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.classList.contains('nt-t')){ e.preventDefault(); e.target.blur() } });
+$('#photos').addEventListener('focusout',e=>{ if(e.target.classList&&e.target.classList.contains('nt-t')) setTimeout(renderPhotos,0) });
+$('#photos').addEventListener('click',e=>{ const b=e.target.closest('[data-ndel]'); if(!b) return; const p=notePlace(); if(!p) return; p.checks=(p.checks||[]).filter(c=>c.id!==b.dataset.ndel); save(); renderPhotos() });
 async function addPhotos(pid,files,dir,ph){
   let n=0; const asset=pid==='@asset'; ph=ph==='after'?'after':'before'; const same=p=>p.placeId===pid&&p.dir===dir&&(asset||phOf(p)===ph);
   for(const f of files.slice(0,1)){ try{ const url=URL.createObjectURL(f); const img=new Image(); await new Promise((r,j)=>{img.onload=r;img.onerror=j;img.src=url}); const k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight)); const c=document.createElement('canvas'); c.width=Math.round(img.naturalWidth*k); c.height=Math.round(img.naturalHeight*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url); S.photos=S.photos.filter(p=>!same(p)); const o={id:uid(),placeId:pid,dir,img:c.toDataURL('image/jpeg',.82),name:f.name}; if(!asset) o.ph=ph; S.photos.push(o); n++ }catch(e){} }
@@ -1548,7 +1621,7 @@ function commit(){ save(); renderAll() }
 /* ---------- 버전 (시점별 저장) ---------- */
 const liveS=()=>UI.viewVer?UI.live:S;
 function fmtAt(t){ const d=new Date(t); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}` }
-function makeVersion(name,auto){ const L=liveS(); const data=JSON.stringify({places:L.places,maps:L.maps.map(m=>{ const c={...m}; delete c.img; return c }),items:L.items,units:L.units,meta:L.meta||{}});
+function makeVersion(name,auto){ const L=liveS(); const data=JSON.stringify({places:L.places,maps:L.maps.map(m=>{ const c={...m}; delete c.img; delete c.imgB; return c }),items:L.items,units:L.units,meta:L.meta||{}});
   if(new TextEncoder().encode(data).length>1000000){ toast('내용이 너무 커서 버전으로 저장할 수 없어요. 파일로 내보내기를 이용하세요.'); return null }
   const placed=L.units.filter(isPlaced).length; const v={id:uid(),name:name||'이름 없는 버전',at:Date.now(),auto:!!auto,data,stats:{units:L.units.length,placed}};
   (L.versions||(L.versions=[])).push(v); return v }
@@ -1561,8 +1634,8 @@ function advanceAll(){ // 변경 후 → 새 변경 전 (전체)
   S.items=S.items.filter(it=>S.units.some(u=>u.itemId===it.id)); for(const it of S.items){ const us=unitsOf(it); it.qty=us.length; us.forEach((u,i)=>u.idx=i+1) } }
 function renderVerList(){ const L=liveS(); const vs=[...(L.versions||[])].sort((a,b)=>b.at-a.at); const box=$('#verList'); if(!box) return;
   box.innerHTML=vs.length?vs.map(v=>`<div class="veritem ${v.auto?'auto':''} ${UI.viewVer===v.id?'on':''}"><input class="vname" data-vername="${v.id}" value="${esc(v.name)}" aria-label="버전 이름" title="눌러서 이름 바꾸기"><div class="va"><button class="btn small" data-verview="${v.id}">보기</button><button class="btn small" data-verrestore="${v.id}">되돌리기</button><button class="btn small danger" data-verdel="${v.id}">삭제</button></div><span class="vm">${fmtAt(v.at)} · 가구 ${v.stats?.units??'?'}개 · 배치 ${v.stats?.placed??'?'}</span></div>`).join(''):'<span class="hint">아직 저장한 버전이 없어요.</span>' }
-function verState(v){ const L=liveS(); const d=JSON.parse(v.data); const imgOf=new Map(L.maps.map(m=>[m.id,m.img]));
-  const st=Object.assign(empty(),d); st.maps=st.maps.map(m=>({...m,img:imgOf.get(m.id)||blankDataURL()})); st.photos=L.photos; st.versions=L.versions; return st }
+function verState(v){ const L=liveS(); const d=JSON.parse(v.data); const imgOf=new Map(L.maps.map(m=>[m.id,m.img])), imgBOf=new Map(L.maps.map(m=>[m.id+':'+m.imgBV,m.imgB]));
+  const st=Object.assign(empty(),d); st.maps=st.maps.map(m=>({...m,img:imgOf.get(m.id)||blankDataURL(),...(m.imgBV?{imgB:imgBOf.get(m.id+':'+m.imgBV)||null}:{})})); st.photos=L.photos; st.versions=L.versions; return st }
 function viewVersion(id){ const L=liveS(); const v=(L.versions||[]).find(x=>x.id===id); if(!v) return; if(!UI.viewVer) UI.live=S; S=verState(v); UI.viewVer=id; UI.sel=null; UI.multi=null; UI.hl=null;
   document.body.classList.add('viewing'); const b=$('#verBar'); b.hidden=false; b.innerHTML=`📌 <b>${esc(v.name)}</b> <span>(${fmtAt(v.at)})</span> 버전을 보는 중 · 보기 전용<button class="btn small" data-verexit>현재로 돌아가기</button><button class="btn small" data-verrestore="${v.id}">이 버전으로 되돌리기</button>`;
   $('#dlgVer').open&&$('#dlgVer').close(); UI.fitted=false; rebuild(); renderAll(); toast('지난 버전을 보고 있어요. 여기서 고친 내용은 저장되지 않아요.') }
@@ -1570,7 +1643,7 @@ function exitVersion(){ if(!UI.viewVer) return; S=UI.live; UI.live=null; UI.view
 function restoreVersion(id){ const L=liveS(); const v=(L.versions||[]).find(x=>x.id===id); if(!v) return; const st=verState(v); exitVersion();
   makeVersion('되돌리기 전 자동 저장',true);
   const keep=new Map(S.maps.map(m=>[m.id,m]));
-  S.places=st.places; S.items=st.items; S.units=st.units; S.meta=st.meta||{}; S.maps=st.maps.map(m=>{ const k=keep.get(m.id); return k?Object.assign(k,{...m,img:k.img}):m });
+  S.places=st.places; S.items=st.items; S.units=st.units; S.meta=st.meta||{}; S.maps=st.maps.map(m=>{ const k=keep.get(m.id); return k?Object.assign(k,{...m,img:k.img,imgB:m.imgBV===k.imgBV?k.imgB:(m.imgB||null)}):m });
   UI.sel=null; UI.hl=null; UI.fitted=false; commit(); $('#dlgVer').open&&$('#dlgVer').close(); toast(`'${v.name}' 버전으로 되돌렸어요. 되돌리기 전 상태는 자동으로 버전에 저장해 두었어요.`) }
 function confirm2(btn,label){ if(btn.dataset.armed) return true; btn.dataset.armed='1'; const t=btn.textContent; btn.textContent=label; btn.classList.add('armed'); setTimeout(()=>{ if(btn.isConnected){ delete btn.dataset.armed; btn.textContent=t; btn.classList.remove('armed') } },3000); return false }
 document.addEventListener('change',e=>{ const t=e.target.closest('[data-vername]'); if(!t) return; const L=liveS(); const v=(L.versions||[]).find(x=>x.id===t.dataset.vername); if(!v) return; const nm=t.value.trim(); if(!nm){ t.value=v.name; return } if(nm!==v.name){ v.name=nm; v.auto=false; if(UI.viewVer){ toast('이름은 현재로 돌아간 뒤에 바꿀 수 있어요.'); t.value=v.name; return } save(); toast('버전 이름을 바꿨어요.') } });
@@ -1886,7 +1959,7 @@ function renderSpaces(){
   for(const p of S.places){ const maps=S.maps.filter(m=>m.placeId===p.id); const n=itemsOf(p.id).reduce((a,i)=>a+i.qty,0); const inc=S.units.filter(u=>destPlace(u)===p.id).length; 
     h+=`<section class="card space"><div class="shead"><input id="pn-${p.id}" data-pname="${p.id}" value="${esc(p.name)}" aria-label="공간 이름"><button class="btn small" data-delspace="${p.id}">삭제</button></div><div class="smeta">기존 가구 ${n}개 · 들어올 가구 ${inc}개 · 도면 ${maps.length}개</div><div class="maps">`;
     for(const m of maps){ if(m.blank){ h+=`<div class="mrow"><div class="blankthumb">빈 도면</div><div style="display:grid;gap:4px;min-width:0"><input id="mn-${m.id}" data-mname="${m.id}" value="${esc(m.name)}" aria-label="도면 이름"><span class="mstat ok">빈 도면 · ${fmt(m.w)}×${fmt(m.h)}cm</span><div class="actions"><button class="btn small" data-blank="${p.id}" data-blankmap="${m.id}">크기 바꾸기</button><button class="btn small" data-cal="${m.id}">방 나누기</button><button class="btn small" data-replmap="${m.id}" title="가구 위치는 그대로 두고 도면 그림만 PDF·이미지로 바꿔요">도면 바꾸기</button><button class="btn small" data-delmap="${m.id}">삭제</button></div></div></div>`; continue }
-      h+=`<div class="mrow"><img src="${m.img}" alt=""><div style="display:grid;gap:4px;min-width:0"><input id="mn-${m.id}" data-mname="${m.id}" value="${esc(m.name)}" aria-label="도면 이름"><span class="mstat ${cal(m)?'ok':'wr'}">${cal(m)?`축척 완료 · ${fmt(m.w/m.sx)}×${fmt(m.h/m.sy)}cm`:'축척을 맞춰야 배치할 수 있어요'}</span><div class="actions"><button class="btn small ${cal(m)?'':'primary'}" data-cal="${m.id}">${cal(m)?'축척 다시 맞추기':'축척 맞추기'}</button><button class="btn small" data-replmap="${m.id}" title="가구 위치는 그대로 두고 도면 그림만 PDF·이미지로 바꿔요">도면 바꾸기</button><button class="btn small" data-delmap="${m.id}">삭제</button></div></div></div>` }
+      h+=`<div class="mrow"><div class="bthumb"><img src="${hasB(m)&&m.imgB?m.imgB:m.img}" alt="">${hasB(m)?'<span class="btag">변경 후</span>':''}</div><div style="display:grid;gap:4px;min-width:0"><input id="mn-${m.id}" data-mname="${m.id}" value="${esc(m.name)}" aria-label="도면 이름"><span class="mstat ${cal(m)?'ok':'wr'}">${cal(m)?`축척 완료 · ${fmt(m.w/m.sx)}×${fmt(m.h/m.sy)}cm`:'축척을 맞춰야 배치할 수 있어요'}</span><div class="actions"><button class="btn small ${cal(m)?'':'primary'}" data-cal="${m.id}">${cal(m)?'축척 다시 맞추기':'축척 맞추기'}</button><button class="btn small" data-replmap="${m.id}" title="가구 위치는 그대로 두고 도면 그림만 PDF·이미지로 바꿔요">도면 바꾸기</button><button class="btn small" data-delmap="${m.id}">삭제</button></div>${aftRow(m)}</div></div>` }
     const ph=S.photos.filter(x=>x.placeId===p.id), phA=ph.filter(x=>phOf(x)==='after').length;
     h+=`</div><div style="display:grid;gap:5px"><span class="smeta">공간 사진 · <span class="phtag before">변경 전</span> ${ph.length-phA}/5 · 화살표는 도면 기준 방향</span>${photoSlots(p.id)}${phA?`<span class="smeta"><span class="phtag after">변경 후</span> ${phA}/5 · 공간 작업의 변경 후 화면에서 올린 사진</span>${photoSlots(p.id,'after')}`:''}</div><div class="actions"><button class="btn small" data-addmap="${p.id}">도면 추가 (PDF·이미지)</button><button class="btn small" data-blank="${p.id}">빈 도면 만들기</button></div></section>` }
   v.innerHTML=h+'</div></div>';
@@ -1895,9 +1968,11 @@ function renderSpaces(){
 /* ---------- views ---------- */
 function firstWorkPlace(){ const p=S.places.find(p=>S.maps.some(m=>m.placeId===p.id&&cal(m)))||S.places[0]; return p?p.id:null }
 let blankImg=null; function blankDataURL(){ if(!blankImg){ const c=document.createElement('canvas'); c.width=c.height=4; const g=c.getContext('2d'); g.fillStyle='#ffffff'; g.fillRect(0,0,4,4); blankImg=c.toDataURL('image/png') } return blankImg }
-function openRename(kind,id){ UI.rn={kind,id}; let cur=''; if(kind==='place') cur=P(id)?.name; else if(kind==='room'){ const[mid,rid]=id.split(':'); cur=roomsOf(M(mid)).find(r=>r.id===rid)?.name } else cur=M(id)?.name; $('#rnTitle').textContent=kind==='place'?'공간 이름 바꾸기':kind==='room'?'방 이름 바꾸기':'도면 이름 바꾸기'; $('#rnName').value=cur||''; $('#dlgRename').showModal(); requestAnimationFrame(()=>$('#rnName').select()) }
+function aftRow(m){ if(!hasB(m)) return `<div class="actions"><button class="btn small" data-aftmap="${m.id}" title="공사 등으로 구조가 바뀐 도면을 변경 후 화면에만 써요. 지금 도면은 변경 전 화면에 그대로 남아요.">＋ 변경 후 도면 넣기</button></div>`;
+  return `<span class="mstat aft">변경 후 도면 있음 · 변경 후 화면에는 새 도면이 보여요</span><div class="actions"><button class="btn small" data-calb="${m.id}">변경 후 방·벽</button><button class="btn small" data-aftmap="${m.id}">변경 후 도면 바꾸기</button><button class="btn small" data-delaft="${m.id}">변경 후 도면 빼기</button></div>` }
+function openRename(kind,id){ UI.rn={kind,id}; let cur=''; if(kind==='place') cur=P(id)?.name; else if(kind==='room'){ const[mid,rid]=id.split(':'); cur=roomsAll(M(mid)).find(r=>r.id===rid)?.name } else cur=M(id)?.name; $('#rnTitle').textContent=kind==='place'?'공간 이름 바꾸기':kind==='room'?'방 이름 바꾸기':'도면 이름 바꾸기'; $('#rnName').value=cur||''; $('#dlgRename').showModal(); requestAnimationFrame(()=>$('#rnName').select()) }
 $('#formRename').addEventListener('submit',e=>{ e.preventDefault(); const nm=$('#rnName').value.trim(); if(!nm){ toast('이름을 입력하세요.'); return } const r=UI.rn||{};
-  if(r.kind==='place'){ const p=P(r.id); if(p) p.name=nm } else if(r.kind==='room'){ const[mid,rid]=r.id.split(':'); const x=roomsOf(M(mid)).find(x=>x.id===rid); if(x) x.name=nm } else { const m=M(r.id); if(m) m.name=nm }
+  if(r.kind==='place'){ const p=P(r.id); if(p) p.name=nm } else if(r.kind==='room'){ const[mid,rid]=r.id.split(':'); const mm=M(mid); for(const x of [...roomsOf(mm),...(mm&&mm.roomsB||[])]) if(x.id===rid) x.name=nm } else { const m=M(r.id); if(m) m.name=nm }
   $('#dlgRename').close(); commit(); toast('이름을 바꿨어요.') });
 function openBlank(pid,mapId){ const m=mapId?M(mapId):null; UI.blankFor={pid,mapId:m?m.id:null}; $('#blankTitle').textContent=m?'빈 도면 크기 바꾸기':`빈 도면 만들기 · ${P(pid)?.name||''}`; $('#bkName').value=m?m.name:(S.maps.some(x=>x.placeId===pid)?`빈 도면 ${S.maps.filter(x=>x.placeId===pid).length+1}`:'전체'); $('#bkW').value=m?Math.round(m.w/m.sx):1000; $('#bkH').value=m?Math.round(m.h/m.sy):800; $('#bkOk').textContent=m?'바꾸기':'만들기'; $('#dlgBlank').showModal(); requestAnimationFrame(()=>$('#bkW').select()) }
 $('#formBlank').addEventListener('submit',e=>{ e.preventDefault(); e.stopPropagation(); const w=Math.round(num($('#bkW').value,0)), h=Math.round(num($('#bkH').value,0)); if(w<50||h<50){ toast('가로·세로를 50cm 이상으로 넣으세요.'); return } const nm=$('#bkName').value.trim()||'빈 도면'; const f=UI.blankFor||{};
@@ -1957,10 +2032,13 @@ document.addEventListener('click',e=>{
   if(d.rename){ const[k,...rest]=d.rename.split(':'); openRename(k,rest.join(':')); return }
   if(d.blank){ openBlank(d.blank,d.blankmap||null); return }
   if(d.cal){ openCal(d.cal); return }
+  if(d.calb){ openCal(d.calb,'b'); return }
+  if(d.aftmap){ const m=M(d.aftmap); if(!m) return; UI.mapTarget=m.placeId; UI.replaceMap=null; UI.afterMap=m.id; $('#fileMap').value=''; $('#fileMap').click(); return }
+  if(d.delaft){ if(!armed(t)) return; const m=M(d.delaft); if(m){ for(const k of ['imgB','imgBV','roomsB','masksB']) delete m[k]; commit(); toast('변경 후 도면을 뺐어요. 변경 후 화면도 지금 도면으로 보여요.') } return }
   if(d.photo){ openPhoto(d.photo); return }
   if(d.addphoto){ UI.photoTarget=d.addphoto; UI.photoDir=d.dir||'전체'; UI.photoPh=d.ph||'before'; $('#filePhoto').value=''; $('#filePhoto').click(); return }
-  if(d.addmap){ UI.mapTarget=d.addmap; UI.replaceMap=null; $('#fileMap').value=''; $('#fileMap').click(); return }
-  if(d.replmap){ const m=M(d.replmap); if(!m) return; UI.mapTarget=m.placeId; UI.replaceMap=m.id; $('#fileMap').value=''; $('#fileMap').click(); return }
+  if(d.addmap){ UI.mapTarget=d.addmap; UI.replaceMap=null; UI.afterMap=null; $('#fileMap').value=''; $('#fileMap').click(); return }
+  if(d.replmap){ const m=M(d.replmap); if(!m) return; UI.mapTarget=m.placeId; UI.replaceMap=m.id; UI.afterMap=null; $('#fileMap').value=''; $('#fileMap').click(); return }
   if(d.delmap){ if(!armed(t)) return; const id=d.delmap; for(const u of S.units){ if(u.from&&u.from.mapId===id) u.from=null; if(u.to&&u.to.mapId===id) u.to=null } S.maps=S.maps.filter(m=>m.id!==id); UI.slots=(UI.slots||[null,null]).map(k=>k&&k.startsWith(id+':')?null:k); savePanels(); commit(); return }
   if(d.delspace){ if(!armed(t)) return; const id=d.delspace; const mids=new Set(S.maps.filter(m=>m.placeId===id).map(m=>m.id)); const iids=new Set(itemsOf(id).map(i=>i.id)); S.units=S.units.filter(u=>!iids.has(u.itemId)); for(const u of S.units){ if(u.to&&mids.has(u.to.mapId)) u.to=null; if(u.toPlaceId===id) u.toPlaceId=null } S.items=S.items.filter(i=>!iids.has(i.id)); S.maps=S.maps.filter(m=>!mids.has(m.id)); S.places=S.places.filter(p=>p.id!==id); S.photos=S.photos.filter(x=>x.placeId!==id); commit(); return }
   if(d.additem){ const nm='새 가구'; const it={id:uid(),placeId:d.additem,name:nm,w:100,d:50,h:0,qty:1,color:colorFor(nm+uid(),100,50)}; it.color=colorFor('',-1,-1); S.items.push(it); syncUnits(it); commit(); requestAnimationFrame(()=>{ const n=$('#n-'+it.id); if(n){n.focus();n.select()} }); return }
@@ -2061,8 +2139,9 @@ const Crop={pdf:null,img:null,rot:0,page:1,pages:1,scale:1,sel:null,placeId:null
 const cropCanvas=$('#cropCanvas');
 $('#fileMap').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; await openCrop(UI.mapTarget,f) };
 async function openCrop(placeId,file){
-  Object.assign(Crop,{pdf:null,img:null,rot:0,page:1,pages:1,scale:1,sel:null,placeId,src:file.name,added:[],replace:UI.replaceMap||null}); UI.replaceMap=null;
-  $('#cropTitle').textContent=Crop.replace?`도면 바꾸기 · ${P(placeId)?.name||''} › ${M(Crop.replace)?.name||''} (가구는 그대로)`:`도면 잘라내기 · ${P(placeId)?.name||''}`; $('#cropAdded').innerHTML=''; $('#cropName').value='';
+  Object.assign(Crop,{pdf:null,img:null,rot:0,page:1,pages:1,scale:1,sel:null,placeId,src:file.name,added:[],replace:UI.replaceMap||null,after:UI.afterMap||null}); UI.replaceMap=null; UI.afterMap=null;
+  $('#cropAdd').textContent=Crop.after?'선택 영역을 변경 후 도면으로':'선택 영역을 층 도면으로 추가'; $('#cropName').closest('label').hidden=!!(Crop.after||Crop.replace);
+  $('#cropTitle').textContent=Crop.after?`변경 후 도면 넣기 · ${P(placeId)?.name||''} › ${M(Crop.after)?.name||''} · 지금 도면과 같은 범위를 잘라 주세요`:Crop.replace?`도면 바꾸기 · ${P(placeId)?.name||''} › ${M(Crop.replace)?.name||''} (가구는 그대로)`:`도면 잘라내기 · ${P(placeId)?.name||''}`; $('#cropAdded').innerHTML=''; $('#cropName').value='';
   try{
     if(file.type==='application/pdf'||/\.pdf$/i.test(file.name)){
       if(!window.pdfjsLib){ toast('PDF 도구를 불러오지 못했어요. 인터넷 연결을 확인하세요.'); return }
@@ -2093,9 +2172,10 @@ $('#cropAdd').onclick=()=>{
   const r=Crop.sel||{x:0,y:0,w:cropCanvas.width,h:cropCanvas.height};
   const maxS=6000, f=Math.min(1,maxS/Math.max(r.w,r.h)); const c=document.createElement('canvas'); c.width=Math.round(r.w*f); c.height=Math.round(r.h*f);
   const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(cropCanvas,r.x,r.y,r.w,r.h,0,0,c.width,c.height);
+  if(Crop.after&&M(Crop.after)){ const id=Crop.after; Crop.after=null; $('#dlgCrop').close(); openAlign(id,c,Crop.scale*f); return }
   if(Crop.replace&&M(Crop.replace)){ // 도면 바꾸기: 가구 위치(cm)는 그대로, 그림만 바꾸고 축척을 다시 맞춤
     const m=M(Crop.replace); if(cal(m)) m.roomsCm=roomsOf(m).map(r=>({id:r.id,name:r.name,x:r.x/m.sx,y:r.y/m.sy,w:r.w/m.sx,h:r.h/m.sy,pts:r.pts?r.pts.map(q=>({x:q.x/m.sx,y:q.y/m.sy})):undefined}));
-    Object.assign(m,{img:c.toDataURL('image/jpeg',.92),imgV:uid(),w:c.width,h:c.height,sx:0,sy:0,gx:0,gy:0,src:Crop.src,ppu:Crop.scale*f,blank:false,rooms:[],masks:[]}); delete m.calRef;
+    Object.assign(m,{img:c.toDataURL('image/jpeg',.92),imgV:uid(),w:c.width,h:c.height,sx:0,sy:0,gx:0,gy:0,src:Crop.src,ppu:Crop.scale*f,blank:false,rooms:[],masks:[]}); delete m.calRef; const hadB=hasB(m); for(const k of ['imgB','imgBV','roomsB','masksB']) delete m[k]; if(hadB) setTimeout(()=>toast('도면 틀이 바뀌어서 변경 후 도면은 뺐어요. 축척을 맞춘 뒤 다시 넣어 주세요.'),2600);
     Crop.added=[m.id]; Crop.replace=null; save(); $('#dlgCrop').close(); renderAll(); toast('도면 그림을 바꿨어요. 축척을 다시 맞추면 가구가 원래 cm 위치에 다시 나타나요.'); openCal(m.id); return }
   const n=S.maps.filter(m=>m.placeId===Crop.placeId).length+1;
   const m={id:uid(),placeId:Crop.placeId,name:$('#cropName').value.trim()||`층 ${n}`,img:c.toDataURL('image/jpeg',.92),w:c.width,h:c.height,sx:0,sy:0,gx:0,gy:0,src:Crop.src,ppu:Crop.scale*f};
@@ -2105,6 +2185,43 @@ $('#cropAdd').onclick=()=>{
 };
 $('#cropDone').onclick=()=>{ $('#dlgCrop').close(); if(!Crop.added.length&&!Crop.sel){ } renderAll(); const first=Crop.added.find(id=>!cal(M(id))); if(first) openCal(first) };
 
+/* ---------- 변경 후 도면 위치 맞추기 ----------
+   새로 잘라낸 그림을 지금 도면 위에 겹쳐 놓고 끌어서 맞춘 뒤, 지금 도면과 같은 틀(픽셀 크기)로 다시 그려 imgB로 저장.
+   그래서 축척·모눈·가구 위치(cm)는 그대로 공유돼요. */
+const alSvg=$('#alSvg'); const AV=Viewport(alSvg); AV.minW=20;
+const AL={id:null,c:null,url:'',k0:1,k:1,x:0,y:0};
+function openAlign(id,cnv,ppuN){ const m=M(id); if(!m) return;
+  const k0=m.ppu&&ppuN?m.ppu/ppuN:Math.min(m.w/cnv.width,m.h/cnv.height);
+  Object.assign(AL,{id,c:cnv,url:cnv.toDataURL('image/jpeg',.9),k0,k:k0}); AL.x=(m.w-cnv.width*k0)/2; AL.y=(m.h-cnv.height*k0)/2;
+  $('#alTitle').textContent=`변경 후 도면 위치 맞추기 · ${P(m.placeId)?.name||''} › ${m.name}`;
+  alSvg.innerHTML=`<defs><filter id="alRed" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 .75  0 0 0 0 .2  0 0 0 0 .15  -.333 -.333 -.333 1 0"/><feComponentTransfer><feFuncA type="linear" slope="1.8" intercept="-.35"/></feComponentTransfer></filter><filter id="alBlue" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 .12  0 0 0 0 .37  0 0 0 0 .82  -.333 -.333 -.333 1 0"/><feComponentTransfer><feFuncA type="linear" slope="1.8" intercept="-.35"/></feComponentTransfer></filter></defs>
+    <rect x="0" y="0" width="${m.w}" height="${m.h}" fill="#fff" stroke="#999" stroke-dasharray="8 6" vector-effect="non-scaling-stroke"/>
+    <image href="${m.img}" x="0" y="0" width="${m.w}" height="${m.h}" filter="url(#alRed)" preserveAspectRatio="none"/>
+    <g id="alNew" style="mix-blend-mode:multiply"><image href="${AL.url}" x="0" y="0" width="${cnv.width}" height="${cnv.height}" filter="url(#alBlue)" preserveAspectRatio="none"/></g>`;
+  $('#alOp').value=80; $('#dlgAlign').showModal(); alApply(); requestAnimationFrame(()=>AV.fit(0,0,m.w,m.h,.04)) }
+function alApply(){ const g=$('#alNew'); if(!g) return; g.setAttribute('transform',`translate(${AL.x} ${AL.y}) scale(${AL.k})`); g.style.opacity=(+$('#alOp').value)/100;
+  const el=$('#alSc'); if(document.activeElement!==el) el.value=(AL.k/AL.k0*100).toFixed(1) }
+function alScale(k){ if(!(k>0)) return; const cx=AL.x+AL.c.width*AL.k/2, cy=AL.y+AL.c.height*AL.k/2; AL.k=k; AL.x=cx-AL.c.width*k/2; AL.y=cy-AL.c.height*k/2; alApply() }
+$('#alOp').oninput=alApply;
+$('#alSc').onchange=()=>{ const v=parseFloat($('#alSc').value); if(v>=10&&v<=1000) alScale(AL.k0*v/100); else alApply() };
+$('#alSm').onclick=()=>alScale(AL.k*0.998); $('#alLg').onclick=()=>alScale(AL.k/0.998); $('#alSc0').onclick=()=>alScale(AL.k0);
+$('#alZin').onclick=()=>AV.zoomBy(1/1.4); $('#alZout').onclick=()=>AV.zoomBy(1.4); $('#alFit').onclick=()=>{ const m=M(AL.id); if(m) AV.fit(0,0,m.w,m.h,.04) };
+alSvg.addEventListener('contextmenu',e=>e.preventDefault());
+alSvg.addEventListener('pointerdown',e=>{ const pan=(e.pointerType==='mouse'&&(e.button===1||e.button===2))||e.ctrlKey||e.metaKey;
+  if(pan){ e.preventDefault(); AV.panStart(e,()=>{}); return } if(e.pointerType==='mouse'&&e.button!==0) return; if(AV.pinching) return;
+  e.preventDefault(); const inv=alSvg.getScreenCTM().inverse(), p0=AV.pt(e,inv), s={x:AL.x,y:AL.y}; try{alSvg.setPointerCapture(e.pointerId)}catch(_){} alSvg.classList.add('dragging');
+  const mv=ev=>{ if(AV.pinching) return; const p=AV.pt(ev,inv); AL.x=s.x+(p.x-p0.x); AL.y=s.y+(p.y-p0.y); alApply() };
+  const up=()=>{ alSvg.removeEventListener('pointermove',mv); alSvg.removeEventListener('pointerup',up); alSvg.removeEventListener('pointercancel',up); alSvg.classList.remove('dragging') };
+  alSvg.addEventListener('pointermove',mv); alSvg.addEventListener('pointerup',up); alSvg.addEventListener('pointercancel',up) });
+document.addEventListener('keydown',e=>{ if(!$('#dlgAlign').open||e.target.closest('input')) return; const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key]; if(!d) return;
+  e.preventDefault(); const r=alSvg.getBoundingClientRect(); const px=AV.w/(r.width||600)*(e.shiftKey?10:1); AL.x+=d[0]*px; AL.y+=d[1]*px; alApply() });
+$('#alApply').onclick=()=>{ const m=M(AL.id); if(!m||!AL.c){ $('#dlgAlign').close(); return }
+  const c=document.createElement('canvas'); c.width=m.w; c.height=m.h; const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height);
+  g.imageSmoothingQuality='high'; g.drawImage(AL.c,AL.x,AL.y,AL.c.width*AL.k,AL.c.height*AL.k);
+  const first=!hasB(m); m.imgB=c.toDataURL('image/jpeg',.92); m.imgBV=uid(); if(!m.roomsB) m.roomsB=JSON.parse(JSON.stringify(roomsOf(m))); if(!m.masksB) m.masksB=[];
+  AL.c=null; AL.url=''; $('#dlgAlign').close(); UI.fitted=false; commit();
+  toast(first?'변경 후 도면을 넣었어요. 방 구분이 바뀌었으면 여기서 고쳐 주세요.':'변경 후 도면을 바꿨어요.'); if(first) openCal(m.id,'b') };
+
 /* ---------- calibration ---------- */
 const calSvg=$('#calSvg'); const CV=Viewport(calSvg); CV.minW=20; CV.onzoom=()=>calOverlay(); // replaced below with loupe-aware version
 /* 축척·방·가리기 창에서 도면 옮기기: Ctrl+끌기, 마우스 가운데·오른쪽 버튼 끌기, Shift+휠(좌우), 두 손가락 */
@@ -2113,13 +2230,17 @@ calSvg.addEventListener('contextmenu',e=>e.preventDefault());
 calSvg.addEventListener('wheel',e=>{ if(!e.shiftKey) return; e.preventDefault(); e.stopImmediatePropagation(); const r=calSvg.getBoundingClientRect(); const k=CV.w/(r.width||1); const d=(Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY)*(e.deltaMode===1?33:1); CV.x+=d*k; CV.apply() },{capture:true,passive:false});
 { let mid=null; calSvg.addEventListener('touchmove',e=>{ if(e.touches.length!==2){ mid=null; return } const[a,b]=e.touches; const m={x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2}; if(mid){ const k=CV.w/(calSvg.getBoundingClientRect().width||1); CV.x-=(m.x-mid.x)*k; CV.y-=(m.y-mid.y)*k; CV.apply() } mid=m },{passive:true}); calSvg.addEventListener('touchend',e=>{ if(e.touches.length<2) mid=null }) }
 const Cal={m:null,mode:'scale',pts:[]};
-function openCal(id){
-  const m=M(id); if(!m) return; Cal.m=m; Cal.pts=[]; Cal.selPt=null; Cal.imgEl=new Image(); Cal.imgEl.src=m.img; setCalMode('scale');
-  $('#calTitle').textContent=`축척 맞추기 · ${P(m.placeId)?.name||''} · ${m.name}`; $('#calLen').value=''; $('#checkOut').textContent='–'; $('#calApply').textContent='적용';
+function openCal(id,l){
+  const m0=M(id); if(!m0) return; Cal.l=l==='b'&&hasB(m0)?'b':'a'; const m=viewOf(m0,Cal.l); Cal.m=m; Cal.pts=[]; Cal.selPt=null; Cal.imgEl=new Image(); Cal.imgEl.src=m.img; setCalMode(Cal.l==='b'?'rooms':'scale');
+  calLayerUI(); $('#calLen').value=''; $('#checkOut').textContent='–'; $('#calApply').textContent='적용';
   if(m.calRef&&m.calRef.pts&&m.calRef.pts.length===2){ Cal.pts=m.calRef.pts.map(q=>({x:q.x,y:q.y})); Cal.selPt=1; $('#calLen').value=m.calRef.mm; const r=$(`input[name=calDir][value="${m.calRef.dir||'both'}"]`); if(r) r.checked=true; $('#calApply').textContent='수정 적용' }
-  if(m.blank) setCalMode('rooms');
+  if(m.blank&&Cal.l!=='b') setCalMode('rooms');
   $('#dlgCal').showModal(); calBase(); requestAnimationFrame(()=>{ CV.fit(0,0,m.w,m.h,.02); calBase() });
 }
+function calLayerUI(){ const b=baseOf(Cal.m); $('#calLayer').hidden=!hasB(b); $$('#calLayer [data-l]').forEach(x=>x.classList.toggle('on',x.dataset.l===Cal.l));
+  $('#calTitle').textContent=`${Cal.l==='b'?'변경 후 도면':'축척 맞추기'} · ${P(b.placeId)?.name||''} · ${b.name}` }
+function calSetLayer(l){ const b=baseOf(Cal.m); Cal.l=l==='b'&&hasB(b)?'b':'a'; Cal.m=viewOf(b,Cal.l); Cal.imgEl=new Image(); Cal.imgEl.src=Cal.m.img; Cal.poly=null; Cal.draft=null; Cal.mdraft=null; calLayerUI(); calBase(); if(Cal.mode==='rooms') calRooms(); if(Cal.mode==='mask') maskInfo() }
+$('#calLayer').addEventListener('click',e=>{ const b=e.target.closest('[data-l]'); if(b) calSetLayer(b.dataset.l) });
 function calBase(){
   const m=Cal.m; let grid='';
   if(cal(m)){ const st=50*m.sx, sty=50*m.sy; let d=''; const x0=((m.gx%st)+st)%st, y0=((m.gy%sty)+sty)%sty; for(let x=x0;x<=m.w;x+=st) d+=`M${x.toFixed(1)} 0V${m.h}`; for(let y=y0;y<=m.h;y+=sty) d+=`M0 ${y.toFixed(1)}H${m.w}`; grid=`<path class="g2" d="${d}"/>` }

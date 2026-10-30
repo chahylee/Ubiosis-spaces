@@ -26,9 +26,18 @@ service cloud.firestore {
       allow read: if isAdmin() || isMember();
       allow write: if isAdmin();
     }
+    // 내 메모: 본인만 읽고 씀 (관리자도 다른 사람 것은 못 봄)
+    match /notes/{em} {
+      allow read, write: if signedIn() && myEmail() == em;
+    }
+    // 공개한 메모: 사용자는 모두 읽고, 본인 것만 씀
+    match /pubnotes/{em} {
+      allow read: if isAdmin() || (isMember() && inPeriod());
+      allow write: if signedIn() && myEmail() == em;
+    }
     match /{coll}/{doc} {
-      allow read: if !(coll in ['members', 'requests', 'settings']) && (isAdmin() || (isMember() && inPeriod()));
-      allow write: if !(coll in ['members', 'requests', 'settings']) && (isAdmin() || (isEditor() && notLocked() && inPeriod()));
+      allow read: if !(coll in ['members', 'requests', 'settings', 'notes', 'pubnotes']) && (isAdmin() || (isMember() && inPeriod()));
+      allow write: if !(coll in ['members', 'requests', 'settings', 'notes', 'pubnotes']) && (isAdmin() || (isEditor() && notLocked() && inPeriod()));
     }
   }
 }

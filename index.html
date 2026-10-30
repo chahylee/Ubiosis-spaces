@@ -342,6 +342,9 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border
 @media (hover:none){.nt-x{opacity:.6}}
 .nt-add{display:grid;grid-template-columns:1fr auto;gap:4px}.nt-add input{min-width:0;font-size:12.5px}
 .nt-empty{margin:0;font-size:11.5px}
+.nt-pub{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);border:1px solid var(--line);border-radius:12px;padding:1px 8px 1px 5px;cursor:pointer;background:var(--raise)}.nt-pub input{margin:0;width:13px;height:13px}.nt-pub.on{color:var(--accent);border-color:var(--accent)}
+.nt-others{display:grid;gap:6px}.nt-o{border-left:3px solid var(--line);padding:2px 0 2px 8px}.nt-on{font-size:11.5px;font-weight:600}.nt-ot{white-space:pre-wrap;font-size:12px;color:var(--ink);margin-top:2px}.nt-err{color:#c0392b;font-size:11.5px}
+.nt-old{display:grid;gap:5px;padding:8px;border:1px dashed var(--line);border-radius:7px}.nt-oldt{white-space:pre-wrap;font-size:12px;color:var(--muted)}
 .inc{display:grid;gap:6px;padding-bottom:10px;border-bottom:1px solid var(--line)}
 .incg{display:grid;gap:2px}
 .incf{font-size:11.5px;color:var(--ok);font-weight:500}
@@ -1421,35 +1424,57 @@ const spPhoto=(pid,dir,ph)=>S.photos.find(p=>p.placeId===pid&&p.dir===dir&&phOf(
 function photoSlots(pid,ph='before'){ return `<div class="pslots">${DIRS.map(dir=>{ const x=spPhoto(pid,dir,ph); return x?`<button class="pslot d${DIRS.indexOf(dir)}" data-photo="${x.id}" aria-label="${DIRN[dir]} 사진 크게 보기" title="${DIRN[dir]}"><img src="${x.img}" alt=""><span>${DIRA[dir]}</span></button>`:`<button class="pslot add d${DIRS.indexOf(dir)}" data-addphoto="${pid}" data-dir="${dir}" data-ph="${ph}" aria-label="${DIRN[dir]} 사진 올리기" title="${DIRN[dir]} 사진 올리기"><span>${DIRA[dir]}</span></button>` }).join('')}</div>` }
 function setRoom(k){ const[mid,rid]=k.split(':'); const m=M(mid); if(!m) return; UI.room={mapId:mid,roomId:rid}; UI.focus=UI.lastFocus=m.placeId; UI.railTab=itemsOf(m.placeId).length?m.placeId:''; UI.sel=null; if(UI.view!=='space') switchView('space'); else { UI.fitted=true; renderRail(); renderPlan(); fitAll(); requestAnimationFrame(fitAll) } }
 function setFocus(pid){ UI.room=null; UI.sel=null; if(!pid){ switchView('plan'); return } UI.focus=UI.lastFocus=pid; UI.railTab=itemsOf(pid).length?pid:''; if(UI.view!=='space') switchView('space'); else { UI.fitted=true; renderRail(); renderPlan(); fitAll(); requestAnimationFrame(fitAll) } }
-function renderPhotos(){ // 공간 작업 오른쪽 창: 공간별 메모·확인할 것(체크리스트). 공간(places) 문서에 memo·checks로 저장돼 모두에게 실시간 공유
+/* 내 메모: 사용자마다 따로, 본인만 보임. 클라우드면 notes/{내 이메일} 문서(firestore.rules로 본인만 읽고 씀), 아니면 이 브라우저(IndexedDB)에 저장 */
+const NOTES={memos:{},pub:{},others:{},started:false,err:false,t:null};
+const myEmail=()=>((Cloud.user&&Cloud.user.email)||'').toLowerCase();
+function myNotesRef(){ return Cloud.on&&Cloud.user&&Cloud.db?Cloud.db.collection('notes').doc(myEmail()):null }
+function startNotes(){ if(NOTES.started) return; if(Cloud.on&&!Cloud.user) return; NOTES.started=true; const r=myNotesRef();
+  if(r){ r.onSnapshot(d=>{ if(d.metadata.hasPendingWrites) return; NOTES.err=false; if(!NOTES.t){ const x=d.exists?d.data():{}; NOTES.memos=Object.assign({},x.memos||{}); NOTES.pub=Object.assign({},x.pub||{}) } renderPhotos() },e=>{ console.error(e); NOTES.err=true; renderPhotos() });
+    Cloud.db.collection('pubnotes').onSnapshot(snap=>{ const o={}; snap.docs.forEach(d=>{ if(d.id!==myEmail()) o[d.id]=d.data() }); NOTES.others=o; renderPhotos() },e=>console.error(e)) } // 공개한 메모: 모두 읽기, 본인만 쓰기
+  else Store.get('mynotes').then(v=>{ if(!NOTES.t){ NOTES.memos=(v&&v.memos)||(v&&!v.memos?v:{})||{} } renderPhotos() }) }
+function setMyMemo(pid,v){ if(v) NOTES.memos[pid]=v; else delete NOTES.memos[pid]; clearTimeout(NOTES.t); NOTES.t=setTimeout(saveNotes,700) }
+async function saveNotes(){ clearTimeout(NOTES.t); NOTES.t=null; const r=myNotesRef();
+  try{ if(r){ const pubM={}; for(const k of Object.keys(NOTES.pub)) if(NOTES.pub[k]&&NOTES.memos[k]) pubM[k]=NOTES.memos[k];
+      await r.set({memos:NOTES.memos,pub:NOTES.pub,at:Date.now()});
+      await Cloud.db.collection('pubnotes').doc(myEmail()).set({name:(Cloud.user.displayName||myEmail().split('@')[0]),memos:pubM,at:Date.now()}) }
+    else await Store.set('mynotes',{memos:NOTES.memos}); NOTES.err=false }catch(e){ console.error(e); NOTES.err=true }
+  const el=$('#nMemoErr'); if(el){ el.hidden=!NOTES.err; el.textContent='메모를 저장하지 못했어요. 관리자에게 Firebase 규칙 업데이트를 부탁하세요.' } }
+function renderPhotos(){ // 공간 작업 오른쪽 창: 내 메모(나만) + 확인할 것(체크리스트, 공간 문서의 checks로 모두에게 공유)
+  startNotes();
   const box=$('#photos'); const pid0=UI.focus&&UI.L.length?UI.focus:null; const pid=pid0&&!UI.photosOff&&P(pid0)?pid0:null;
   $('#photosTab').hidden=!(pid0&&UI.photosOff);
   $('#svgwrap').classList.toggle('hasphotos',!!pid); box.hidden=!pid; if(!pid){ box.innerHTML=''; box.dataset.pid=''; return }
   const p=P(pid), ro=Cloud.on&&!canEdit(), cks=p.checks||[], done=cks.filter(c=>c.done).length;
   if(box.dataset.pid!==pid||!$('#nMemo')){ box.dataset.pid=pid;
     box.innerHTML=`<div class="ph-head"><b class="ph-title nt-place"></b><button id="photosOff" title="접기">접기 ▶</button></div>
-      <label class="nt-sec"><b class="ph-title">메모</b><textarea id="nMemo" rows="6" placeholder="이 공간에 대한 메모를 적어 두세요. 모두에게 같이 보여요."></textarea></label>
+      <div class="nt-sec"><div class="nt-hd"><b class="ph-title">내 메모</b><label class="nt-pub" id="nPubL" title="켜면 다른 사람도 이 메모를 볼 수 있어요 (고치는 건 나만)"><input type="checkbox" id="nPub"> <span id="nPubT">🔒 나만</span></label></div><textarea id="nMemo" rows="6" aria-label="내 메모"></textarea><span id="nMemoErr" class="hint nt-err" hidden></span></div><div id="nOthers" class="nt-others" hidden></div><div id="nOld" class="nt-old" hidden></div>
       <div class="nt-sec"><div class="nt-hd"><b class="ph-title">확인할 것</b><span id="nCnt" class="nt-cnt"></span></div><div id="nList" class="nt-list"></div>
       <form id="nAddF" class="nt-add" autocomplete="off"><input id="nAdd" placeholder="예: 콘센트 위치 확인" aria-label="확인할 것 추가"><button class="btn small">추가</button></form></div>` }
   box.querySelector('.nt-place').textContent=p.name;
-  const ta=$('#nMemo'); ta.readOnly=ro; if(document.activeElement!==ta) ta.value=p.memo||'';
+  const ta=$('#nMemo'); if(document.activeElement!==ta) ta.value=NOTES.memos[pid]||''; const pub=!!NOTES.pub[pid];
+  $('#nPubL').hidden=!Cloud.on; $('#nPub').checked=pub; $('#nPubT').textContent=pub?'👥 공개':'🔒 나만'; $('#nPubL').classList.toggle('on',pub);
+  ta.placeholder=pub?'이 메모는 다른 사람도 볼 수 있어요.':'이 공간에 대한 메모를 적어 두세요. 나만 보여요.';
+  const oth=Object.values(NOTES.others).filter(o=>o&&o.memos&&o.memos[pid]); const ob=$('#nOthers'); ob.hidden=!oth.length;
+  if(oth.length) ob.innerHTML=`<b class="ph-title">다른 사람이 공개한 메모</b>`+oth.map(o=>`<div class="nt-o"><span class="nt-on">${esc(o.name||'')}</span><div class="nt-ot">${esc(o.memos[pid])}</div></div>`).join(''); const me=$('#nMemoErr'); me.hidden=!NOTES.err; if(NOTES.err) me.textContent='메모를 불러오거나 저장하지 못했어요. 관리자에게 Firebase 규칙 업데이트를 부탁하세요.';
+  const old=$('#nOld'); old.hidden=!p.memo; if(p.memo) old.innerHTML=`<b class="ph-title">예전 공용 메모 (모두에게 보임)</b><div class="nt-oldt">${esc(p.memo)}</div><button class="btn small" data-nold>내 메모로 옮기기</button>`;
   $('#nAddF').hidden=ro; $('#nCnt').textContent=cks.length?`${done}/${cks.length} 완료`:'';
   const ae=document.activeElement; if(ae&&ae.classList.contains('nt-t')&&$('#nList').contains(ae)) return; // 항목 글자 고치는 중에는 다시 그리지 않음
   $('#nList').innerHTML=cks.length?cks.map(c=>`<div class="nt-item${c.done?' done':''}"><input type="checkbox" data-nck="${c.id}" ${c.done?'checked':''} ${ro?'disabled':''} aria-label="${esc(c.t)} 확인"><textarea class="nt-t" rows="1" data-nedit="${c.id}" ${ro?'readonly':''} aria-label="확인할 것">${esc(c.t)}</textarea>${ro?'<span></span>':`<button class="nt-x" data-ndel="${c.id}" title="지우기" aria-label="${esc(c.t)} 지우기">×</button>`}</div>`).join('')
     :'<p class="hint nt-empty">아직 없어요. 아래에 적고 Enter를 누르세요.</p>'; ntFit() }
 function ntFit(){ const f=()=>$$('#nList .nt-t').forEach(t=>{ if(!t.offsetWidth) return; t.style.height='0px'; t.style.height=t.scrollHeight+'px' }); f(); requestAnimationFrame(f) }
 const notePlace=()=>P($('#photos').dataset.pid||'');
-let memoT=null;
-$('#photos').addEventListener('input',e=>{ if(e.target.classList.contains('nt-t')){ ntFit(); return } if(e.target.id!=='nMemo') return; const p=notePlace(); if(!p) return; p.memo=e.target.value; clearTimeout(memoT); memoT=setTimeout(save,700) });
-$('#photos').addEventListener('focusout',e=>{ if(e.target.id==='nMemo'&&memoT){ clearTimeout(memoT); memoT=null; save() } });
+$('#photos').addEventListener('input',e=>{ if(e.target.classList.contains('nt-t')){ ntFit(); return } if(e.target.id!=='nMemo') return; const p=notePlace(); if(!p) return; setMyMemo(p.id,e.target.value) });
+$('#photos').addEventListener('focusout',e=>{ if(e.target.id==='nMemo'&&NOTES.t) saveNotes() });
 $('#photos').addEventListener('submit',e=>{ if(e.target.id!=='nAddF') return; e.preventDefault(); const p=notePlace(), inp=$('#nAdd'), t=inp.value.trim(); if(!p||!t) return;
   (p.checks||(p.checks=[])).push({id:uid(),t,done:false}); inp.value=''; save(); renderPhotos(); inp.focus() });
 $('#photos').addEventListener('change',e=>{ const p=notePlace(); if(!p) return; const d=e.target.dataset;
+  if(e.target.id==='nPub'){ if(e.target.checked) NOTES.pub[p.id]=true; else delete NOTES.pub[p.id]; saveNotes(); renderPhotos(); toast(e.target.checked?'이 메모를 공개했어요. 다른 사람도 볼 수 있어요.':'이 메모를 나만 보게 바꿨어요.'); return }
   if(d.nck){ const c=(p.checks||[]).find(c=>c.id===d.nck); if(c){ c.done=e.target.checked; save(); renderPhotos() } }
   else if(d.nedit){ const c=(p.checks||[]).find(c=>c.id===d.nedit); if(!c) return; const t=e.target.value.trim(); if(t) c.t=t; else p.checks=p.checks.filter(x=>x!==c); save(); e.target.blur(); renderPhotos() } });
 $('#photos').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.classList.contains('nt-t')){ e.preventDefault(); e.target.blur() } });
 $('#photos').addEventListener('focusout',e=>{ if(e.target.classList&&e.target.classList.contains('nt-t')) setTimeout(renderPhotos,0) });
-$('#photos').addEventListener('click',e=>{ const b=e.target.closest('[data-ndel]'); if(!b) return; const p=notePlace(); if(!p) return; p.checks=(p.checks||[]).filter(c=>c.id!==b.dataset.ndel); save(); renderPhotos() });
+$('#photos').addEventListener('click',e=>{ if(e.target.closest('[data-nold]')){ const p=notePlace(); if(!p||!p.memo) return; const cur=NOTES.memos[p.id]||''; setMyMemo(p.id,(cur?cur+'\n':'')+p.memo); saveNotes(); if(!(Cloud.on&&!canEdit())){ delete p.memo; save() } renderPhotos(); return }
+  const b=e.target.closest('[data-ndel]'); if(!b) return; const p=notePlace(); if(!p) return; p.checks=(p.checks||[]).filter(c=>c.id!==b.dataset.ndel); save(); renderPhotos() });
 async function addPhotos(pid,files,dir,ph){
   let n=0; const asset=pid==='@asset'; ph=ph==='after'?'after':'before'; const same=p=>p.placeId===pid&&p.dir===dir&&(asset||phOf(p)===ph);
   for(const f of files.slice(0,1)){ try{ const url=URL.createObjectURL(f); const img=new Image(); await new Promise((r,j)=>{img.onload=r;img.onerror=j;img.src=url}); const k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight)); const c=document.createElement('canvas'); c.width=Math.round(img.naturalWidth*k); c.height=Math.round(img.naturalHeight*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url); S.photos=S.photos.filter(p=>!same(p)); const o={id:uid(),placeId:pid,dir,img:c.toDataURL('image/jpeg',.82),name:f.name}; if(!asset) o.ph=ph; S.photos.push(o); n++ }catch(e){} }
@@ -2152,13 +2177,13 @@ planSvg.addEventListener('dblclick',e=>{ const m=UI.measure; if(!m||!m.pts.lengt
 document.addEventListener('keydown',e=>{ const m=UI.measure; if(!m) return; if(e.key==='Shift'){ m.shift=true; renderOverlay() } if(e.key==='Enter'&&!e.target.closest('input,select,textarea')){ m.done=true; m.hover=null; renderOverlay() } if(e.key==='Backspace'&&!e.target.closest('input,select,textarea')&&!m.done&&m.pts.length){ e.preventDefault(); e.stopImmediatePropagation(); m.pts.pop(); renderOverlay() } },true);
 document.addEventListener('keyup',e=>{ if(e.key==='Shift'&&UI.measure){ UI.measure.shift=false; renderOverlay() } });
 $('#btnMeasure').onclick=toggleMeasure;
-try{ UI.railOff=localStorage.getItem('mb-railoff')==='1'; UI.photosOff=localStorage.getItem('mb-photosoff')==='1' }catch(e){}
+try{ UI.railOff=localStorage.getItem('mb-railoff')==='1'; UI.photosOff=false; localStorage.removeItem('mb-photosoff') }catch(e){} // 메모 창은 들어올 때마다 열려 있게
 function applyRail(){ $('#view-plan').classList.toggle('railoff',!!UI.railOff); $('#btnRail').textContent=UI.railOff?'▶ 목록':'◀ 목록'; $('#railTab').hidden=!UI.railOff }
 $('#railTab').onclick=()=>$('#btnRail').click();
 applyRail();
 $('#btnRail').onclick=()=>{ UI.railOff=!UI.railOff; try{localStorage.setItem('mb-railoff',UI.railOff?'1':'0')}catch(e){} applyRail(); requestAnimationFrame(()=>{ V.apply(); updateSbars() }) };
-$('#photosTab').onclick=()=>{ UI.photosOff=false; try{localStorage.setItem('mb-photosoff','0')}catch(e){} renderPhotos(); requestAnimationFrame(()=>{ V.apply(); updateSbars() }) };
-$('#photos').addEventListener('click',e=>{ if(e.target.closest('#photosOff')){ UI.photosOff=true; try{localStorage.setItem('mb-photosoff','1')}catch(_){} renderPhotos(); requestAnimationFrame(()=>{ V.apply(); updateSbars() }) } });
+$('#photosTab').onclick=()=>{ UI.photosOff=false; renderPhotos(); requestAnimationFrame(()=>{ V.apply(); updateSbars() }) };
+$('#photos').addEventListener('click',e=>{ if(e.target.closest('#photosOff')){ UI.photosOff=true; renderPhotos(); requestAnimationFrame(()=>{ V.apply(); updateSbars() }) } });
 $('#btnZin').onclick=()=>V.zoomBy(1/1.12); $('#btnZout').onclick=()=>V.zoomBy(1.12);
 $('#zoomR').addEventListener('input',e=>{ if(!baseW) return; const z=Math.exp(+e.target.value); V.zoomBy((baseW/z)/V.w); $('#zoomP').textContent=Math.round(z*100)+'%' }); $('#btnFit').onclick=fitAll;
 $('#btnClearEx').onclick=()=>{ S=empty(); UI.slots=[null,null]; UI.sel=null; UI.hl=null; UI.fitted=false; savePanels(); commit(); switchView('spaces'); toast('예시를 지웠어요. 먼저 공간을 등록하세요.') };

@@ -304,6 +304,9 @@ button.num.zero{opacity:.35}
 .ibtn.on{background:var(--hl);border-color:var(--hl);color:#fff}
 .svgwrap{position:relative;min-height:0;overflow:hidden;background:
   radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--muted) 22%,transparent) 1px,transparent 1.5px) 0 0/18px 18px,var(--bg)}
+/* 배치판은 점 무늬 없이 흰 바탕 (어두운 화면 설정이면 어두운 단색) */
+.svgwrap.isplan{background:#fff}
+@media (prefers-color-scheme: dark){.svgwrap.isplan{background:var(--bg)}}
 #plan{width:100%;height:100%;display:block;touch-action:none;overscroll-behavior:contain;user-select:none;-webkit-user-select:none}
 #plan.panning{cursor:grabbing}
 #plan.measuring{cursor:crosshair}
@@ -1480,7 +1483,7 @@ function renderPhotos(){ // 배치판·공간 작업 오른쪽 창: 내 전체 �
   startNotes(); if(!NOTES.t&&mergeMemos()) saveNotes();
   const box=$('#photos'); const can=UI.view==='plan'||UI.view==='space'; const show=can&&!UI.photosOff;
   $('#photosTab').hidden=!(can&&UI.photosOff);
-  $('#svgwrap').classList.toggle('hasphotos',show); box.hidden=!show; if(!show){ box.innerHTML=''; box.dataset.pid=''; return }
+  $('#svgwrap').classList.toggle('isplan',UI.view==='plan'); $('#svgwrap').classList.toggle('hasphotos',show); box.hidden=!show; if(!show){ box.innerHTML=''; box.dataset.pid=''; return }
   const pid=UI.view==='space'&&UI.focus&&P(UI.focus)?UI.focus:''; const p=pid?P(pid):null;
   if(!$('#nMemo')){ box.innerHTML=`<div class="ph-head"><b class="ph-title" id="nTopT"></b><button id="photosOff" title="접기">접기 ▶</button></div><div id="nNew"></div>
       <div class="nt-hd"><b class="ph-title">내 메모</b><label class="nt-pub" id="nPubL" title="켜면 다른 사람도 이 메모를 볼 수 있어요 (고치는 건 나만)"><input type="checkbox" id="nPub"> <span id="nPubT">🔒 나만</span></label></div>

@@ -1803,7 +1803,7 @@ function renderRail(){ SELI=selItemIds();
   const tabs=[{id:'',name:'전체'},...S.places.filter(p=>itemsOf(p.id).length).map(p=>({id:p.id,name:p.name}))];
   if(!tabs.find(t=>t.id===UI.railTab)) UI.railTab='';
   let h=`<div class="railhead"><div class="railtop"><b>자산 목록</b><button class="railfold" data-railfold title="자산 목록 접기">◀ 접기</button></div><div class="sum"><div class="sumnums"><span>전체<b>${tot}</b></span><span>배치<b>${pl}</b></span><span class="w">남음<b>${tot-pl}</b></span></div><div class="bar"><i style="width:${tot?pl/tot*100:0}%"></i></div></div>
-  <div class="seg">${tabs.map(t=>`<button data-railtab="${t.id}" class="${t.id===UI.railTab?'on':''}">${esc(t.name)}</button>`).join('')}</div>${UI.view==='space'&&UI.focus&&P(UI.focus)?`<form class="qadd" id="qadd"><b>${esc(P(UI.focus).name)}에 자산 추가</b><div class="qrow qk"><input id="qaName" placeholder="이름" aria-label="이름" autocomplete="off"><select id="qaK" aria-label="종류"><option value="furn">가구</option><option value="chair">의자(겹쳐 놓기)</option><option value="item">올리는 물품</option></select><input id="qaQ" type="number" min="1" value="1" aria-label="수량" title="수량"></div><div class="qrow q3"><input id="qaW" type="number" min="1" placeholder="가로" aria-label="가로 cm"><input id="qaD" type="number" min="1" placeholder="세로" aria-label="세로 cm"><input id="qaH" type="number" min="0" placeholder="높이" aria-label="높이 cm (선택)"><button class="btn primary small">추가</button></div><label class="qnew" title="체크하지 않으면 지금 있는 기존 가구로 등록돼요"><input type="checkbox" id="qaNew"> <b>신규 구매</b><span class="hint">· 안 하면 기존 가구</span></label></form>`:''}</div><div class="raillist">`;
+  <div class="seg">${tabs.map(t=>`<button data-railtab="${t.id}" class="${t.id===UI.railTab?'on':''}">${esc(t.name)}</button>`).join('')}</div>${UI.view==='space'&&UI.focus&&P(UI.focus)?`<form class="qadd" id="qadd"><b>🆕 새 가구 추가 <span class="hint">· ${esc(P(UI.focus).name)}</span></b><div class="qrow qk"><input id="qaName" placeholder="이름" aria-label="이름" autocomplete="off"><select id="qaK" aria-label="종류"><option value="furn">가구</option><option value="chair">의자(겹쳐 놓기)</option><option value="item">올리는 물품</option></select><input id="qaQ" type="number" min="1" value="1" aria-label="수량" title="수량"></div><div class="qrow q3"><input id="qaW" type="number" min="1" placeholder="가로" aria-label="가로 cm"><input id="qaD" type="number" min="1" placeholder="세로" aria-label="세로 cm"><input id="qaH" type="number" min="0" placeholder="높이" aria-label="높이 cm (선택)"><button class="btn primary small">추가</button></div><span class="hint">새로 살 가구만 여기서 추가해요. 지금 있는 가구는 자산 목록에서 등록하세요.</span></form>`:''}</div><div class="raillist">`;
   if(!S.items.length&&UI.view!=='space'){ h+=`<div class="railempty"><span>가구가 아직 없어요. 공간별로 지금 있는 가구를 입력하세요.</span><button class="btn primary" data-view="items">자산 입력하기</button></div>` }
   else if(UI.railTab==='') h+=railTotal(); else h+=railSpace(UI.railTab);
   rail.innerHTML=h+'</div>'; renderItemDlg();
@@ -2123,7 +2123,7 @@ function switchView(view){
   renderAll(); if(view==='plan'||view==='space'){ fitAll(); requestAnimationFrame(fitAll) }
 }
 function renderAll(){
-  rebuild(); $('#exampleBar').hidden=!S.meta.example||Cloud.on; savePrefs();
+  applyRail(); rebuild(); $('#exampleBar').hidden=!S.meta.example||Cloud.on; savePrefs();
   if(UI.view==='plan'||UI.view==='space'){ renderRail(); renderPlan() }
   else if(UI.view==='items') renderItems();
   else if(UI.view==='routes') renderRoutes();
@@ -2204,7 +2204,7 @@ document.addEventListener('change',e=>{
 });
 document.addEventListener('submit',e=>{ if(e.target.id==='qadd'){ e.preventDefault(); const nm=$('#qaName').value.trim(), w=Math.round(num($('#qaW').value,0)), d=Math.round(num($('#qaD').value,0)), h=Math.max(0,Math.round(num($('#qaH').value,0))), q=Math.max(1,Math.round(num($('#qaQ').value,1)));
     if(!nm){ toast('가구 이름을 입력하세요.'); $('#qaName').focus(); return } if(!(w>0&&d>0)){ toast('가로와 세로를 cm로 입력하세요.'); (w>0?$('#qaD'):$('#qaW')).focus(); return }
-    const kind=autoKind($('#qaName').value,['item','chair'].includes($('#qaK').value)?$('#qaK').value:'furn'); const isNew=!!($('#qaNew')&&$('#qaNew').checked); const pid=UI.focus; const same=S.items.find(i=>i.placeId===pid&&gkey(i)===nm+'|'+w+'|'+d+(kind==='item'?'|i':'')+(isNew?'|n':''));
+    const kind=autoKind($('#qaName').value,['item','chair'].includes($('#qaK').value)?$('#qaK').value:'furn'); const isNew=true; /* 공간 작업에서는 새 가구만 추가 */ const pid=UI.focus; const same=S.items.find(i=>i.placeId===pid&&gkey(i)===nm+'|'+w+'|'+d+(kind==='item'?'|i':'')+(isNew?'|n':''));
     if(same){ same.qty+=q; syncUnits(same) } else { const it={id:uid(),placeId:pid,name:nm,w,d,h,qty:q,kind,isNew,color:colorFor(nm,w,d)}; S.items.push(it); syncUnits(it) }
     UI.railTab=pid; /* 도면 화면(변경 전/후)은 바꾸지 않음 */ commit(); if(UI.view==='space'){ UI.fitted=true; fitAll() } toast(isNew?`신규 구매 ${nm} ${q}개를 추가했어요. 변경 후 화면에서 놓을 자리에 끌어 놓으세요.`:`${nm} ${q}개를 기존 가구로 추가했어요. 미배치 가구 칸에서 도면에 끌어 놓으세요.`); requestAnimationFrame(()=>{ const n=$('#qaName'); if(n) n.focus() }); return }
  if(e.target.id==='formSpace'){ e.preventDefault(); const nm=$('#newSpace').value.trim(); if(!nm){ $('#newSpace').focus(); return } S.places.push({id:uid(),name:nm}); commit(); requestAnimationFrame(()=>$('#newSpace')&&$('#newSpace').focus()) } });
@@ -2237,11 +2237,12 @@ planSvg.addEventListener('dblclick',e=>{ const m=UI.measure; if(!m||!m.pts.lengt
 document.addEventListener('keydown',e=>{ const m=UI.measure; if(!m) return; if(e.key==='Shift'){ m.shift=true; renderOverlay() } if(e.key==='Enter'&&!e.target.closest('input,select,textarea,[contenteditable]')){ m.done=true; m.hover=null; renderOverlay() } if(e.key==='Backspace'&&!e.target.closest('input,select,textarea,[contenteditable]')&&!m.done&&m.pts.length){ e.preventDefault(); e.stopImmediatePropagation(); m.pts.pop(); renderOverlay() } },true);
 document.addEventListener('keyup',e=>{ if(e.key==='Shift'&&UI.measure){ UI.measure.shift=false; renderOverlay() } });
 $('#btnMeasure').onclick=toggleMeasure;
-try{ UI.railOff=localStorage.getItem('mb-railoff')==='1'; UI.photosOff=false; localStorage.removeItem('mb-photosoff') }catch(e){} // 메모 창은 들어올 때마다 열려 있게
-function applyRail(){ $('#view-plan').classList.toggle('railoff',!!UI.railOff); $('#btnRail').textContent=UI.railOff?'▶ 목록':'◀ 목록'; $('#railTab').hidden=!UI.railOff }
+try{ UI.railOffSpace=localStorage.getItem('mb-railoff')==='1'; UI.photosOff=false; localStorage.removeItem('mb-photosoff') }catch(e){} // 메모 창은 들어올 때마다 열려 있게
+UI.railOffPlan=true; // 배치판에서는 자산 목록을 기본으로 닫아 둠 (공간 작업은 마지막 상태 기억)
+function applyRail(){ UI.railOff=UI.view==='plan'?UI.railOffPlan!==false:!!UI.railOffSpace; $('#view-plan').classList.toggle('railoff',!!UI.railOff); $('#btnRail').textContent=UI.railOff?'▶ 목록':'◀ 목록'; $('#railTab').hidden=!UI.railOff }
 $('#railTab').onclick=()=>$('#btnRail').click();
 applyRail();
-$('#btnRail').onclick=()=>{ UI.railOff=!UI.railOff; try{localStorage.setItem('mb-railoff',UI.railOff?'1':'0')}catch(e){} applyRail(); requestAnimationFrame(()=>{ V.apply(); updateSbars() }) };
+$('#btnRail').onclick=()=>{ if(UI.view==='plan') UI.railOffPlan=!UI.railOff; else { UI.railOffSpace=!UI.railOff; try{localStorage.setItem('mb-railoff',UI.railOffSpace?'1':'0')}catch(e){} } applyRail(); requestAnimationFrame(()=>{ V.apply(); updateSbars() }) };
 $('#photosTab').onclick=()=>{ UI.photosOff=false; renderPhotos(); requestAnimationFrame(()=>{ V.apply(); updateSbars() }) };
 $('#photos').addEventListener('click',e=>{ if(e.target.closest('#photosOff')){ UI.photosOff=true; renderPhotos(); requestAnimationFrame(()=>{ V.apply(); updateSbars() }) } });
 $('#btnZin').onclick=()=>V.zoomBy(1/1.12); $('#btnZout').onclick=()=>V.zoomBy(1.12);

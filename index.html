@@ -787,8 +787,8 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
           <div id="calCopy"></div>
         </div>
         <div data-pane="mask" hidden class="field" style="gap:10px"><p class="hint">도면에 적힌 필요 없는 글씨나 선을 <b>끌어서</b> 흰 네모로 가리세요. 새 벽은 <b>■ 색 네모</b>를 고르고(색은 아래에서 고를 수 있어요, 기본 검은색) 가늘고 길게 끌어 그리면 돼요. 모눈은 그 위에 그대로 보여요. <b>✂ 일부 지우기</b>로 끌면 그 부분만 다시 보이고, 흰 네모는 <b>클릭</b>하면 지워지고, 색 네모(벽)는 클릭하면 선택돼서 끌어 옮기거나 지울 수 있어요. 도면 이동은 Ctrl+끌기(또는 마우스 오른쪽 버튼 끌기).</p><div class="seg" id="maskMode"><button data-mm="add" class="on">▢ 흰색 가리기</button><button data-mm="black">■ 색 네모(벽)</button><button data-mm="erase">✂ 일부 지우기</button></div><label class="hint" style="display:flex;align-items:center;gap:6px">색 네모 색 <input type="color" id="maskColor" value="#222222" style="width:42px;height:24px;padding:0;border:1px solid var(--line);border-radius:5px"></label>
-          <div class="wallbox"><b>크기로 벽 넣기</b><span class="hint">가로·세로를 cm로 넣고 [벽 넣기]를 누르면 화면 가운데에 생겨요. 끌어서 옮기고, 방향키로 1cm씩(Shift: 10cm) 움직여요.</span>
-          <div class="trow2"><input id="mW" type="number" inputmode="decimal" min="1" placeholder="가로 cm" aria-label="벽 가로 cm"><input id="mH" type="number" inputmode="decimal" min="1" placeholder="세로 cm" aria-label="벽 세로 cm"><button class="btn small primary" id="mAdd">벽 넣기</button></div>
+          <div class="wallbox"><b>크기로 벽 넣기</b><span class="hint">가로·세로를 cm로 넣고 [벽 넣기]를 누르면 화면 가운데에 생겨요. 끌어서 옮기고, 방향키로 1cm씩(Shift: 10cm) 움직여요. [자 넣기]는 같은 크기의 테스터 자를 넣어요(세로를 비우면 선). 자도 끌어서 옮길 수 있어요.</span>
+          <div class="trow2"><input id="mW" type="number" inputmode="decimal" min="1" placeholder="가로 cm" aria-label="벽 가로 cm"><input id="mH" type="number" inputmode="decimal" min="1" placeholder="세로 cm" aria-label="벽 세로 cm"><button class="btn small primary" id="mAdd">벽 넣기</button><button class="btn small" id="mTst" title="같은 크기의 테스터 자를 넣어요 (세로를 비우면 선)">자 넣기</button></div>
           <div id="mSel" class="msel2" hidden></div></div><div id="maskInfo" class="hint"></div><div class="actions"><button class="btn small" id="maskUndo" title="Ctrl+Z">↶ 되돌리기</button><button class="btn small" id="maskClear">가린 것 모두 지우기</button></div></div>
         <div data-pane="origin" hidden><p class="hint">모눈이 시작할 벽 모서리를 클릭하세요. 모눈 선이 벽에 딱 맞게 옮겨져요.</p></div>
         <div data-pane="rooms" hidden class="field" style="gap:10px"><p class="hint">방 모서리를 차례로 <b>클릭</b>하면 상하좌우 선으로 꺾이며 그려지고, <b>처음 점을 누르면</b> 방이 완성돼요(더블클릭·Enter도 돼요). Backspace는 한 점 지우기, Esc는 취소예요. 네모 방은 끌어서 그려도 돼요. 방별로도 보고 층 전체로도 볼 수 있어요. 도면 이동은 Ctrl+끌기(또는 마우스 오른쪽 버튼 끌기), 확대·축소는 휠이에요.</p><div id="roomList" class="roomlist"></div></div>
@@ -2413,7 +2413,7 @@ $('#calLayer').addEventListener('click',e=>{ const b=e.target.closest('[data-l]'
 function calBase(){
   const m=Cal.m; let grid='';
   if(cal(m)){ const st=50*m.sx, sty=50*m.sy; let d=''; const x0=((m.gx%st)+st)%st, y0=((m.gy%sty)+sty)%sty; for(let x=x0;x<=m.w;x+=st) d+=`M${x.toFixed(1)} 0V${m.h}`; for(let y=y0;y<=m.h;y+=sty) d+=`M0 ${y.toFixed(1)}H${m.w}`; grid=`<path class="g2" d="${d}"/>` }
-  calSvg.innerHTML=`<image href="${m.img}" x="0" y="0" width="${m.w}" height="${m.h}"/>${grid}<g id="calTst"></g><g id="calOvl"></g>`;
+  calSvg.innerHTML=`<image href="${m.img}" x="0" y="0" width="${m.w}" height="${m.h}"/>${grid}<g id="calOvl"></g><g id="calTst"></g>`;
   calOverlay(); calStatus(); renderTesters();
 }
 function calOverlay(){
@@ -2510,7 +2510,7 @@ function cutRect(r,e){ // r에서 e 부분을 뺀 나머지 네모들
 $('#maskMode').onclick=e=>{ const b=e.target.closest('[data-mm]'); if(!b) return; Cal.maskMode=b.dataset.mm; $$('#maskMode button').forEach(x=>x.classList.toggle('on',x===b)) };
 $('#maskUndo').onclick=()=>undoStep(false);
 function maskInfo(){ const n=(Cal.m&&Cal.m.masks||[]).length; const el=$('#maskInfo'); if(el) el.textContent=n?`가린 곳 ${n}개`:'아직 가린 곳이 없어요.' }
-calSvg.addEventListener('pointerdown',e=>{ if(Cal.mode!=='mask') return; if(e.pointerType==='mouse'&&e.button!==0) return; e.stopImmediatePropagation(); e.preventDefault();
+calSvg.addEventListener('pointerdown',e=>{ if(Cal.mode!=='mask'||e.target.closest('[data-tid]')) return; if(e.pointerType==='mouse'&&e.button!==0) return; e.stopImmediatePropagation(); e.preventDefault();
   const m=Cal.m, inv=calSvg.getScreenCTM().inverse(), p0=CV.pt(e,inv), sx=e.clientX, sy=e.clientY; let drag=false; try{calSvg.setPointerCapture(e.pointerId)}catch(_){}
   if(Cal.maskMode!=='erase'){ const ms=m.masks||[]; let hit=null; for(let i=ms.length-1;i>=0;i--){ const q=ms[i]; if(q.c&&p0.x>=q.x&&p0.x<=q.x+q.w&&p0.y>=q.y&&p0.y<=q.y+q.h){ hit=q; break } }
     if(hit){ const x0=hit.x, y0=hit.y; Cal.msel=hit; renderWallSel(); calOverlay();
@@ -2540,6 +2540,7 @@ function wallAct(a){ const m=Cal.m, q=Cal.msel; if(!m||!q) return;
   else if(a==='dup'){ const k=Math.round(20*m.sx); const n={...q,x:Math.min(q.x+k,Math.max(0,m.w-q.w)),y:Math.min(q.y+k,Math.max(0,m.h-q.h))}; m.masks.push(n); Cal.msel=n }
   else if(a==='del'){ m.masks=(m.masks||[]).filter(x=>x!==q); Cal.msel=null; toast('벽을 지웠어요.') }
   save(); maskInfo(); calOverlay(); renderWallSel() }
+$('#mTst').onclick=()=>{ $('#tW').value=$('#mW').value; $('#tH').value=$('#mH').value; $('#tAdd').click() };
 $('#mSel').addEventListener('click',e=>{ const b=e.target.closest('[data-wall]'); if(b) wallAct(b.dataset.wall) });
 document.addEventListener('keydown',e=>{ if(!$('#dlgCal').open||Cal.mode!=='mask'||!Cal.msel||!Cal.m) return; if(e.target.closest('input,select,textarea,[contenteditable]')) return; const m=Cal.m, q=Cal.msel; if(!(m.masks||[]).includes(q)) return;
   const st=e.shiftKey?10:1; const d={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,-st],ArrowDown:[0,st]}[e.key];
@@ -2556,7 +2557,7 @@ function finishPoly(){ const m=Cal.m, P2=Cal.poly; if(!P2||P2.length<3){ if(P2&&
   if(w<m.w*.01||h<m.h*.01){ calOverlay(); return }
   m.rooms=m.rooms||[]; const r={id:uid(),name:`방 ${m.rooms.length+1}`,x:Math.round(x),y:Math.round(y),w:Math.round(w),h:Math.round(h),pts:P2.map(q=>({x:Math.round(q.x),y:Math.round(q.y)}))};
   m.rooms.push(r); save(); calRooms(); calOverlay(); requestAnimationFrame(()=>{ const i=$('#rn-'+r.id); if(i){i.focus();i.select()} }); toast('방을 만들었어요. 이름을 입력하세요.') }
-calSvg.addEventListener('pointerdown',e=>{ if(Cal.mode!=='rooms') return; if(e.pointerType==='mouse'&&e.button!==0) return; e.stopImmediatePropagation(); e.preventDefault();
+calSvg.addEventListener('pointerdown',e=>{ if(Cal.mode!=='rooms'||e.target.closest('[data-tid]')) return; if(e.pointerType==='mouse'&&e.button!==0) return; e.stopImmediatePropagation(); e.preventDefault();
   const m=Cal.m, inv=calSvg.getScreenCTM().inverse(), p0=CV.pt(e,inv), sx=e.clientX, sy=e.clientY; let drag=false; try{calSvg.setPointerCapture(e.pointerId)}catch(_){}
   const box={x:p0.x,y:p0.y,w:0,h:0};
   const mv=ev=>{ if(Cal.poly&&Cal.poly.length) return; if(!drag&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<6) return; drag=true; const p=CV.pt(ev,inv); const x=clamp(p.x,0,m.w), y=clamp(p.y,0,m.h); box.x=Math.min(p0.x,x); box.y=Math.min(p0.y,y); box.w=Math.abs(x-p0.x); box.h=Math.abs(y-p0.y); Cal.draft=box; calOverlay() };

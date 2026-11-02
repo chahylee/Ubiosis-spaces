@@ -602,6 +602,9 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
 .cmask{fill:#fff;stroke:none;pointer-events:none} .cmask.on{stroke:#e0473b;stroke-width:1.5;stroke-dasharray:5 4;vector-effect:non-scaling-stroke}
 .cmask.blk{fill:#222} .pmask.blk{fill:#222}
 .cmask.erase{fill:rgba(224,71,59,.15)}
+.cwsel{fill:none;stroke:#1e5c84;stroke-width:2.5;vector-effect:non-scaling-stroke;pointer-events:none}
+.wallbox{display:grid;gap:6px;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--raise)} .wallbox>b{font-size:12.5px}
+.msel2{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px}
 .pmask{fill:#fff}
 .cpoly{fill:color-mix(in srgb,var(--accent) 10%,transparent);stroke:var(--accent);stroke-width:2.5;vector-effect:non-scaling-stroke;pointer-events:none}
 .crm.on{fill:color-mix(in srgb,var(--accent) 14%,transparent);stroke-width:2.5}
@@ -783,7 +786,10 @@ dialog::backdrop{background:rgba(10,16,14,.45)}
           <button class="btn primary" id="calApply">적용</button>
           <div id="calCopy"></div>
         </div>
-        <div data-pane="mask" hidden class="field" style="gap:10px"><p class="hint">도면에 적힌 필요 없는 글씨나 선을 <b>끌어서</b> 흰 네모로 가리세요. 새 벽은 <b>■ 색 네모</b>를 고르고(색은 아래에서 고를 수 있어요, 기본 검은색) 가늘고 길게 끌어 그리면 돼요. 모눈은 그 위에 그대로 보여요. <b>✂ 일부 지우기</b>로 끌면 그 부분만 다시 보이고, 가린 네모를 <b>클릭</b>하면 통째로 지워져요. 도면 이동은 Ctrl+끌기(또는 마우스 오른쪽 버튼 끌기).</p><div class="seg" id="maskMode"><button data-mm="add" class="on">▢ 흰색 가리기</button><button data-mm="black">■ 색 네모(벽)</button><button data-mm="erase">✂ 일부 지우기</button></div><label class="hint" style="display:flex;align-items:center;gap:6px">색 네모 색 <input type="color" id="maskColor" value="#222222" style="width:42px;height:24px;padding:0;border:1px solid var(--line);border-radius:5px"></label><div id="maskInfo" class="hint"></div><div class="actions"><button class="btn small" id="maskUndo" title="Ctrl+Z">↶ 되돌리기</button><button class="btn small" id="maskClear">가린 것 모두 지우기</button></div></div>
+        <div data-pane="mask" hidden class="field" style="gap:10px"><p class="hint">도면에 적힌 필요 없는 글씨나 선을 <b>끌어서</b> 흰 네모로 가리세요. 새 벽은 <b>■ 색 네모</b>를 고르고(색은 아래에서 고를 수 있어요, 기본 검은색) 가늘고 길게 끌어 그리면 돼요. 모눈은 그 위에 그대로 보여요. <b>✂ 일부 지우기</b>로 끌면 그 부분만 다시 보이고, 흰 네모는 <b>클릭</b>하면 지워지고, 색 네모(벽)는 클릭하면 선택돼서 끌어 옮기거나 지울 수 있어요. 도면 이동은 Ctrl+끌기(또는 마우스 오른쪽 버튼 끌기).</p><div class="seg" id="maskMode"><button data-mm="add" class="on">▢ 흰색 가리기</button><button data-mm="black">■ 색 네모(벽)</button><button data-mm="erase">✂ 일부 지우기</button></div><label class="hint" style="display:flex;align-items:center;gap:6px">색 네모 색 <input type="color" id="maskColor" value="#222222" style="width:42px;height:24px;padding:0;border:1px solid var(--line);border-radius:5px"></label>
+          <div class="wallbox"><b>크기로 벽 넣기</b><span class="hint">가로·세로를 cm로 넣고 [벽 넣기]를 누르면 화면 가운데에 생겨요. 끌어서 옮기고, 방향키로 1cm씩(Shift: 10cm) 움직여요.</span>
+          <div class="trow2"><input id="mW" type="number" inputmode="decimal" min="1" placeholder="가로 cm" aria-label="벽 가로 cm"><input id="mH" type="number" inputmode="decimal" min="1" placeholder="세로 cm" aria-label="벽 세로 cm"><button class="btn small primary" id="mAdd">벽 넣기</button></div>
+          <div id="mSel" class="msel2" hidden></div></div><div id="maskInfo" class="hint"></div><div class="actions"><button class="btn small" id="maskUndo" title="Ctrl+Z">↶ 되돌리기</button><button class="btn small" id="maskClear">가린 것 모두 지우기</button></div></div>
         <div data-pane="origin" hidden><p class="hint">모눈이 시작할 벽 모서리를 클릭하세요. 모눈 선이 벽에 딱 맞게 옮겨져요.</p></div>
         <div data-pane="rooms" hidden class="field" style="gap:10px"><p class="hint">방 모서리를 차례로 <b>클릭</b>하면 상하좌우 선으로 꺾이며 그려지고, <b>처음 점을 누르면</b> 방이 완성돼요(더블클릭·Enter도 돼요). Backspace는 한 점 지우기, Esc는 취소예요. 네모 방은 끌어서 그려도 돼요. 방별로도 보고 층 전체로도 볼 수 있어요. 도면 이동은 Ctrl+끌기(또는 마우스 오른쪽 버튼 끌기), 확대·축소는 휠이에요.</p><div id="roomList" class="roomlist"></div></div>
         <div data-pane="check" hidden class="field" style="gap:10px"><p class="hint">다른 벽의 양 끝을 클릭하면 앱이 계산한 길이가 나와요. 도면에 적힌 치수와 같으면 축척이 맞은 거예요.</p><div id="checkOut" class="bignum">–</div><label class="field">도면에 적힌 값 (mm)<input id="chkLen" type="number" inputmode="decimal" min="1" placeholder="예: 9895"></label><div id="chkDiff" class="hint"></div><label class="hint" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="chkSep"> 이 방향(가로 또는 세로)만 고치기</label><button class="btn primary" id="chkFix" disabled>이 치수로 축척 고치기</button></div>
@@ -2414,6 +2420,7 @@ function calOverlay(){
   const g=$('#calOvl'); if(!g) return; const k=CV.w/600, m=Cal.m; let s='';
   if(cal(m)&&Cal.mode==='origin'){ s+=`<path class="corigin" d="M${m.gx-14*k} ${m.gy}H${m.gx+14*k}M${m.gx} ${m.gy-14*k}V${m.gy+14*k}"/>` }
   for(const q of (m.masks||[])) s+=`<rect class="cmask${Cal.mode==='mask'?' on':''}"${q.c?` style="fill:${mcol(q)}"`:''} x="${q.x}" y="${q.y}" width="${q.w}" height="${q.h}"/>`;
+  if(Cal.msel&&(m.masks||[]).includes(Cal.msel)&&Cal.mode==='mask'&&cal(m)){ const q=Cal.msel, c=wallCm(q); s+=`<rect class="cwsel" x="${q.x}" y="${q.y}" width="${q.w}" height="${q.h}"/><text class="tlab" style="--tc:#1e5c84" x="${q.x+q.w/2}" y="${q.y-6*k}" font-size="${12*k}">${c.w}×${c.h}cm</text>` }
   if(Cal.mdraft){ const b=Cal.mdraft; s+=`<rect class="cmask on${Cal.maskMode==='erase'?' erase':''}"${Cal.maskMode==='black'?` style="fill:${$('#maskColor').value}"`:''} x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"/>` }
   for(const r of roomsOf(m)){ const on=Cal.mode==='rooms'; const p0=roomPts(r)[0]; s+=(r.pts?`<polygon class="crm ${on?'on':''}" points="${r.pts.map(q=>q.x+','+q.y).join(' ')}"/>`:`<rect class="crm ${on?'on':''}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}"/>`)+`<text class="crmt" x="${p0.x+8*k}" y="${p0.y+20*k}" font-size="${14*k}">${esc(r.name)}</text>` }
   if(Cal.poly&&Cal.poly.length){ const P2=Cal.poly; const h=Cal.hover?polyNext(Cal.hover):null; const all=h?[...P2,h]:P2; const near=h&&P2.length>=3&&Math.hypot(h.x-P2[0].x,h.y-P2[0].y)<14*k;
@@ -2428,7 +2435,7 @@ function calOverlay(){
   if(Cal.pts.length===2){ const[a,b]=Cal.pts; s+=`<line class="cline" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>` }
   g.innerHTML=s;
   if(Cal.mode==='scale'&&Cal.pts.length===2&&Cal.m&&Cal.m.calRef){ $('#calHint').textContent='지난번에 찍은 두 점이에요. 점을 끌거나 화살표 키로 조정하고 수정 적용을 누르세요. 새로 찍으려면 빈 곳을 클릭하세요.'; g.innerHTML=s; return }
-  const hints={rooms:['방 모서리를 차례로 클릭해 둘레를 그리고(선은 상하좌우), 처음 점을 누르면 방이 완성돼요. 네모 방은 끌어서 그려도 돼요.'],mask:['필요 없는 글씨나 선을 끌어서 흰 네모로 가리세요. 가린 네모를 클릭하면 지워져요.'],scale:['치수선의 한쪽 끝을 클릭하세요. 돋보기로 끝을 확인하며 찍으세요.','점선을 따라 다른 쪽 끝을 클릭하세요. 거의 수평·수직이면 자동으로 맞춰져요.','점을 끌거나 화살표 키(Shift: 10칸씩)로 미세 조정한 뒤, 실제 길이를 넣고 적용을 누르세요.'],origin:['모눈이 시작할 벽 모서리를 클릭하세요.'],check:['재고 싶은 치수선의 한쪽 끝을 클릭하세요.','다른 쪽 끝을 클릭하세요.','점을 끌거나 화살표 키로 미세 조정하면 길이가 바로 바뀌어요.']};
+  const hints={rooms:['방 모서리를 차례로 클릭해 둘레를 그리고(선은 상하좌우), 처음 점을 누르면 방이 완성돼요. 네모 방은 끌어서 그려도 돼요.'],mask:['필요 없는 글씨나 선은 끌어서 흰 네모로 가리세요. 벽은 오른쪽 [크기로 벽 넣기]로 cm 크기를 넣어 만들 수 있어요.'],scale:['치수선의 한쪽 끝을 클릭하세요. 돋보기로 끝을 확인하며 찍으세요.','점선을 따라 다른 쪽 끝을 클릭하세요. 거의 수평·수직이면 자동으로 맞춰져요.','점을 끌거나 화살표 키(Shift: 10칸씩)로 미세 조정한 뒤, 실제 길이를 넣고 적용을 누르세요.'],origin:['모눈이 시작할 벽 모서리를 클릭하세요.'],check:['재고 싶은 치수선의 한쪽 끝을 클릭하세요.','다른 쪽 끝을 클릭하세요.','점을 끌거나 화살표 키로 미세 조정하면 길이가 바로 바뀌어요.']};
   const hs=hints[Cal.mode]; $('#calHint').textContent=hs[Math.min(Cal.pts.length,hs.length-1)];
 }
 function chkUpdate(){ const t=num($('#chkLen').value,0), v=Cal.chk; const ok=Cal.mode==='check'&&Cal.pts.length===2&&t>0&&v>0; $('#chkFix').disabled=!ok; if(!ok){ $('#chkDiff').textContent=''; return } const d=(v-t)/t*100; $('#chkDiff').innerHTML=Math.abs(d)<1.5?`<b style="color:var(--ok)">오차 ${d.toFixed(1)}% · 축척이 맞아요</b>`:`<b style="color:var(--warn)">오차 ${d>0?'+':''}${d.toFixed(1)}% · 아래 버튼으로 고치세요</b>` }
@@ -2505,6 +2512,12 @@ $('#maskUndo').onclick=()=>undoStep(false);
 function maskInfo(){ const n=(Cal.m&&Cal.m.masks||[]).length; const el=$('#maskInfo'); if(el) el.textContent=n?`가린 곳 ${n}개`:'아직 가린 곳이 없어요.' }
 calSvg.addEventListener('pointerdown',e=>{ if(Cal.mode!=='mask') return; if(e.pointerType==='mouse'&&e.button!==0) return; e.stopImmediatePropagation(); e.preventDefault();
   const m=Cal.m, inv=calSvg.getScreenCTM().inverse(), p0=CV.pt(e,inv), sx=e.clientX, sy=e.clientY; let drag=false; try{calSvg.setPointerCapture(e.pointerId)}catch(_){}
+  if(Cal.maskMode!=='erase'){ const ms=m.masks||[]; let hit=null; for(let i=ms.length-1;i>=0;i--){ const q=ms[i]; if(q.c&&p0.x>=q.x&&p0.x<=q.x+q.w&&p0.y>=q.y&&p0.y<=q.y+q.h){ hit=q; break } }
+    if(hit){ const x0=hit.x, y0=hit.y; Cal.msel=hit; renderWallSel(); calOverlay();
+      const mv2=ev=>{ if(!drag&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<4) return; drag=true; const p=CV.pt(ev,inv); hit.x=Math.round(clamp(x0+p.x-p0.x,0,Math.max(0,m.w-hit.w))); hit.y=Math.round(clamp(y0+p.y-p0.y,0,Math.max(0,m.h-hit.h))); calOverlay() };
+      const up2=()=>{ calSvg.removeEventListener('pointermove',mv2); calSvg.removeEventListener('pointerup',up2); calSvg.removeEventListener('pointercancel',up2); if(drag) save(); calOverlay(); renderWallSel() };
+      calSvg.addEventListener('pointermove',mv2); calSvg.addEventListener('pointerup',up2); calSvg.addEventListener('pointercancel',up2); return } }
+  if(Cal.msel){ Cal.msel=null; renderWallSel() }
   const box={x:p0.x,y:p0.y,w:0,h:0};
   const mv=ev=>{ if(!drag&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<5) return; drag=true; const p=CV.pt(ev,inv); const x=clamp(p.x,0,m.w), y=clamp(p.y,0,m.h); box.x=Math.min(p0.x,x); box.y=Math.min(p0.y,y); box.w=Math.abs(x-p0.x); box.h=Math.abs(y-p0.y); Cal.mdraft=box; calOverlay() };
   const up=()=>{ calSvg.removeEventListener('pointermove',mv); calSvg.removeEventListener('pointerup',up); Cal.mdraft=null;
@@ -2513,6 +2526,25 @@ calSvg.addEventListener('pointerdown',e=>{ if(Cal.mode!=='mask') return; if(e.po
     else { const ms=m.masks||[]; for(let i=ms.length-1;i>=0;i--){ const q=ms[i]; if(p0.x>=q.x&&p0.x<=q.x+q.w&&p0.y>=q.y&&p0.y<=q.y+q.h){ ms.splice(i,1); save(); toast('가린 네모를 지웠어요.'); break } } }
     maskInfo(); calOverlay() };
   calSvg.addEventListener('pointermove',mv); calSvg.addEventListener('pointerup',up) },true);
+/* 크기로 벽 넣기: 축척에 맞춰 실제 cm 크기의 색 네모를 만들고, 끌기·방향키로 옮김 */
+function wallCm(q){ const m=Cal.m; return {w:Math.round(q.w/m.sx*10)/10,h:Math.round(q.h/m.sy*10)/10} }
+function renderWallSel(){ const el=$('#mSel'); if(!el) return; const m=Cal.m; const q=Cal.msel; if(!m||!q||!(m.masks||[]).includes(q)||!cal(m)){ Cal.msel=null; el.hidden=true; return }
+  const c=wallCm(q); el.hidden=false; el.innerHTML=`<span>선택한 벽 <b class="mono">${c.w} × ${c.h} cm</b></span><button class="btn small" data-wall="rot" title="R">↻ 돌리기</button><button class="btn small" data-wall="dup">복사</button><button class="btn small danger" data-wall="del" title="Delete">지우기</button>` }
+$('#mAdd').onclick=()=>{ const m=Cal.m; if(!m||!cal(m)){ toast('먼저 ① 축척을 맞춰야 크기로 벽을 넣을 수 있어요.'); return }
+  const W=num($('#mW').value,0), H=num($('#mH').value,0); if(!(W>0)){ toast('벽 가로 길이를 cm로 넣으세요.'); $('#mW').focus(); return } if(!(H>0)){ toast('벽 세로(두께)를 cm로 넣으세요.'); $('#mH').focus(); return }
+  const w=Math.round(W*m.sx), h=Math.max(1,Math.round(H*m.sy)); const cx=CV.x+CV.w/2, cy=CV.y+CV.h/2;
+  const q={x:Math.round(clamp(cx-w/2,0,Math.max(0,m.w-w))),y:Math.round(clamp(cy-h/2,0,Math.max(0,m.h-h))),w,h,c:$('#maskColor').value||'#222222'};
+  (m.masks||(m.masks=[])).push(q); Cal.msel=q; save(); maskInfo(); calOverlay(); renderWallSel(); toast(`${W}×${H}cm 벽을 넣었어요. 끌어서 자리에 맞추세요.`) };
+function wallAct(a){ const m=Cal.m, q=Cal.msel; if(!m||!q) return;
+  if(a==='rot'){ const cx=q.x+q.w/2, cy=q.y+q.h/2; const c=wallCm(q); const w=Math.round(c.h*m.sx), h=Math.round(c.w*m.sy); Object.assign(q,{w,h,x:Math.round(clamp(cx-w/2,0,Math.max(0,m.w-w))),y:Math.round(clamp(cy-h/2,0,Math.max(0,m.h-h)))}) }
+  else if(a==='dup'){ const k=Math.round(20*m.sx); const n={...q,x:Math.min(q.x+k,Math.max(0,m.w-q.w)),y:Math.min(q.y+k,Math.max(0,m.h-q.h))}; m.masks.push(n); Cal.msel=n }
+  else if(a==='del'){ m.masks=(m.masks||[]).filter(x=>x!==q); Cal.msel=null; toast('벽을 지웠어요.') }
+  save(); maskInfo(); calOverlay(); renderWallSel() }
+$('#mSel').addEventListener('click',e=>{ const b=e.target.closest('[data-wall]'); if(b) wallAct(b.dataset.wall) });
+document.addEventListener('keydown',e=>{ if(!$('#dlgCal').open||Cal.mode!=='mask'||!Cal.msel||!Cal.m) return; if(e.target.closest('input,select,textarea,[contenteditable]')) return; const m=Cal.m, q=Cal.msel; if(!(m.masks||[]).includes(q)) return;
+  const st=e.shiftKey?10:1; const d={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,-st],ArrowDown:[0,st]}[e.key];
+  if(d){ e.preventDefault(); e.stopImmediatePropagation(); q.x=Math.round(clamp(q.x+d[0]*m.sx,0,Math.max(0,m.w-q.w))); q.y=Math.round(clamp(q.y+d[1]*m.sy,0,Math.max(0,m.h-q.h))); clearTimeout(Cal.wallT); Cal.wallT=setTimeout(save,400); calOverlay(); return }
+  if(e.key==='Delete'||e.key==='Backspace'){ e.preventDefault(); e.stopImmediatePropagation(); wallAct('del') } else if(e.key==='r'||e.key==='R'){ e.preventDefault(); wallAct('rot') } },true);
 $('#maskClear').onclick=e=>{ if(!Cal.m||!(Cal.m.masks||[]).length) return; if(!armed(e.currentTarget)) return; Cal.m.masks=[]; save(); maskInfo(); calOverlay() };
 /* 방 그리기: 클릭할 때마다 꺾이는 점(선은 상하좌우로만), 처음 점을 누르면(또는 더블클릭·Enter) 방 완성. 끌면 네모 방 */
 function orthoPt(a,q){ return Math.abs(q.x-a.x)>=Math.abs(q.y-a.y)?{x:q.x,y:a.y}:{x:a.x,y:q.y} }
